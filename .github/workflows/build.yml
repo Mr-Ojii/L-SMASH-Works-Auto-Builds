@@ -54,10 +54,10 @@ jobs:
         path: l-smash-works
         
         
-    - name: Set dav1d REV_LIST_COUNT
+    - name: Set dav1d REV_SHA
       id: dav1d-rev
       run: |
-        cd ${{ github.workspace }}/l-smash
+        cd ${{ github.workspace }}/dav1d
         SHA=`git rev-parse HEAD`
         echo "::set-output name=REV_SHA::${SHA}"
         
