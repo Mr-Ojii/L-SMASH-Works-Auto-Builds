@@ -31,6 +31,13 @@ jobs:
         fetch-depth: 0
         repository: videolan/dav1d
         path: dav1d
+    
+    - name: Checkout libvpx repository
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        repository: webmproject/libvpx
+        path: libvpx
       
     - name: Checkout FFmpeg repository
       uses: actions/checkout@v2
@@ -58,6 +65,13 @@ jobs:
       id: dav1d-rev
       run: |
         cd ${{ github.workspace }}/dav1d
+        SHA=`git rev-parse HEAD`
+        echo "::set-output name=REV_SHA::${SHA}"
+        
+    - name: Set libvpx REV_SHA
+      id: libvpx-rev
+      run: |
+        cd ${{ github.workspace }}/libvpx
         SHA=`git rev-parse HEAD`
         echo "::set-output name=REV_SHA::${SHA}"
         
@@ -91,6 +105,9 @@ jobs:
         echo "" >> "l-smash-works/AviUtl/About-this-build.txt"
         echo "dav1d ${{ steps.dav1d-rev.outputs.REV_SHA }}" >> "l-smash-works/AviUtl/About-this-build.txt" 
         echo "https://github.com/videolan/dav1d" >> "l-smash-works/AviUtl/About-this-build.txt"
+        echo "" >> "l-smash-works/AviUtl/About-this-build.txt"
+        echo "libvpx ${{ steps.libvpx-rev.outputs.REV_SHA }}" >> "l-smash-works/AviUtl/About-this-build.txt"
+        echo "https://github.com/webmproject/libvpx" >> "l-smash-works/AviUtl/About-this-build.txt"
     
     - name: Add License Files
       run: |
@@ -98,9 +115,9 @@ jobs:
         cp ${{ github.workspace }}/dav1d/COPYING ${{ github.workspace }}/l-smash-works/AviUtl/Licenses/dav1d.txt
         cp ${{ github.workspace }}/l-smash/LICENSE ${{ github.workspace }}/l-smash-works/AviUtl/Licenses/L-SMASH.txt
         cp ${{ github.workspace }}/ffmpeg/COPYING.LGPLv3 ${{ github.workspace }}/l-smash-works/AviUtl/Licenses/FFmpeg.txt
+        cp ${{ github.workspace }}/libvpx/LICENSE ${{ github.workspace }}/l-smash-works/AviUtl/Licenses/libvpx.txt
         
-        
-    - name: Build dav1d
+    - name: Install dav1d
       run: |
         cd ${{ github.workspace }}
         mkdir dav1d/build && cd dav1d/build
@@ -108,15 +125,23 @@ jobs:
         ninja
         sudo ninja install
         
-    - name: Build FFmpeg
+    - name: Install libvpx
+      run: |
+        cd ${{ github.workspace }}
+        mkdir libvpx/builds && cd libvpx/builds
+        CROSS=i686-w64-mingw32- ../configure --target=x86-win32-gcc --enable-vp9_highbitdepth --disable-vp8-encoder --disable-vp9-encoder
+        make
+        sudo make install
+        
+    - name: Install FFmpeg
       run: |
         cd ${{ github.workspace }}/ffmpeg
         export PKG_CONFIG_PATH==/usr/local/lib/pkgconfig
-        ./configure --enable-version3 --enable-avresample --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-autodetect --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --disable-avfilter --disable-debug --cross-prefix=i686-w64-mingw32- --cpu=i686 --target-os=mingw32 --arch=x86  --extra-ldflags="-static-libgcc -static" --enable-libdav1d
+        ./configure --enable-version3 --enable-avresample --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-autodetect --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --disable-avfilter --disable-debug --cross-prefix=i686-w64-mingw32- --cpu=i686 --target-os=mingw32 --arch=x86  --extra-ldflags="-static-libgcc -static" --enable-libdav1d --enable-libvpx
         make -j2
         sudo make install -j2
         
-    - name: Build L-SMASH
+    - name: Install L-SMASH
       run: |
         cd ${{ github.workspace }}/l-smash
         ./configure --cross-prefix=i686-w64-mingw32- --extra-ldflags=-static-libgcc
