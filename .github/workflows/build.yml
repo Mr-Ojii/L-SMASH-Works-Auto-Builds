@@ -1,0 +1,173 @@
+name: Build L-SMASH Works
+
+on:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+
+  aviutl-build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        user: [HolyWu, VFR-maniac]
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      
+    - name: Install depend lib
+      run: sudo apt install nasm mingw-w64 meson ninja-build pkg-config
+      
+    - name: Create symbolic link
+      run: sudo ln -s /usr/bin/pkg-config /usr/bin/i686-w64-mingw32-pkg-config
+      
+    - name: Checkout dav1d repository
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        repository: videolan/dav1d
+        path: dav1d
+      
+    - name: Checkout FFmpeg repository
+      uses: actions/checkout@v2
+      with:
+        repository: FFmpeg/FFmpeg
+        path: ffmpeg
+        ref: release/4.4
+        
+    - name: Checkout L-SMASH repository
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        repository: l-smash/l-smash
+        path: l-smash
+        
+    - name: Checkout L-SMASH Works repository
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        repository: ${{ matrix.user }}/L-SMASH-Works
+        path: l-smash-works
+        
+        
+    - name: Set dav1d REV_LIST_COUNT
+      id: dav1d-rev
+      run: |
+        cd ${{ github.workspace }}/l-smash
+        SHA=`git rev-parse HEAD`
+        echo "::set-output name=REV_SHA::${SHA}"
+        
+    - name: Set L-SMASH REV_LIST_COUNT
+      id: l-smash-rev
+      run: |
+        cd ${{ github.workspace }}/l-smash
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "::set-output name=REV_LIST_COUNT::${REVCOUNT}"
+        
+            
+    - name: Set L-SMASH Works REV_LIST_COUNT
+      id: l-smash-works-rev
+      run: |
+        cd ${{ github.workspace }}/l-smash-works
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "::set-output name=REV_LIST_COUNT::${REVCOUNT}"
+        
+        
+    - name: Create BuildInfo File
+      run: |
+        cd ${{ github.workspace }}
+        echo "${{ matrix.user }}/L-SMASH-Works r${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}" > "l-smash-works/AviUtl/About-this-build.txt"
+        echo "https://github.com/HolyWu/L-SMASH-Works" >> "l-smash-works/AviUtl/About-this-build.txt"
+        echo "" >> "l-smash-works/AviUtl/About-this-build.txt"
+        echo FFmpeg 4.4 >> "l-smash-works/AviUtl/About-this-build.txt"
+        echo "https://github.com/FFmpeg/FFmpeg" >> "l-smash-works/AviUtl/About-this-build.txt"
+        echo "" >> "l-smash-works/AviUtl/About-this-build.txt"
+        echo "L-SMASH r${{ steps.l-smash-rev.outputs.REV_LIST_COUNT }}" >> "l-smash-works/AviUtl/About-this-build.txt"
+        echo "https://github.com/l-smash/l-smash" >> "l-smash-works/AviUtl/About-this-build.txt"
+        echo "" >> "l-smash-works/AviUtl/About-this-build.txt"
+        echo "dav1d ${{ steps.dav1d-rev.outputs.REV_SHA }}" >> "l-smash-works/AviUtl/About-this-build.txt" 
+        echo "https://github.com/videolan/dav1d" >> "l-smash-works/AviUtl/About-this-build.txt"
+    
+    - name: Add License Files
+      run: |
+        mkdir ${{ github.workspace }}/l-smash-works/AviUtl/Licenses
+        cp ${{ github.workspace }}/dav1d/COPYING ${{ github.workspace }}/l-smash-works/AviUtl/Licenses/dav1d.txt
+        cp ${{ github.workspace }}/l-smash/LICENSE ${{ github.workspace }}/l-smash-works/AviUtl/Licenses/L-SMASH.txt
+        cp ${{ github.workspace }}/ffmpeg/COPYING.LGPLv3 ${{ github.workspace }}/l-smash-works/AviUtl/Licenses/FFmpeg.txt
+        
+        
+    - name: Build dav1d
+      run: |
+        cd ${{ github.workspace }}
+        mkdir dav1d/build && cd dav1d/build
+        meson --cross-file=../package/crossfiles/i686-w64-mingw32.meson --buildtype release --default-library=static ..
+        ninja
+        sudo ninja install
+        
+    - name: Build FFmpeg
+      run: |
+        cd ${{ github.workspace }}/ffmpeg
+        export PKG_CONFIG_PATH==/usr/local/lib/pkgconfig
+        ./configure --enable-version3 --enable-avresample --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-autodetect --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --disable-avfilter --disable-debug --cross-prefix=i686-w64-mingw32- --cpu=i686 --target-os=mingw32 --arch=x86  --extra-ldflags="-static-libgcc -static" --enable-libdav1d
+        make -j2
+        sudo make install -j2
+        
+    - name: Build L-SMASH
+      run: |
+        cd ${{ github.workspace }}/l-smash
+        ./configure --cross-prefix=i686-w64-mingw32- --extra-ldflags=-static-libgcc
+        make lib -j2
+        sudo make install-lib -j2
+        
+    - name: Build L-SMASH Works
+      run: |
+        cd l-smash-works/AviUtl
+        ./configure --cross-prefix=i686-w64-mingw32- --extra-ldflags=-static-libgcc
+        make -j2
+        
+    - name: Create archive
+      run: |
+        cd l-smash-works/AviUtl
+        zip L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.user }}_AviUtl -r lwcolor.auc lwdumper.auf lwinput.aui lwmuxer.auf LICENSE README README.ja About-this-build.txt Licenses
+        
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: l-smash-works
+        path: ${{ github.workspace }}/l-smash-works/AviUtl/L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.user }}_AviUtl.zip
+        
+
+  create_release:
+    name: Create release
+    needs: aviutl-build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    
+    - uses: actions/download-artifact@v2
+      with:
+        name: l-smash-works
+        path: artifacts
+    
+    - name: Get Date
+      id: get_date
+      run: |
+        DATE_TIME=`date +'%Y-%m-%d-%H-%M-%S'`
+        echo "::set-output name=DATE_TIME::${DATE_TIME}"
+    # https://gist.github.com/superbrothers/af84a2f8af394a62352e06537a640746        
+    - name: Create a Release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        RELEASE_NAME=Build-${{ steps.get_date.outputs.DATE_TIME }}
+        TAG_NAME=build-${{ steps.get_date.outputs.DATE_TIME }}
+        assets=()
+        for asset in ${{ github.workspace }}/artifacts/*.zip; do
+          assets+=("-a" "$asset")
+        done
+        hub release create "${assets[@]}" -m "$RELEASE_NAME" "$TAG_NAME"
