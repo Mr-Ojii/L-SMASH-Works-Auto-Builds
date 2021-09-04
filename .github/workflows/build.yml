@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        user: [HolyWu, VFR-maniac]
+        author: [HolyWu, VFR-maniac]
     
     steps:
     - name: Checkout repository
@@ -63,7 +63,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-        repository: ${{ matrix.user }}/L-SMASH-Works
+        repository: ${{ matrix.author }}/L-SMASH-Works
         path: l-smash-works
 
 
@@ -99,8 +99,8 @@ jobs:
     - name: Create BuildInfo File
       run: |
         cd ${{ github.workspace }}
-        echo "${{ matrix.user }}/L-SMASH-Works r${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}" > "l-smash-works/AviUtl/About-this-build.txt"
-        echo "https://github.com/HolyWu/L-SMASH-Works" >> "l-smash-works/AviUtl/About-this-build.txt"
+        echo "${{ matrix.author }}/L-SMASH-Works r${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}" > "l-smash-works/AviUtl/About-this-build.txt"
+        echo "https://github.com/${{ matrix.author }}/L-SMASH-Works" >> "l-smash-works/AviUtl/About-this-build.txt"
         echo "" >> "l-smash-works/AviUtl/About-this-build.txt"
         echo FFmpeg 4.4 >> "l-smash-works/AviUtl/About-this-build.txt"
         echo "https://github.com/FFmpeg/FFmpeg" >> "l-smash-works/AviUtl/About-this-build.txt"
@@ -171,13 +171,13 @@ jobs:
     - name: Create archive
       run: |
         cd ${{ github.workspace }}/l-smash-works/AviUtl
-        zip L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.user }}_AviUtl -r lwcolor.auc lwdumper.auf lwinput.aui lwmuxer.auf LICENSE README README.ja About-this-build.txt Licenses
+        zip L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_AviUtl -r lwcolor.auc lwdumper.auf lwinput.aui lwmuxer.auf LICENSE README README.ja About-this-build.txt Licenses
         
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: l-smash-works
-        path: ${{ github.workspace }}/l-smash-works/AviUtl/L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.user }}_AviUtl.zip
+        path: ${{ github.workspace }}/l-smash-works/AviUtl/L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_AviUtl.zip
         
 
   create_release:
