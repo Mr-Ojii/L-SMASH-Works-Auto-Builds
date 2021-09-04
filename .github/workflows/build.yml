@@ -38,6 +38,12 @@ jobs:
         fetch-depth: 0
         repository: webmproject/libvpx
         path: libvpx
+        
+    - name: Clone nv-codec-headers repository
+      uses: actions/checkout@v2
+      with:
+        repository: FFmpeg/nv-codec-headers
+        path: nv-codec-headers
       
     - name: Clone FFmpeg repository
       uses: actions/checkout@v2
@@ -68,6 +74,13 @@ jobs:
         SHA=`git rev-parse HEAD`
         echo "::set-output name=REV_SHA::${SHA}"
         
+    - name: Set nv-codec-headers REV_SHA
+      id: nv-codec-headers-rev
+      run: |
+        cd ${{ github.workspace }}/nv-codec-headers
+        SHA=`git rev-parse HEAD`
+        echo "::set-output name=REV_SHA::${SHA}"
+        
     - name: Set L-SMASH REV_LIST_COUNT
       id: l-smash-rev
       run: |
@@ -75,7 +88,6 @@ jobs:
         REVCOUNT=`git rev-list --count HEAD`
         echo "::set-output name=REV_LIST_COUNT::${REVCOUNT}"
         
-            
     - name: Set L-SMASH Works REV_LIST_COUNT
       id: l-smash-works-rev
       run: |
@@ -101,6 +113,9 @@ jobs:
         echo "" >> "l-smash-works/AviUtl/About-this-build.txt"
         echo "libvpx ${{ steps.libvpx-rev.outputs.REV_SHA }}" >> "l-smash-works/AviUtl/About-this-build.txt"
         echo "https://github.com/webmproject/libvpx" >> "l-smash-works/AviUtl/About-this-build.txt"
+        echo "" >> "l-smash-works/AviUtl/About-this-build.txt"
+        echo "nv-codec-headers ${{ steps.nv-codec-headers-rev.outputs.REV_SHA }}" >> "l-smash-works/AviUtl/About-this-build.txt"
+        echo "https://github.com/FFmpeg/nv-codec-headers" >> "l-smash-works/AviUtl/About-this-build.txt"
     
     - name: Add License Files
       run: |
@@ -109,6 +124,7 @@ jobs:
         cp ${{ github.workspace }}/l-smash/LICENSE ${{ github.workspace }}/l-smash-works/AviUtl/Licenses/L-SMASH.txt
         cp ${{ github.workspace }}/ffmpeg/COPYING.LGPLv3 ${{ github.workspace }}/l-smash-works/AviUtl/Licenses/FFmpeg.txt
         cp ${{ github.workspace }}/libvpx/LICENSE ${{ github.workspace }}/l-smash-works/AviUtl/Licenses/libvpx.txt
+        
         
     - name: Install dav1d
       run: |
@@ -124,6 +140,11 @@ jobs:
         mkdir libvpx/builds && cd libvpx/builds
         CROSS=i686-w64-mingw32- ../configure --target=x86-win32-gcc --enable-vp9_highbitdepth --disable-vp8-encoder --disable-vp9-encoder
         make
+        sudo make install
+        
+    - name: Install nv-codec-headers
+      run: |
+        cd ${{ github.workspace }}/nv-codec-headers
         sudo make install
         
     - name: Install FFmpeg
