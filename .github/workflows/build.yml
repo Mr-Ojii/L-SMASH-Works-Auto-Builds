@@ -25,49 +25,42 @@ jobs:
     - name: Create symbolic link
       run: sudo ln -s /usr/bin/pkg-config /usr/bin/i686-w64-mingw32-pkg-config
       
-    - name: Checkout dav1d repository
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-        repository: videolan/dav1d
-        path: dav1d
+    - name: Clone dav1d repository
+      run: |
+        cd ${{ github.workspace }}
+        git clone https://code.videolan.org/videolan/dav1d.git
+        cd dav1d
+        git checkout refs/tags/0.9.2
     
-    - name: Checkout libvpx repository
+    - name: Clone libvpx repository
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
         repository: webmproject/libvpx
         path: libvpx
       
-    - name: Checkout FFmpeg repository
+    - name: Clone FFmpeg repository
       uses: actions/checkout@v2
       with:
         repository: FFmpeg/FFmpeg
         path: ffmpeg
         ref: release/4.4
         
-    - name: Checkout L-SMASH repository
+    - name: Clone L-SMASH repository
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
         repository: l-smash/l-smash
         path: l-smash
         
-    - name: Checkout L-SMASH Works repository
+    - name: Clone L-SMASH Works repository
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
         repository: ${{ matrix.user }}/L-SMASH-Works
         path: l-smash-works
-        
-        
-    - name: Set dav1d REV_SHA
-      id: dav1d-rev
-      run: |
-        cd ${{ github.workspace }}/dav1d
-        SHA=`git rev-parse HEAD`
-        echo "::set-output name=REV_SHA::${SHA}"
-        
+
+
     - name: Set libvpx REV_SHA
       id: libvpx-rev
       run: |
@@ -103,7 +96,7 @@ jobs:
         echo "L-SMASH r${{ steps.l-smash-rev.outputs.REV_LIST_COUNT }}" >> "l-smash-works/AviUtl/About-this-build.txt"
         echo "https://github.com/l-smash/l-smash" >> "l-smash-works/AviUtl/About-this-build.txt"
         echo "" >> "l-smash-works/AviUtl/About-this-build.txt"
-        echo "dav1d ${{ steps.dav1d-rev.outputs.REV_SHA }}" >> "l-smash-works/AviUtl/About-this-build.txt" 
+        echo "dav1d 0.9.2" >> "l-smash-works/AviUtl/About-this-build.txt" 
         echo "https://github.com/videolan/dav1d" >> "l-smash-works/AviUtl/About-this-build.txt"
         echo "" >> "l-smash-works/AviUtl/About-this-build.txt"
         echo "libvpx ${{ steps.libvpx-rev.outputs.REV_SHA }}" >> "l-smash-works/AviUtl/About-this-build.txt"
@@ -150,13 +143,13 @@ jobs:
         
     - name: Build L-SMASH Works
       run: |
-        cd l-smash-works/AviUtl
+        cd ${{ github.workspace }}/l-smash-works/AviUtl
         ./configure --cross-prefix=i686-w64-mingw32- --extra-ldflags=-static-libgcc
         make -j2
         
     - name: Create archive
       run: |
-        cd l-smash-works/AviUtl
+        cd ${{ github.workspace }}/l-smash-works/AviUtl
         zip L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.user }}_AviUtl -r lwcolor.auc lwdumper.auf lwinput.aui lwmuxer.auf LICENSE README README.ja About-this-build.txt Licenses
         
     - name: Upload artifact
