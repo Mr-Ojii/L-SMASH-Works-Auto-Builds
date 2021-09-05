@@ -52,13 +52,24 @@ jobs:
         git clone https://github.com/FFmpeg/nv-codec-headers.git --depth 1
         cd nv-codec-headers
         sudo make install
+        
+    - name: Install mfx_dispatch
+      run: |
+        cd ${{ github.workspace }}
+        git clone https://github.com/lu-zero/mfx_dispatch.git
+        cd mfx_dispatch
+        git checkout refs/tags/1.35
+        autoreconf -i
+        ./configure --host=i686-w64-mingw32
+        make -j$(nproc)
+        sudo make install
       
     - name: Install FFmpeg
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/FFmpeg/FFmpeg.git -b release/4.4 --depth 1
         cd FFmpeg
-        PKG_CONFIG_PATH==/usr/local/lib/pkgconfig ./configure --enable-version3 --enable-avresample --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --disable-avfilter --disable-debug --cross-prefix=i686-w64-mingw32- --cpu=i686 --target-os=mingw32 --arch=x86  --extra-ldflags="-static-libgcc -static" --enable-libdav1d --enable-libvpx
+        ./configure --enable-version3 --enable-avresample --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --disable-avfilter --disable-debug --cross-prefix=i686-w64-mingw32- --cpu=i686 --target-os=mingw32 --arch=x86 --enable-libdav1d --enable-libvpx
         make -j2
         sudo make install -j2
         
@@ -67,7 +78,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/l-smash/l-smash.git
         cd l-smash
-        ./configure --cross-prefix=i686-w64-mingw32- --extra-ldflags=-static-libgcc
+        ./configure --cross-prefix=i686-w64-mingw32-
         make lib -j2
         sudo make install-lib -j2
         
@@ -76,7 +87,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/${{ matrix.author }}/L-SMASH-Works.git
         cd L-SMASH-Works/AviUtl
-        ./configure --cross-prefix=i686-w64-mingw32- --extra-ldflags=-static-libgcc
+        ./configure --cross-prefix=i686-w64-mingw32- --extra-ldflags="-static-libgcc -static-libstdc++ -static"
         make -j2
 
 
@@ -91,6 +102,13 @@ jobs:
       id: nv-codec-headers-rev
       run: |
         cd ${{ github.workspace }}/nv-codec-headers
+        SHA=`git rev-parse HEAD`
+        echo "::set-output name=REV_SHA::${SHA}"
+        
+    - name: Set nv-codec-headers REV_SHA
+      id: mfx_dispatch-rev
+      run: |
+        cd ${{ github.workspace }}/mfx_dispatch
         SHA=`git rev-parse HEAD`
         echo "::set-output name=REV_SHA::${SHA}"
         
@@ -129,6 +147,9 @@ jobs:
         echo "" >> "AviUtl/About-this-build.txt"
         echo "nv-codec-headers ${{ steps.nv-codec-headers-rev.outputs.REV_SHA }}" >> "AviUtl/About-this-build.txt"
         echo "https://github.com/FFmpeg/nv-codec-headers" >> "AviUtl/About-this-build.txt"
+        echo "" >> "AviUtl/About-this-build.txt"
+        echo "mfx_dispatch ${{ steps.mfx_dispatch-rev.outputs.REV_SHA }}" >> "AviUtl/About-this-build.txt"
+        echo "https://github.com/lu-zero/mfx_dispatch" >> "AviUtl/About-this-build.txt"
     
     - name: Add License Files
       run: |
@@ -138,6 +159,7 @@ jobs:
         cp ${{ github.workspace }}/l-smash/LICENSE L-SMASH.txt
         cp ${{ github.workspace }}/FFmpeg/COPYING.LGPLv3 FFmpeg.txt
         cp ${{ github.workspace }}/libvpx/LICENSE libvpx.txt
+        cp ${{ github.workspace }}/mfx_dispatch/LICENSE mfx_dispatch.txt
         
     - name: Create archive
       run: |
