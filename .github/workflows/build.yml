@@ -87,7 +87,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/${{ matrix.author }}/L-SMASH-Works.git
         cd L-SMASH-Works/AviUtl
-        ./configure --cross-prefix=i686-w64-mingw32- --extra-ldflags="-static-libgcc -static-libstdc++ -static"
+        ./configure --cross-prefix=i686-w64-mingw32- --extra-ldflags="-static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make -j2
 
 
