@@ -26,6 +26,15 @@ jobs:
       run: sudo ln -s /usr/bin/pkg-config /usr/bin/i686-w64-mingw32-pkg-config
       
       
+    - name: Install zlib
+      run: |
+        cd ${{ github.workspace }}
+        git clone https://github.com/madler/zlib.git
+        cd zlib
+        CROSS_PREFIX=i686-w64-mingw32- ./configure --static
+        make
+        sudo make install
+        
     - name: Install dav1d
       run: |
         cd ${{ github.workspace }}
@@ -91,6 +100,13 @@ jobs:
         make -j2
 
 
+    - name: Set zlib REV_SHA
+      id: zlib-rev
+      run: |
+        cd ${{ github.workspace }}/zlib
+        SHA=`git rev-parse HEAD`
+        echo "::set-output name=REV_SHA::${SHA}"
+        
     - name: Set libvpx REV_SHA
       id: libvpx-rev
       run: |
@@ -150,6 +166,9 @@ jobs:
         echo "" >> "AviUtl/About-this-build.txt"
         echo "mfx_dispatch ${{ steps.mfx_dispatch-rev.outputs.REV_SHA }}" >> "AviUtl/About-this-build.txt"
         echo "https://github.com/lu-zero/mfx_dispatch" >> "AviUtl/About-this-build.txt"
+        echo "" >> "AviUtl/About-this-build.txt"
+        echo "zlib ${{ steps.zlib-rev.outputs.REV_SHA }}" >> "AviUtl/About-this-build.txt"
+        echo "https://github.com/madler/zlib" >> "AviUtl/About-this-build.txt"
     
     - name: Add License Files
       run: |
@@ -160,6 +179,8 @@ jobs:
         cp ${{ github.workspace }}/FFmpeg/COPYING.LGPLv3 FFmpeg.txt
         cp ${{ github.workspace }}/libvpx/LICENSE libvpx.txt
         cp ${{ github.workspace }}/mfx_dispatch/LICENSE mfx_dispatch.txt
+        echo "[InternetShortcut]" > zlib.url
+        echo "URL=https://zlib.net/zlib_license.html" >> zlib.url
         
     - name: Create archive
       run: |
