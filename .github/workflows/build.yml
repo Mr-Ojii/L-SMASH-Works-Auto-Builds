@@ -169,10 +169,10 @@ jobs:
     - name: Create BuildInfo File
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works
-        echo "L-SMASH-Works-Auto-Builds r${{ steps.workflow-rev.outputs.REV_LIST_COUNT }}" > "AviUtl/About-this-build.txt"
+        echo "L-SMASH-Works-Auto-Builds r${{ steps.workflow-rev.outputs.REV_LIST_COUNT }}" >> "AviUtl/About-this-build.txt"
         echo "https://github.com/Mr-Ojii/L-SMASH-Works-Auto-Builds" >> "AviUtl/About-this-build.txt"
         echo "" >> "AviUtl/About-this-build.txt"
-        echo "${{ matrix.author }}/L-SMASH-Works r${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}" > "AviUtl/About-this-build.txt"
+        echo "${{ matrix.author }}/L-SMASH-Works r${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}" >> "AviUtl/About-this-build.txt"
         echo "https://github.com/${{ matrix.author }}/L-SMASH-Works" >> "AviUtl/About-this-build.txt"
         echo "" >> "AviUtl/About-this-build.txt"
         echo FFmpeg 4.4 >> "AviUtl/About-this-build.txt"
