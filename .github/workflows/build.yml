@@ -18,6 +18,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
       
     - name: Install depend lib
       run: sudo apt install nasm mingw-w64 meson ninja-build pkg-config
@@ -100,10 +102,21 @@ jobs:
         make -j2
 
 
+    - name: Set workflow REV_LIST_COUNT
+      id: workflow-rev
+      run: |
+        cd ${{ github.workspace }}
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "::set-output name=REV_LIST_COUNT::${REVCOUNT}"
+        SHA=`git rev-parse HEAD`
+        echo "::set-output name=REV_SHA::${SHA}"
+              
     - name: Set zlib REV_SHA
       id: zlib-rev
       run: |
         cd ${{ github.workspace }}/zlib
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "::set-output name=REV_LIST_COUNT::${REVCOUNT}"
         SHA=`git rev-parse HEAD`
         echo "::set-output name=REV_SHA::${SHA}"
         
@@ -111,6 +124,8 @@ jobs:
       id: libvpx-rev
       run: |
         cd ${{ github.workspace }}/libvpx
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "::set-output name=REV_LIST_COUNT::${REVCOUNT}"
         SHA=`git rev-parse HEAD`
         echo "::set-output name=REV_SHA::${SHA}"
         
@@ -118,6 +133,8 @@ jobs:
       id: nv-codec-headers-rev
       run: |
         cd ${{ github.workspace }}/nv-codec-headers
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "::set-output name=REV_LIST_COUNT::${REVCOUNT}"
         SHA=`git rev-parse HEAD`
         echo "::set-output name=REV_SHA::${SHA}"
         
@@ -125,6 +142,8 @@ jobs:
       id: mfx_dispatch-rev
       run: |
         cd ${{ github.workspace }}/mfx_dispatch
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "::set-output name=REV_LIST_COUNT::${REVCOUNT}"
         SHA=`git rev-parse HEAD`
         echo "::set-output name=REV_SHA::${SHA}"
         
@@ -134,6 +153,8 @@ jobs:
         cd ${{ github.workspace }}/l-smash
         REVCOUNT=`git rev-list --count HEAD`
         echo "::set-output name=REV_LIST_COUNT::${REVCOUNT}"
+        SHA=`git rev-parse HEAD`
+        echo "::set-output name=REV_SHA::${SHA}"
         
     - name: Set L-SMASH Works REV_LIST_COUNT
       id: l-smash-works-rev
@@ -141,11 +162,16 @@ jobs:
         cd ${{ github.workspace }}/L-SMASH-Works
         REVCOUNT=`git rev-list --count HEAD`
         echo "::set-output name=REV_LIST_COUNT::${REVCOUNT}"
+        SHA=`git rev-parse HEAD`
+        echo "::set-output name=REV_SHA::${SHA}"
         
         
     - name: Create BuildInfo File
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works
+        echo "L-SMASH-Works-Auto-Builds r${{ steps.workflow-rev.outputs.REV_LIST_COUNT }}" > "AviUtl/About-this-build.txt"
+        echo "https://github.com/Mr-Ojii/L-SMASH-Works-Auto-Builds" >> "AviUtl/About-this-build.txt"
+        echo "" >> "AviUtl/About-this-build.txt"
         echo "${{ matrix.author }}/L-SMASH-Works r${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}" > "AviUtl/About-this-build.txt"
         echo "https://github.com/${{ matrix.author }}/L-SMASH-Works" >> "AviUtl/About-this-build.txt"
         echo "" >> "AviUtl/About-this-build.txt"
