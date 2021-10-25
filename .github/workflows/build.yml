@@ -9,7 +9,7 @@ on:
 
 jobs:
 
-  aviutl-build:
+  build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -69,7 +69,6 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/lu-zero/mfx_dispatch.git
         cd mfx_dispatch
-        git checkout refs/tags/1.35
         autoreconf -i
         ./configure --host=i686-w64-mingw32
         make -j$(nproc)
@@ -222,7 +221,7 @@ jobs:
 
   create_release:
     name: Create release
-    needs: aviutl-build
+    needs: build
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
