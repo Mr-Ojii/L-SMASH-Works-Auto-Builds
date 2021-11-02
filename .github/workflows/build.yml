@@ -42,7 +42,6 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://code.videolan.org/videolan/dav1d.git
         cd dav1d
-        git checkout refs/tags/0.9.2
         mkdir build && cd build
         meson --cross-file=../package/crossfiles/i686-w64-mingw32.meson --buildtype release --default-library=static ..
         ninja
@@ -119,6 +118,15 @@ jobs:
         SHA=`git rev-parse HEAD`
         echo "::set-output name=REV_SHA::${SHA}"
         
+    - name: Set dav1d REV_SHA
+      id: dav1d-rev
+      run: |
+        cd ${{ github.workspace }}/dav1d
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "::set-output name=REV_LIST_COUNT::${REVCOUNT}"
+        SHA=`git rev-parse HEAD`
+        echo "::set-output name=REV_SHA::${SHA}"
+        
     - name: Set libvpx REV_SHA
       id: libvpx-rev
       run: |
@@ -180,7 +188,7 @@ jobs:
         echo "L-SMASH r${{ steps.l-smash-rev.outputs.REV_LIST_COUNT }}" >> "AviUtl/About-this-build.txt"
         echo "https://github.com/l-smash/l-smash" >> "AviUtl/About-this-build.txt"
         echo "" >> "AviUtl/About-this-build.txt"
-        echo "dav1d 0.9.2" >> "AviUtl/About-this-build.txt" 
+        echo "dav1d ${{ steps.dav1d-rev.outputs.REV_SHA }}" >> "AviUtl/About-this-build.txt" 
         echo "https://github.com/videolan/dav1d" >> "AviUtl/About-this-build.txt"
         echo "" >> "AviUtl/About-this-build.txt"
         echo "libvpx ${{ steps.libvpx-rev.outputs.REV_SHA }}" >> "AviUtl/About-this-build.txt"
