@@ -31,7 +31,7 @@ jobs:
     - name: Install zlib
       run: |
         cd ${{ github.workspace }}
-        git clone https://github.com/madler/zlib.git
+        git clone https://github.com/madler/zlib.git --depth 1
         cd zlib
         CROSS_PREFIX=i686-w64-mingw32- ./configure --static
         make
@@ -40,7 +40,7 @@ jobs:
     - name: Install dav1d
       run: |
         cd ${{ github.workspace }}
-        git clone https://code.videolan.org/videolan/dav1d.git
+        git clone https://code.videolan.org/videolan/dav1d.git --depth 1
         cd dav1d
         mkdir build && cd build
         meson --cross-file=../package/crossfiles/i686-w64-mingw32.meson --buildtype release --default-library=static ..
@@ -66,7 +66,7 @@ jobs:
     - name: Install mfx_dispatch
       run: |
         cd ${{ github.workspace }}
-        git clone https://github.com/lu-zero/mfx_dispatch.git
+        git clone https://github.com/lu-zero/mfx_dispatch.git --depth 1
         cd mfx_dispatch
         autoreconf -i
         ./configure --host=i686-w64-mingw32
