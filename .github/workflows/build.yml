@@ -14,6 +14,7 @@ jobs:
     strategy:
       matrix:
         author: [HolyWu, VFR-maniac, Mr-Ojii]
+        version : [original, modded]
     
     steps:
     - name: Checkout repository
@@ -91,10 +92,22 @@ jobs:
         make lib -j2
         sudo make install-lib -j2
         
-    - name: Build L-SMASH Works
+
+    - name: Clone L-SMASH Works
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/${{ matrix.author }}/L-SMASH-Works.git
+
+    - name: Attach patch files to L-SMASH Works
+      if: ${{ matrix.version == 'modded' }}
+      run: |
+        mv add-supports-extensions.diff L-SMASH-Works/AviUtl
+        cd L-SMASH-Works/AviUtl
+        patch < add-supports-extensions.diff
+        
+    - name: Build L-SMASH Works
+      run: |
+        cd ${{ github.workspace }}
         cd L-SMASH-Works/AviUtl
         ./configure --cross-prefix=i686-w64-mingw32- --extra-ldflags="-static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make -j2
@@ -179,7 +192,7 @@ jobs:
         echo "L-SMASH-Works-Auto-Builds r${{ steps.workflow-rev.outputs.REV_LIST_COUNT }}" >> "AviUtl/About-this-build.txt"
         echo "https://github.com/Mr-Ojii/L-SMASH-Works-Auto-Builds" >> "AviUtl/About-this-build.txt"
         echo "" >> "AviUtl/About-this-build.txt"
-        echo "${{ matrix.author }}/L-SMASH-Works r${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}" >> "AviUtl/About-this-build.txt"
+        echo "${{ matrix.author }}/L-SMASH-Works r${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} ${{ matrix.version }}" >> "AviUtl/About-this-build.txt"
         echo "https://github.com/${{ matrix.author }}/L-SMASH-Works" >> "AviUtl/About-this-build.txt"
         echo "" >> "AviUtl/About-this-build.txt"
         echo FFmpeg 4.4 >> "AviUtl/About-this-build.txt"
@@ -218,13 +231,13 @@ jobs:
     - name: Create archive
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
-        zip L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_AviUtl -r lwcolor.auc lwdumper.auf lwinput.aui lwmuxer.auf LICENSE README README.ja About-this-build.txt Licenses
+        zip L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_${{ matrix.version }}_AviUtl -r lwcolor.auc lwdumper.auf lwinput.aui lwmuxer.auf LICENSE README README.ja About-this-build.txt Licenses
         
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: L-SMASH-Works
-        path: ${{ github.workspace }}/L-SMASH-Works/AviUtl/L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_AviUtl.zip
+        path: ${{ github.workspace }}/L-SMASH-Works/AviUtl/L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_${{ matrix.version }}_AviUtl.zip
         
 
   create_release:
