@@ -34,8 +34,8 @@ jobs:
         git clone https://github.com/madler/zlib.git --depth 1
         cd zlib
         CROSS_PREFIX=i686-w64-mingw32- ./configure --static
-        make
-        sudo make install
+        make -j$(nproc)
+        sudo make install -j$(nproc)
         
     - name: Install dav1d
       run: |
@@ -53,15 +53,15 @@ jobs:
         git clone https://github.com/webmproject/libvpx.git --depth 1
         mkdir libvpx/builds && cd libvpx/builds
         CROSS=i686-w64-mingw32- ../configure --target=x86-win32-gcc --enable-vp9_highbitdepth --disable-docs --disable-tools --disable-examples --disable-webm_io --disable-vp8-encoder --disable-vp9-encoder
-        make
-        sudo make install
+        make -j$(nproc)
+        sudo make install -j$(nproc)
         
     - name: Install nv-codec-headers
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/FFmpeg/nv-codec-headers.git --depth 1
         cd nv-codec-headers
-        sudo make install
+        sudo make install -j$(nproc)
         
     - name: Install mfx_dispatch
       run: |
@@ -71,7 +71,7 @@ jobs:
         autoreconf -i
         ./configure --host=i686-w64-mingw32
         make -j$(nproc)
-        sudo make install
+        sudo make install -j$(nproc)
       
     - name: Install FFmpeg
       run: |
@@ -79,8 +79,8 @@ jobs:
         git clone https://github.com/FFmpeg/FFmpeg.git -b release/4.4 --depth 1
         cd FFmpeg
         ./configure --enable-version3 --disable-decoder=vp8 --disable-decoder=vp9 --enable-avresample --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --disable-avfilter --disable-debug --extra-libs="-lpthread" --cross-prefix=i686-w64-mingw32- --cpu=i686 --target-os=mingw32 --arch=x86 --enable-libdav1d --enable-libvpx --enable-libmfx
-        make -j2
-        sudo make install -j2
+        make -j$(nproc)
+        sudo make install -j$(nproc)
         
     - name: Install L-SMASH
       run: |
@@ -88,8 +88,8 @@ jobs:
         git clone https://github.com/l-smash/l-smash.git
         cd l-smash
         ./configure --cross-prefix=i686-w64-mingw32-
-        make lib -j2
-        sudo make install-lib -j2
+        make lib -j$(nproc)
+        sudo make install-lib -j$(nproc)
         
     - name: Build L-SMASH Works
       run: |
@@ -97,7 +97,7 @@ jobs:
         git clone https://github.com/${{ matrix.author }}/L-SMASH-Works.git
         cd L-SMASH-Works/AviUtl
         ./configure --cross-prefix=i686-w64-mingw32- --extra-ldflags="-static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
-        make -j2
+        make -j$(nproc)
 
 
     - name: Set workflow REV_LIST_COUNT
