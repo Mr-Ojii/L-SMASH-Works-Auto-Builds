@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         author: [HolyWu, VFR-maniac, Mr-Ojii]
-        l-smash_author: [l-smash, Mr-Ojii, vimeo]
+        l-smash_author: [l-smash, Mr-Ojii]
     
     steps:
     - name: Checkout repository
