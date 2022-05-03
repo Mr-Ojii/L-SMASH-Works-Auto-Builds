@@ -14,6 +14,7 @@ jobs:
     strategy:
       matrix:
         author: [HolyWu, VFR-maniac, Mr-Ojii]
+        l-smash_author: [l-smash, Mr-Ojii, vimeo]
     
     steps:
     - name: Checkout repository
@@ -85,7 +86,7 @@ jobs:
     - name: Install L-SMASH
       run: |
         cd ${{ github.workspace }}
-        git clone https://github.com/l-smash/l-smash.git
+        git clone https://github.com/${{ matrix.l-smash_author }}/l-smash.git
         cd l-smash
         ./configure --cross-prefix=i686-w64-mingw32-
         make lib -j$(nproc)
@@ -185,8 +186,8 @@ jobs:
         echo FFmpeg 4.4 >> "AviUtl/About-this-build.txt"
         echo "https://github.com/FFmpeg/FFmpeg" >> "AviUtl/About-this-build.txt"
         echo "" >> "AviUtl/About-this-build.txt"
-        echo "L-SMASH r${{ steps.l-smash-rev.outputs.REV_LIST_COUNT }}" >> "AviUtl/About-this-build.txt"
-        echo "https://github.com/l-smash/l-smash" >> "AviUtl/About-this-build.txt"
+        echo "${{ matrix.l-smash_author }}/L-SMASH r${{ steps.l-smash-rev.outputs.REV_LIST_COUNT }}" >> "AviUtl/About-this-build.txt"
+        echo "https://github.com/${{ matrix.l-smash_author }}/l-smash" >> "AviUtl/About-this-build.txt"
         echo "" >> "AviUtl/About-this-build.txt"
         echo "dav1d ${{ steps.dav1d-rev.outputs.REV_SHA }}" >> "AviUtl/About-this-build.txt" 
         echo "https://github.com/videolan/dav1d" >> "AviUtl/About-this-build.txt"
@@ -218,13 +219,13 @@ jobs:
     - name: Create archive
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
-        zip L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_AviUtl -r lwcolor.auc lwdumper.auf lwinput.aui lwmuxer.auf LICENSE README README.ja About-this-build.txt Licenses
+        zip L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_${{ matrix.l-smash_author }}_AviUtl -r lwcolor.auc lwdumper.auf lwinput.aui lwmuxer.auf LICENSE README README.ja About-this-build.txt Licenses
         
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: L-SMASH-Works
-        path: ${{ github.workspace }}/L-SMASH-Works/AviUtl/L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_AviUtl.zip
+        path: ${{ github.workspace }}/L-SMASH-Works/AviUtl/L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_${{ matrix.l-smash_author }}_AviUtl.zip
         
 
   create_release:
