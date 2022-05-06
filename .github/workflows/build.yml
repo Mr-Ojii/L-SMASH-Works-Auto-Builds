@@ -23,7 +23,7 @@ jobs:
         fetch-depth: 0
       
     - name: Install depend lib
-      run: sudo apt install autoconf nasm mingw-w64 meson ninja-build pkg-config
+      run: sudo apt install autoconf libtool nasm mingw-w64 meson ninja-build pkg-config
       
     - name: Create symbolic link
       run: sudo ln -s /usr/bin/pkg-config /usr/bin/i686-w64-mingw32-pkg-config
