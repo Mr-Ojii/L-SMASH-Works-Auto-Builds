@@ -79,7 +79,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/FFmpeg/FFmpeg.git -b release/4.4 --depth 1
         cd FFmpeg
-        ./configure --enable-version3 --disable-decoder=vp8 --disable-decoder=vp9 --enable-avresample --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --disable-avfilter --disable-debug --extra-libs="-lpthread" --cross-prefix=i686-w64-mingw32- --cpu=i686 --target-os=mingw32 --arch=x86 --enable-libdav1d --enable-libvpx --enable-libmfx
+        ./configure --enable-version3 --disable-decoder=vp8 --disable-decoder=vp9 --enable-avresample --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="-lpthread" --cross-prefix=i686-w64-mingw32- --cpu=i686 --target-os=mingw32 --arch=x86 --enable-libdav1d --enable-libvpx --enable-libmfx
         make -j$(nproc)
         sudo make install -j$(nproc)
         
