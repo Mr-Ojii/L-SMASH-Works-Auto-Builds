@@ -53,7 +53,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/webmproject/libvpx.git --depth 1
         mkdir libvpx/builds && cd libvpx/builds
-        CROSS=i686-w64-mingw32- ../configure --target=x86-win32-gcc --enable-vp9_highbitdepth --disable-docs --disable-tools --disable-examples --disable-webm_io --disable-vp8-encoder --disable-vp9-encoder
+        CROSS=i686-w64-mingw32- ../configure --target=x86-win32-gcc --enable-vp9-highbitdepth --disable-docs --disable-tools --disable-examples --disable-webm_io --disable-vp8-encoder --disable-vp9-encoder
         make -j$(nproc)
         sudo make install -j$(nproc)
         
