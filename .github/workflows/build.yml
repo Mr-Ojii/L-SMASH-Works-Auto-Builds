@@ -252,11 +252,14 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        cd ${{ github.workspace }}/artifacts
         RELEASE_NAME=Build-${{ steps.get_date.outputs.DATE_TIME }}
         TAG_NAME=build-${{ steps.get_date.outputs.DATE_TIME }}
         assets=()
         for asset in ${{ github.workspace }}/artifacts/*.zip; do
           assets+=("-a" "$asset")
+        done
+        for asset in *.zip; do
           if [[ "$asset" =~ "Mr-Ojii_Mr-Ojii_AviUtl" ]]; then
             AVIUTL_RECOMMEND_FILE=$asset
           fi
