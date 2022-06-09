@@ -257,7 +257,7 @@ jobs:
         assets=()
         for asset in ${{ github.workspace }}/artifacts/*.zip; do
           assets+=("-a" "$asset")
-          if[[ "$asset" =~ "Mr-Ojii_Mr-Ojii_AviUtl" ]]; then
+          if [[ "$asset" =~ "Mr-Ojii_Mr-Ojii_AviUtl" ]]; then
             AVIUTL_RECOMMEND_FILE=$asset
           fi
         done
