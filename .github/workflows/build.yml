@@ -264,4 +264,4 @@ jobs:
             AVIUTL_RECOMMEND_FILE=$asset
           fi
         done
-        hub release create "${assets[@]}" -m "$RELEASE_NAME" -m "AviUtl用には$AVIUTL_RECOMMEND_FILEをダウンロードすることをお勧めします。" "$TAG_NAME"
+        hub release create "${assets[@]}" -m "$RELEASE_NAME" -m "AviUtl用には\`$AVIUTL_RECOMMEND_FILE\`をダウンロードすることをお勧めします。" "$TAG_NAME"
