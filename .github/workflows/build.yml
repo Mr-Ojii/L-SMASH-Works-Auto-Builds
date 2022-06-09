@@ -257,5 +257,8 @@ jobs:
         assets=()
         for asset in ${{ github.workspace }}/artifacts/*.zip; do
           assets+=("-a" "$asset")
+          if[[ "$asset" =~ "Mr-Ojii_Mr-Ojii_AviUtl" ]] then
+            AVIUTL_RECOMMEND_FILE=$asset
+          fi
         done
-        hub release create "${assets[@]}" -m "$RELEASE_NAME" "$TAG_NAME"
+        hub release create "${assets[@]}" -m "$RELEASE_NAME" -m "AviUtl用には$AVIUTL_RECOMMEND_FILEをダウンロードすることをお勧めします。" "$TAG_NAME"
