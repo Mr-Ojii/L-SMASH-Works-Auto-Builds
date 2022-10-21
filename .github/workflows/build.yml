@@ -19,7 +19,7 @@ jobs:
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
       
@@ -223,7 +223,7 @@ jobs:
         zip L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_${{ matrix.l-smash_author }}_AviUtl -r lwcolor.auc lwdumper.auf lwinput.aui lwmuxer.auf LICENSE README README.ja About-this-build.txt Licenses
         
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: L-SMASH-Works
         path: ${{ github.workspace }}/L-SMASH-Works/AviUtl/L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_${{ matrix.l-smash_author }}_AviUtl.zip
@@ -235,9 +235,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v3
       with:
         name: L-SMASH-Works
         path: artifacts
