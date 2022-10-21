@@ -107,72 +107,72 @@ jobs:
       run: |
         cd ${{ github.workspace }}
         REVCOUNT=`git rev-list --count HEAD`
-        echo "::set-output name=REV_LIST_COUNT::${REVCOUNT}"
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
         SHA=`git rev-parse HEAD`
-        echo "::set-output name=REV_SHA::${SHA}"
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
               
     - name: Set zlib REV_SHA
       id: zlib-rev
       run: |
         cd ${{ github.workspace }}/zlib
         REVCOUNT=`git rev-list --count HEAD`
-        echo "::set-output name=REV_LIST_COUNT::${REVCOUNT}"
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
         SHA=`git rev-parse HEAD`
-        echo "::set-output name=REV_SHA::${SHA}"
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
     - name: Set dav1d REV_SHA
       id: dav1d-rev
       run: |
         cd ${{ github.workspace }}/dav1d
         REVCOUNT=`git rev-list --count HEAD`
-        echo "::set-output name=REV_LIST_COUNT::${REVCOUNT}"
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
         SHA=`git rev-parse HEAD`
-        echo "::set-output name=REV_SHA::${SHA}"
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
     - name: Set libvpx REV_SHA
       id: libvpx-rev
       run: |
         cd ${{ github.workspace }}/libvpx
         REVCOUNT=`git rev-list --count HEAD`
-        echo "::set-output name=REV_LIST_COUNT::${REVCOUNT}"
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
         SHA=`git rev-parse HEAD`
-        echo "::set-output name=REV_SHA::${SHA}"
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
     - name: Set nv-codec-headers REV_SHA
       id: nv-codec-headers-rev
       run: |
         cd ${{ github.workspace }}/nv-codec-headers
         REVCOUNT=`git rev-list --count HEAD`
-        echo "::set-output name=REV_LIST_COUNT::${REVCOUNT}"
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
         SHA=`git rev-parse HEAD`
-        echo "::set-output name=REV_SHA::${SHA}"
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
     - name: Set nv-codec-headers REV_SHA
       id: mfx_dispatch-rev
       run: |
         cd ${{ github.workspace }}/mfx_dispatch
         REVCOUNT=`git rev-list --count HEAD`
-        echo "::set-output name=REV_LIST_COUNT::${REVCOUNT}"
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
         SHA=`git rev-parse HEAD`
-        echo "::set-output name=REV_SHA::${SHA}"
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
     - name: Set L-SMASH REV_LIST_COUNT
       id: l-smash-rev
       run: |
         cd ${{ github.workspace }}/l-smash
         REVCOUNT=`git rev-list --count HEAD`
-        echo "::set-output name=REV_LIST_COUNT::${REVCOUNT}"
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
         SHA=`git rev-parse HEAD`
-        echo "::set-output name=REV_SHA::${SHA}"
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
     - name: Set L-SMASH Works REV_LIST_COUNT
       id: l-smash-works-rev
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works
         REVCOUNT=`git rev-list --count HEAD`
-        echo "::set-output name=REV_LIST_COUNT::${REVCOUNT}"
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
         SHA=`git rev-parse HEAD`
-        echo "::set-output name=REV_SHA::${SHA}"
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
         
     - name: Create BuildInfo File
@@ -246,7 +246,7 @@ jobs:
       id: get_date
       run: |
         DATE_TIME=`date +'%Y-%m-%d-%H-%M-%S'`
-        echo "::set-output name=DATE_TIME::${DATE_TIME}"
+        echo "DATE_TIME=${DATE_TIME}"
     # https://gist.github.com/superbrothers/af84a2f8af394a62352e06537a640746        
     - name: Create a Release
       env:
