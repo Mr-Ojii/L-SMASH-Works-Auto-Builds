@@ -152,7 +152,7 @@ jobs:
         SHA=`git rev-parse HEAD`
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
-    - name: Set nv-codec-headers REV_SHA
+    - name: Set mfx_dispatch REV_SHA
       id: mfx_dispatch-rev
       run: |
         cd ${{ github.workspace }}/mfx_dispatch
