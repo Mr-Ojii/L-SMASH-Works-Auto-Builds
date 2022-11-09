@@ -29,6 +29,10 @@ jobs:
     - name: Create symbolic link
       run: sudo ln -s /usr/bin/pkg-config /usr/bin/i686-w64-mingw32-pkg-config
       
+    - name: Set git config
+      run: |
+        git config --global user.name Mr-Ojii
+        git config --global user.email okaschan@gmail.com
       
     - name: Install zlib
       run: |
