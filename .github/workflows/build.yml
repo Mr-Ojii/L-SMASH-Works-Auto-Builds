@@ -189,7 +189,7 @@ jobs:
         echo "${{ matrix.author }}/L-SMASH-Works r${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}" >> "AviUtl/About-this-build.txt"
         echo "https://github.com/${{ matrix.author }}/L-SMASH-Works" >> "AviUtl/About-this-build.txt"
         echo "" >> "AviUtl/About-this-build.txt"
-        echo FFmpeg 4.4 (patched) >> "AviUtl/About-this-build.txt"
+        echo "FFmpeg 4.4 (patched)" >> "AviUtl/About-this-build.txt"
         echo "https://github.com/FFmpeg/FFmpeg" >> "AviUtl/About-this-build.txt"
         echo "" >> "AviUtl/About-this-build.txt"
         echo "${{ matrix.l-smash_author }}/L-SMASH r${{ steps.l-smash-rev.outputs.REV_LIST_COUNT }}" >> "AviUtl/About-this-build.txt"
