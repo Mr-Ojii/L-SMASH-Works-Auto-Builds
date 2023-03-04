@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         author: [HolyWu, VFR-maniac, Mr-Ojii]
-        l-smash_author: [l-smash, Mr-Ojii]
+        l-smash_author: [l-smash, Mr-Ojii, vimeo]
     
     steps:
     - name: Checkout repository
@@ -90,6 +90,16 @@ jobs:
         ./configure --enable-version3 --enable-avresample --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="-lpthread" --cross-prefix=i686-w64-mingw32- --cpu=i686 --target-os=mingw32 --arch=x86 --enable-libdav1d --enable-libvpx --enable-libmfx
         make -j$(nproc)
         sudo make install -j$(nproc)
+  
+    - name: Install obuparse
+      run: |
+        cd ${{ github.workspace }}
+        git clone https://github.com/dwbuiten/obuparse.git --depth 1
+        cd obuparse
+        i686-w64-mingw32-gcc -c obuparse.c
+        i686-w64-mingw32-ar r libobuparse.a obuparse.o
+        sudo install obuparse.h /usr/local/include
+        sudo install libobuparse.a /usr/local/lib
         
     - name: Install L-SMASH
       run: |
@@ -163,6 +173,15 @@ jobs:
         SHA=`git rev-parse HEAD`
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
+    - name: Set obuparse REV_SHA
+      id: obuparse-rev
+      run: |
+        cd ${{ github.workspace }}/obuparse
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+        SHA=`git rev-parse HEAD`
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+        
     - name: Set L-SMASH REV_LIST_COUNT
       id: l-smash-rev
       run: |
@@ -211,6 +230,8 @@ jobs:
         echo "" >> "AviUtl/About-this-build.txt"
         echo "zlib ${{ steps.zlib-rev.outputs.REV_SHA }}" >> "AviUtl/About-this-build.txt"
         echo "https://github.com/madler/zlib" >> "AviUtl/About-this-build.txt"
+        echo "obuparse ${{ steps.obuparse-rev.outputs.REV_SHA }}" >> "AviUtl/About-this-build.txt"
+        echo "https://github.com/dwbuiten/obuparse" >> "AviUtl/About-this-build.txt"
     
     - name: Add License Files
       run: |
