@@ -244,6 +244,7 @@ jobs:
         cp ${{ github.workspace }}/mfx_dispatch/LICENSE mfx_dispatch.txt
         echo "[InternetShortcut]" > zlib.url
         echo "URL=https://zlib.net/zlib_license.html" >> zlib.url
+        cp ${{ github.workspace }}/obuparse/LICENSE obuparse.txt
         
     - name: Create archive
       run: |
