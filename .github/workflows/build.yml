@@ -106,7 +106,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/${{ matrix.l-smash_author }}/l-smash.git
         cd l-smash
-        ./configure --cross-prefix=i686-w64-mingw32-
+        ./configure --cross-prefix=i686-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags=-L/usr/local/lib
         make lib -j$(nproc)
         sudo make install-lib -j$(nproc)
         
@@ -115,7 +115,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/${{ matrix.author }}/L-SMASH-Works.git
         cd L-SMASH-Works/AviUtl
-        ./configure --cross-prefix=i686-w64-mingw32- --extra-ldflags="-static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
+        ./configure --cross-prefix=i686-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make -j$(nproc)
 
 
