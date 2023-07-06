@@ -16,6 +16,8 @@ jobs:
       matrix:
         author: [HolyWu, VFR-maniac, Mr-Ojii]
         l-smash_author: [l-smash, Mr-Ojii, vimeo]
+        config:
+          - { cpu: i686, arch: x86, vpx_target: x86-win32-gcc, user_arch: x86 }
     
     steps:
     - name: Checkout repository
@@ -41,7 +43,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/madler/zlib.git --depth 1
         cd zlib
-        CROSS_PREFIX=i686-w64-mingw32- ./configure --static
+        CROSS_PREFIX=${{ matrix.config.cpu }}-w64-mingw32- ./configure --static
         make -j$(nproc)
         sudo make install -j$(nproc)
         
@@ -51,7 +53,7 @@ jobs:
         git clone https://code.videolan.org/videolan/dav1d.git --depth 1
         cd dav1d
         mkdir build && cd build
-        meson --cross-file=../package/crossfiles/i686-w64-mingw32.meson --buildtype release --default-library=static ..
+        meson --cross-file=../package/crossfiles/${{ matrix.config.cpu }}-w64-mingw32.meson --buildtype release --default-library=static ..
         ninja
         sudo ninja install
     
@@ -60,7 +62,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/webmproject/libvpx.git --depth 1
         mkdir libvpx/builds && cd libvpx/builds
-        CROSS=i686-w64-mingw32- ../configure --target=x86-win32-gcc --enable-vp9-highbitdepth --disable-docs --disable-tools --disable-examples --disable-webm-io --disable-vp8-encoder --disable-vp9-encoder
+        CROSS=${{ matrix.config.cpu }}-w64-mingw32- ../configure --target=${{ matrix.config.vpx_target }} --enable-vp9-highbitdepth --disable-docs --disable-tools --disable-examples --disable-webm-io --disable-vp8-encoder --disable-vp9-encoder
         make -j$(nproc)
         sudo make install -j$(nproc)
         
@@ -77,7 +79,7 @@ jobs:
         git clone https://github.com/lu-zero/mfx_dispatch.git --depth 1
         cd mfx_dispatch
         autoreconf -i
-        ./configure --host=i686-w64-mingw32
+        ./configure --host=${{ matrix.config.cpu }}-w64-mingw32
         make -j$(nproc)
         sudo make install -j$(nproc)
       
@@ -87,7 +89,7 @@ jobs:
         git clone https://github.com/FFmpeg/FFmpeg.git -b release/4.4
         cd FFmpeg
         git cherry-pick 07bcedc232feeb9e30336624f4e9977d47ac43bc
-        ./configure --enable-version3 --enable-avresample --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="-lpthread" --cross-prefix=i686-w64-mingw32- --cpu=i686 --target-os=mingw32 --arch=x86 --enable-libdav1d --enable-libvpx --enable-libmfx
+        ./configure --enable-version3 --enable-avresample --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="-lpthread" --cross-prefix=${{ matrix.config.cpu }}-w64-mingw32- --cpu=${{ matrix.config.cpu }} --target-os=mingw32 --arch=${{ matrix.config.arch }} --enable-libdav1d --enable-libvpx --enable-libmfx
         make -j$(nproc)
         sudo make install -j$(nproc)
   
@@ -96,8 +98,8 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/dwbuiten/obuparse.git --depth 1
         cd obuparse
-        i686-w64-mingw32-gcc -c obuparse.c
-        i686-w64-mingw32-ar r libobuparse.a obuparse.o
+        ${{ matrix.config.cpu }}-w64-mingw32-gcc -c obuparse.c
+        ${{ matrix.config.cpu }}-w64-mingw32-ar r libobuparse.a obuparse.o
         sudo install obuparse.h /usr/local/include
         sudo install libobuparse.a /usr/local/lib
         
@@ -106,7 +108,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/${{ matrix.l-smash_author }}/l-smash.git
         cd l-smash
-        ./configure --cross-prefix=i686-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags=-L/usr/local/lib
+        ./configure --cross-prefix=${{ matrix.config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags=-L/usr/local/lib
         make lib -j$(nproc)
         sudo make install-lib -j$(nproc)
         
@@ -115,7 +117,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/${{ matrix.author }}/L-SMASH-Works.git
         cd L-SMASH-Works/AviUtl
-        ./configure --cross-prefix=i686-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
+        ./configure --cross-prefix=${{ matrix.config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make -j$(nproc)
 
 
@@ -249,13 +251,13 @@ jobs:
     - name: Create archive
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
-        zip L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_${{ matrix.l-smash_author }}_AviUtl -r lwcolor.auc lwdumper.auf lwinput.aui lwmuxer.auf LICENSE README README.ja About-this-build.txt Licenses
+        zip L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_${{ matrix.l-smash_author }}_${{ matrix.config.user_arch }}_AviUtl -r lwcolor.auc lwdumper.auf lwinput.aui lwmuxer.auf LICENSE README README.ja About-this-build.txt Licenses
         
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
         name: L-SMASH-Works
-        path: ${{ github.workspace }}/L-SMASH-Works/AviUtl/L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_${{ matrix.l-smash_author }}_AviUtl.zip
+        path: ${{ github.workspace }}/L-SMASH-Works/AviUtl/L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_${{ matrix.l-smash_author }}_${{ matrix.config.user_arch }}_AviUtl.zip
         
 
   create_release:
@@ -289,7 +291,7 @@ jobs:
           assets+=("-a" "$asset")
         done
         for asset in *.zip; do
-          if [[ "$asset" =~ "Mr-Ojii_Mr-Ojii_AviUtl" ]]; then
+          if [[ "$asset" =~ "Mr-Ojii_Mr-Ojii_x86_AviUtl" ]]; then
             AVIUTL_RECOMMEND_FILE=$asset
           fi
         done
