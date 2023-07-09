@@ -251,7 +251,7 @@ jobs:
     - name: Create RevInfo.txt
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
-        echo ${{ steps.workflow-rev.outputs.REV_LIST_COUNT }} > RevInfo.txt
+        echo ${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} > RevInfo.txt
         
     - name: Rename Files(x64)
       if: ${{ matrix.config.user_arch == 'x64' }}
