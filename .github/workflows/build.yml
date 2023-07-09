@@ -32,7 +32,7 @@ jobs:
         sudo apt-get install -y autoconf libtool nasm mingw-w64 meson ninja-build pkg-config
       
     - name: Create symbolic link
-      run: sudo ln -s /usr/bin/pkg-config /usr/bin/i686-w64-mingw32-pkg-config
+      run: sudo ln -s /usr/bin/pkg-config /usr/bin/${{ matrix.config.cpu }}-w64-mingw32-pkg-config
       
     - name: Set git config
       run: |
