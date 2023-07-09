@@ -253,7 +253,7 @@ jobs:
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
         mv lwinput.aui lwinput64.aui
-        mv About-This-Build.txt About-This-Build-x64.txt
+        mv About-this-build.txt About-this-build-x64.txt
 
     - name: Create archive
       run: |
@@ -277,7 +277,7 @@ jobs:
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/README
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/README.ja
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/LICENSE
-          ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-This-Build.txt
+          ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build.txt
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/Licenses
           
           
@@ -288,7 +288,7 @@ jobs:
         name: ${{ matrix.author }}_${{ matrix.l-smash_author }}
         path: |
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui
-          ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-This-Build-x64.txt
+          ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build-x64.txt
         
         
   create-archive:
