@@ -260,11 +260,6 @@ jobs:
         mv lwinput.aui lwinput64.aui
         mv About-this-build.txt About-this-build-x64.txt
         mv RevInfo.txt RevInfo64.txt
-        
-    - uses: actions/upload-artifact@v3
-      with:
-        name: L-SMASH-Works
-        path: ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.zip
           
     - name: Upload artifact(x86)
       uses: actions/upload-artifact@v3
