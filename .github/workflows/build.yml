@@ -310,16 +310,18 @@ jobs:
         name: ${{ matrix.author }}_${{ matrix.l-smash_author }}
         path: artifacts
         
-    - id: rev-info
+    - name: Set RevInfo
+      id: rev-info
       run: |
         cd ${{ github.workspace }}/artifacts
         if [ "$(cat RevInfo.txt)" != "$(cat RevInfo64.txt)" ]; then
           exit 1
-        end
+        fi
         echo "REV=" > Rev.txt
         cat RevInfo.txt >> Rev.txt
         cat Rev.txt >> $GITHUB_OUTPUT
         rm Rev.txt RevInfo.txt RevInfo64.txt
+        
         
     - name: Create archive
       run: |
