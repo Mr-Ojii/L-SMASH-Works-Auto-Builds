@@ -258,7 +258,7 @@ jobs:
     - name: Create archive
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
-        zip L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_${{ matrix.l-smash_author }}_${{ matrix.config.user_arch }}_AviUtl -r ${{ matrix.config.assets }} LICENSE README README.ja About-this-build.txt Licenses
+        zip L-SMASH-Works_r${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_${{ matrix.l-smash_author }}_${{ matrix.config.user_arch }}_AviUtl -r ${{ matrix.config.assets }} LICENSE README README.ja About-this-build.txt Licenses
         
     - name: Upload artifact
       uses: actions/upload-artifact@v3
