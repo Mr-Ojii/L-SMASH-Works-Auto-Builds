@@ -250,7 +250,7 @@ jobs:
         cp ${{ github.workspace }}/obuparse/LICENSE obuparse.txt
         
     - name: Rename lwinput.aui(x64)
-      if: ${{ matrix.config.user_arch }} == 'x64'
+      if: ${{ matrix.config.user_arch == 'x64' }}
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
         mv lwinput.aui lwinput64.aui
