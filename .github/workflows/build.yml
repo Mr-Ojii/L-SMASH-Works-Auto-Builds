@@ -280,7 +280,7 @@ jobs:
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/LICENSE
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build.txt
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/Licenses
-          ${{ github.workspace }}/L-SMASH-Works/AviUtl/RevisionInfo.txt
+          ${{ github.workspace }}/L-SMASH-Works/AviUtl/RevInfo.txt
           
           
     - name: Upload artifact(x64)
@@ -291,7 +291,7 @@ jobs:
         path: |
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build-x64.txt
-          ${{ github.workspace }}/L-SMASH-Works/AviUtl/RevisionInfo64.txt
+          ${{ github.workspace }}/L-SMASH-Works/AviUtl/RevInfo64.txt
         
         
   create-archive:
