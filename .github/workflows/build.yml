@@ -17,7 +17,8 @@ jobs:
         author: [HolyWu, VFR-maniac, Mr-Ojii]
         l-smash_author: [l-smash, Mr-Ojii, vimeo]
         config:
-          - { cpu: i686, arch: x86, vpx_target: x86-win32-gcc, user_arch: x86 }
+          - { cpu: i686, arch: x86, vpx_target: x86-win32-gcc, user_arch: x86, assets: 'lwcolor.auc lwdumper.auf lwinput.aui lwmuxer.auf' }
+          - { cpu: x86_64, arch: x86_64, vpx_target: x86_64-win64-gcc, user_arch: x64, assets: 'lwinput64.aui' }
     
     steps:
     - name: Checkout repository
@@ -248,10 +249,16 @@ jobs:
         echo "URL=https://zlib.net/zlib_license.html" >> zlib.url
         cp ${{ github.workspace }}/obuparse/LICENSE obuparse.txt
         
+    - name: Rename lwinput.aui(x64)
+      if: ${{ matrix.config.user_arch }} == 'x64'
+      run: |
+        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
+        mv lwinput.aui lwinput64.aui
+    
     - name: Create archive
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
-        zip L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_${{ matrix.l-smash_author }}_${{ matrix.config.user_arch }}_AviUtl -r lwcolor.auc lwdumper.auf lwinput.aui lwmuxer.auf LICENSE README README.ja About-this-build.txt Licenses
+        zip L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_${{ matrix.l-smash_author }}_${{ matrix.config.user_arch }}_AviUtl -r ${{ matrix.config.assets }} LICENSE README README.ja About-this-build.txt Licenses
         
     - name: Upload artifact
       uses: actions/upload-artifact@v3
