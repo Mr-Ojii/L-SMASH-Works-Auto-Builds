@@ -317,7 +317,7 @@ jobs:
         if [ "$(cat RevInfo.txt)" != "$(cat RevInfo64.txt)" ]; then
           exit 1
         fi
-        echo "REV=" > Rev.txt
+        echo -n "REV=" > Rev.txt
         cat RevInfo.txt >> Rev.txt
         cat Rev.txt >> $GITHUB_OUTPUT
         rm Rev.txt RevInfo.txt RevInfo64.txt
