@@ -21,8 +21,7 @@ jobs:
           - { cpu: x86_64, arch: x86_64, vpx_target: x86_64-win64-gcc, user_arch: x64, assets: 'lwinput64.aui' }
     
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
       
@@ -31,7 +30,7 @@ jobs:
         sudo apt-get update -y
         sudo apt-get install -y autoconf libtool nasm mingw-w64 meson ninja-build pkg-config
       
-    - name: Create symbolic link
+    - name: Create pkg-config symbolic link
       run: sudo ln -s /usr/bin/pkg-config /usr/bin/${{ matrix.config.cpu }}-w64-mingw32-pkg-config
       
     - name: Set git config
@@ -122,7 +121,7 @@ jobs:
         make -j$(nproc)
 
 
-    - name: Set workflow REV_LIST_COUNT
+    - name: Set workflow Revision Info
       id: workflow-rev
       run: |
         cd ${{ github.workspace }}
@@ -131,7 +130,7 @@ jobs:
         SHA=`git rev-parse HEAD`
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
               
-    - name: Set zlib REV_SHA
+    - name: Set zlib Revision Info
       id: zlib-rev
       run: |
         cd ${{ github.workspace }}/zlib
@@ -140,7 +139,7 @@ jobs:
         SHA=`git rev-parse HEAD`
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
-    - name: Set dav1d REV_SHA
+    - name: Set dav1d Revision Info
       id: dav1d-rev
       run: |
         cd ${{ github.workspace }}/dav1d
@@ -149,7 +148,7 @@ jobs:
         SHA=`git rev-parse HEAD`
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
-    - name: Set libvpx REV_SHA
+    - name: Set libvpx Revision Info
       id: libvpx-rev
       run: |
         cd ${{ github.workspace }}/libvpx
@@ -158,7 +157,7 @@ jobs:
         SHA=`git rev-parse HEAD`
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
-    - name: Set nv-codec-headers REV_SHA
+    - name: Set nv-codec-headers Revision Info
       id: nv-codec-headers-rev
       run: |
         cd ${{ github.workspace }}/nv-codec-headers
@@ -167,7 +166,7 @@ jobs:
         SHA=`git rev-parse HEAD`
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
-    - name: Set mfx_dispatch REV_SHA
+    - name: Set mfx_dispatch Revision Info
       id: mfx_dispatch-rev
       run: |
         cd ${{ github.workspace }}/mfx_dispatch
@@ -176,7 +175,7 @@ jobs:
         SHA=`git rev-parse HEAD`
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
-    - name: Set obuparse REV_SHA
+    - name: Set obuparse Revision Info
       id: obuparse-rev
       run: |
         cd ${{ github.workspace }}/obuparse
@@ -185,7 +184,7 @@ jobs:
         SHA=`git rev-parse HEAD`
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
-    - name: Set L-SMASH REV_LIST_COUNT
+    - name: Set L-SMASH Revision Info
       id: l-smash-rev
       run: |
         cd ${{ github.workspace }}/l-smash
@@ -194,7 +193,7 @@ jobs:
         SHA=`git rev-parse HEAD`
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
-    - name: Set L-SMASH Works REV_LIST_COUNT
+    - name: Set L-SMASH Works Revision Info
       id: l-smash-works-rev
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works
@@ -260,8 +259,7 @@ jobs:
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
         zip L-SMASH-Works_r${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_${{ matrix.l-smash_author }}_${{ matrix.config.user_arch }}_AviUtl -r ${{ matrix.config.assets }} LICENSE README README.ja About-this-build.txt Licenses
         
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v3
       with:
         name: L-SMASH-Works
         path: ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.zip
@@ -271,8 +269,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
     
     - uses: actions/download-artifact@v3
       with:
