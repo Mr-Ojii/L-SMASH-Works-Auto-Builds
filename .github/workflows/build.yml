@@ -264,8 +264,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: L-SMASH-Works
-        path: ${{ github.workspace }}/L-SMASH-Works/AviUtl/L-SMASH-Works_rev${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_${{ matrix.l-smash_author }}_${{ matrix.config.user_arch }}_AviUtl.zip
-        
+        path: ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.zip
 
   create_release:
     name: Create release
