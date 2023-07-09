@@ -248,12 +248,13 @@ jobs:
         echo "URL=https://zlib.net/zlib_license.html" >> zlib.url
         cp ${{ github.workspace }}/obuparse/LICENSE obuparse.txt
         
-    - name: Rename lwinput.aui(x64)
+    - name: Rename Files(x64)
       if: ${{ matrix.config.user_arch == 'x64' }}
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
         mv lwinput.aui lwinput64.aui
-    
+        mv About-This-Build.txt About-This-Build-x64.txt
+
     - name: Create archive
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
@@ -263,10 +264,63 @@ jobs:
       with:
         name: L-SMASH-Works
         path: ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.zip
-
-  create_release:
-    name: Create release
+          
+    - name: Upload artifact(x86)
+      uses: actions/upload-artifact@v3
+      if: ${{ matrix.config.user_arch == 'x86' }}
+      with:
+        name: ${{ matrix.author }}_${{ matrix.l-smash_author }}
+        path: |
+          ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auf
+          ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auc
+          ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui
+          ${{ github.workspace }}/L-SMASH-Works/AviUtl/README
+          ${{ github.workspace }}/L-SMASH-Works/AviUtl/README.ja
+          ${{ github.workspace }}/L-SMASH-Works/AviUtl/LICENSE
+          ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-This-Build.txt
+          ${{ github.workspace }}/L-SMASH-Works/AviUtl/Licenses
+          
+          
+    - name: Upload artifact(x64)
+      uses: actions/upload-artifact@v3
+      if: ${{ matrix.config.user_arch == 'x64' }}
+      with:
+        name: ${{ matrix.author }}_${{ matrix.l-smash_author }}
+        path: |
+          ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui
+          ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-This-Build-x64.txt
+        
+        
+  create-archive:
+    name: Create archive
     needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        author: [HolyWu, VFR-maniac, Mr-Ojii]
+        l-smash_author: [l-smash, Mr-Ojii, vimeo]
+    steps:
+    - uses: actions/checkout@v3
+    
+    - uses: actions/download-artifact@v3
+      with:
+        name: ${{ matrix.author }}_${{ matrix.l-smash_author }}
+        path: artifacts
+        
+    - name: Create archive
+      run: |
+        cd artifacts
+        zip L-SMASH-Works_rxxx_${{ matrix.author }}_${{ matrix.l-smash_author }}_AviUtl -r *
+        
+    - uses: actions/upload-artifact@v3
+      with:
+        name: LSW
+        path: ${{ github.workspace }}/artifacts/*.zip
+
+
+  create-release:
+    name: Create release
+    needs: create-archive
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
