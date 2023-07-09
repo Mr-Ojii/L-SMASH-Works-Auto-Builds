@@ -248,17 +248,18 @@ jobs:
         echo "URL=https://zlib.net/zlib_license.html" >> zlib.url
         cp ${{ github.workspace }}/obuparse/LICENSE obuparse.txt
         
+    - name: Create RevInfo.txt
+      run: |
+        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
+        echo ${{ steps.workflow-rev.outputs.REV_LIST_COUNT }} > RevInfo.txt
+        
     - name: Rename Files(x64)
       if: ${{ matrix.config.user_arch == 'x64' }}
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
         mv lwinput.aui lwinput64.aui
         mv About-this-build.txt About-this-build-x64.txt
-
-    - name: Create archive
-      run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
-        zip L-SMASH-Works_r${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}_${{ matrix.author }}_${{ matrix.l-smash_author }}_${{ matrix.config.user_arch }}_AviUtl -r ${{ matrix.config.assets }} LICENSE README README.ja About-this-build.txt Licenses
+        mv RevInfo.txt RevInfo64.txt
         
     - uses: actions/upload-artifact@v3
       with:
@@ -279,6 +280,7 @@ jobs:
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/LICENSE
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build.txt
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/Licenses
+          ${{ github.workspace }}/L-SMASH-Works/AviUtl/RevisionInfo.txt
           
           
     - name: Upload artifact(x64)
@@ -289,6 +291,7 @@ jobs:
         path: |
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build-x64.txt
+          ${{ github.workspace }}/L-SMASH-Works/AviUtl/RevisionInfo64.txt
         
         
   create-archive:
@@ -307,14 +310,25 @@ jobs:
         name: ${{ matrix.author }}_${{ matrix.l-smash_author }}
         path: artifacts
         
+    - id: rev-info
+      run: |
+        cd ${{ github.workspace }}/artifacts
+        if [ "$(cat RevInfo.txt)" != "$(cat RevInfo64.txt)" ]; then
+          exit 1
+        end
+        echo "REV=" > Rev.txt
+        cat RevInfo.txt >> Rev.txt
+        cat Rev.txt >> $GITHUB_OUTPUT
+        rm Rev.txt RevInfo.txt RevInfo64.txt
+        
     - name: Create archive
       run: |
-        cd artifacts
-        zip L-SMASH-Works_rxxx_${{ matrix.author }}_${{ matrix.l-smash_author }}_AviUtl -r *
+        cd ${{ github.workspace }}/artifacts
+        zip L-SMASH-Works_r${{ steps.rev-info.outputs.REV }}_${{ matrix.author }}_${{ matrix.l-smash_author }}_AviUtl -r *
         
     - uses: actions/upload-artifact@v3
       with:
-        name: LSW
+        name: L-SMASH-Works
         path: ${{ github.workspace }}/artifacts/*.zip
 
 
