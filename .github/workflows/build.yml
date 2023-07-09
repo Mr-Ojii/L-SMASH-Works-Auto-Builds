@@ -359,7 +359,7 @@ jobs:
           assets+=("-a" "$asset")
         done
         for asset in *.zip; do
-          if [[ "$asset" =~ "Mr-Ojii_Mr-Ojii_x86_AviUtl" ]]; then
+          if [[ "$asset" =~ "Mr-Ojii_Mr-Ojii_AviUtl" ]]; then
             AVIUTL_RECOMMEND_FILE=$asset
           fi
         done
