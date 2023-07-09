@@ -317,6 +317,12 @@ jobs:
         cat Rev.txt >> $GITHUB_OUTPUT
         rm Rev.txt RevInfo.txt RevInfo64.txt
         
+    - name: Check diff
+      run: |
+        cd ${{ github.workspace }}/artifacts
+        if [ "$(diff About-this-build.txt About-this-build-x64.txt)" == "" ]; then
+          rm About-this-build-x64.txt
+        fi
         
     - name: Create archive
       run: |
