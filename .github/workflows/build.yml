@@ -14,9 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        author: [HolyWu, VFR-maniac, Mr-Ojii]
+        lsw_config:
+          - { author: HolyWu, ffmpeg_version: 4.4 }
+          - { author: VFR-maniac, ffmpeg_version: 4.4 }
+          - { author: Mr-Ojii, ffmpeg_version: 4.4 }
         l-smash_author: [l-smash, Mr-Ojii, vimeo]
-        config:
+        cpu_config:
           - { cpu: i686, arch: x86, vpx_target: x86-win32-gcc }
           - { cpu: x86_64, arch: x86_64, vpx_target: x86_64-win64-gcc }
     
@@ -31,7 +34,7 @@ jobs:
         sudo apt-get install -y autoconf libtool nasm mingw-w64 meson ninja-build pkg-config
       
     - name: Create pkg-config symbolic link
-      run: sudo ln -s /usr/bin/pkg-config /usr/bin/${{ matrix.config.cpu }}-w64-mingw32-pkg-config
+      run: sudo ln -s /usr/bin/pkg-config /usr/bin/${{ matrix.cpu_config.cpu }}-w64-mingw32-pkg-config
       
     - name: Set git config
       run: |
@@ -43,7 +46,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/madler/zlib.git --depth 1
         cd zlib
-        CROSS_PREFIX=${{ matrix.config.cpu }}-w64-mingw32- ./configure --static
+        CROSS_PREFIX=${{ matrix.cpu_config.cpu }}-w64-mingw32- ./configure --static
         make -j$(nproc)
         sudo make install -j$(nproc)
         
@@ -53,7 +56,7 @@ jobs:
         git clone https://code.videolan.org/videolan/dav1d.git --depth 1
         cd dav1d
         mkdir build && cd build
-        meson --cross-file=../package/crossfiles/${{ matrix.config.cpu }}-w64-mingw32.meson --buildtype release --default-library=static ..
+        meson --cross-file=../package/crossfiles/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson --buildtype release --default-library=static ..
         ninja
         sudo ninja install
     
@@ -62,7 +65,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/webmproject/libvpx.git --depth 1
         mkdir libvpx/builds && cd libvpx/builds
-        CROSS=${{ matrix.config.cpu }}-w64-mingw32- ../configure --target=${{ matrix.config.vpx_target }} --enable-vp9-highbitdepth --disable-docs --disable-tools --disable-examples --disable-webm-io --disable-vp8-encoder --disable-vp9-encoder
+        CROSS=${{ matrix.cpu_config.cpu }}-w64-mingw32- ../configure --target=${{ matrix.cpu_config.vpx_target }} --enable-vp9-highbitdepth --disable-docs --disable-tools --disable-examples --disable-webm-io --disable-vp8-encoder --disable-vp9-encoder
         make -j$(nproc)
         sudo make install -j$(nproc)
         
@@ -79,17 +82,17 @@ jobs:
         git clone https://github.com/lu-zero/mfx_dispatch.git --depth 1
         cd mfx_dispatch
         autoreconf -i
-        ./configure --host=${{ matrix.config.cpu }}-w64-mingw32
+        ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32
         make -j$(nproc)
         sudo make install -j$(nproc)
       
     - name: Install FFmpeg
       run: |
         cd ${{ github.workspace }}
-        git clone https://github.com/FFmpeg/FFmpeg.git -b release/4.4
+        git clone https://github.com/FFmpeg/FFmpeg.git -b release/${{ matrix.lsw_config.ffmpeg_version }}
         cd FFmpeg
         git cherry-pick 07bcedc232feeb9e30336624f4e9977d47ac43bc
-        ./configure --enable-version3 --enable-avresample --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="-lpthread" --cross-prefix=${{ matrix.config.cpu }}-w64-mingw32- --cpu=${{ matrix.config.cpu }} --target-os=mingw32 --arch=${{ matrix.config.arch }} --enable-libdav1d --enable-libvpx --enable-libmfx
+        ./configure --enable-version3 --enable-avresample --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="-lpthread" --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --cpu=${{ matrix.cpu_config.cpu }} --target-os=mingw32 --arch=${{ matrix.cpu_config.arch }} --enable-libdav1d --enable-libvpx --enable-libmfx
         make -j$(nproc)
         sudo make install -j$(nproc)
   
@@ -98,8 +101,8 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/dwbuiten/obuparse.git --depth 1
         cd obuparse
-        ${{ matrix.config.cpu }}-w64-mingw32-gcc -c obuparse.c
-        ${{ matrix.config.cpu }}-w64-mingw32-ar r libobuparse.a obuparse.o
+        ${{ matrix.cpu_config.cpu }}-w64-mingw32-gcc -c obuparse.c
+        ${{ matrix.cpu_config.cpu }}-w64-mingw32-ar r libobuparse.a obuparse.o
         sudo install obuparse.h /usr/local/include
         sudo install libobuparse.a /usr/local/lib
         
@@ -108,16 +111,16 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/${{ matrix.l-smash_author }}/l-smash.git
         cd l-smash
-        ./configure --cross-prefix=${{ matrix.config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags=-L/usr/local/lib
+        ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags=-L/usr/local/lib
         make lib -j$(nproc)
         sudo make install-lib -j$(nproc)
         
     - name: Build L-SMASH Works
       run: |
         cd ${{ github.workspace }}
-        git clone https://github.com/${{ matrix.author }}/L-SMASH-Works.git
+        git clone https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works.git
         cd L-SMASH-Works/AviUtl
-        ./configure --cross-prefix=${{ matrix.config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
+        ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make -j$(nproc)
 
 
@@ -209,8 +212,8 @@ jobs:
         echo "L-SMASH-Works-Auto-Builds r${{ steps.workflow-rev.outputs.REV_LIST_COUNT }}" >> "AviUtl/About-this-build.txt"
         echo "https://github.com/Mr-Ojii/L-SMASH-Works-Auto-Builds" >> "AviUtl/About-this-build.txt"
         echo "" >> "AviUtl/About-this-build.txt"
-        echo "${{ matrix.author }}/L-SMASH-Works r${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}" >> "AviUtl/About-this-build.txt"
-        echo "https://github.com/${{ matrix.author }}/L-SMASH-Works" >> "AviUtl/About-this-build.txt"
+        echo "${{ matrix.lsw_config.author }}/L-SMASH-Works r${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}" >> "AviUtl/About-this-build.txt"
+        echo "https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works" >> "AviUtl/About-this-build.txt"
         echo "" >> "AviUtl/About-this-build.txt"
         echo "FFmpeg 4.4 (patched)" >> "AviUtl/About-this-build.txt"
         echo "https://github.com/FFmpeg/FFmpeg" >> "AviUtl/About-this-build.txt"
@@ -254,7 +257,7 @@ jobs:
         echo ${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} > RevInfo.txt
         
     - name: Rename Files(x64)
-      if: ${{ matrix.config.arch == 'x86_64' }}
+      if: ${{ matrix.cpu_config.arch == 'x86_64' }}
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
         mv lwinput.aui lwinput64.aui
@@ -263,9 +266,9 @@ jobs:
           
     - name: Upload artifact(x86)
       uses: actions/upload-artifact@v3
-      if: ${{ matrix.config.arch == 'x86' }}
+      if: ${{ matrix.cpu_config.arch == 'x86' }}
       with:
-        name: ${{ matrix.author }}_${{ matrix.l-smash_author }}
+        name: ${{ matrix.lsw_config.author }}_${{ matrix.l-smash_author }}
         path: |
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auf
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auc
@@ -280,9 +283,9 @@ jobs:
           
     - name: Upload artifact(x64)
       uses: actions/upload-artifact@v3
-      if: ${{ matrix.config.arch == 'x86_64' }}
+      if: ${{ matrix.cpu_config.arch == 'x86_64' }}
       with:
-        name: ${{ matrix.author }}_${{ matrix.l-smash_author }}
+        name: ${{ matrix.lsw_config.author }}_${{ matrix.l-smash_author }}
         path: |
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build-x64.txt
