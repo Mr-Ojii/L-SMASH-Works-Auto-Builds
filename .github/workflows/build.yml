@@ -103,8 +103,8 @@ jobs:
         cd obuparse
         ${{ matrix.cpu_config.cpu }}-w64-mingw32-gcc -c obuparse.c
         ${{ matrix.cpu_config.cpu }}-w64-mingw32-ar r libobuparse.a obuparse.o
-        install obuparse.h --prefix=${{ github.workspace }}/lsw/include
-        install libobuparse.a --prefix=${{ github.workspace }}/lsw/lib
+        install obuparse.h ${{ github.workspace }}/lsw/include
+        install libobuparse.a ${{ github.workspace }}/lsw/lib
         
     - name: Install L-SMASH
       run: |
