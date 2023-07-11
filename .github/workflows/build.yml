@@ -17,8 +17,8 @@ jobs:
         author: [HolyWu, VFR-maniac, Mr-Ojii]
         l-smash_author: [l-smash, Mr-Ojii, vimeo]
         config:
-          - { cpu: i686, arch: x86, vpx_target: x86-win32-gcc, user_arch: x86, assets: 'lwcolor.auc lwdumper.auf lwinput.aui lwmuxer.auf' }
-          - { cpu: x86_64, arch: x86_64, vpx_target: x86_64-win64-gcc, user_arch: x64, assets: 'lwinput64.aui' }
+          - { cpu: i686, arch: x86, vpx_target: x86-win32-gcc, user_arch: x86, }
+          - { cpu: x86_64, arch: x86_64, vpx_target: x86_64-win64-gcc, user_arch: x64 }
     
     steps:
     - uses: actions/checkout@v3
