@@ -46,9 +46,9 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/madler/zlib.git --depth 1
         cd zlib
-        CROSS_PREFIX=${{ matrix.cpu_config.cpu }}-w64-mingw32- ./configure --static
+        CROSS_PREFIX=${{ matrix.cpu_config.cpu }}-w64-mingw32- ./configure --static --prefix=${{ github.workspace }}/lsw
         make -j$(nproc)
-        sudo make install -j$(nproc)
+        make install -j$(nproc)
         
     - name: Install dav1d
       run: |
@@ -56,18 +56,18 @@ jobs:
         git clone https://code.videolan.org/videolan/dav1d.git --depth 1
         cd dav1d
         mkdir build && cd build
-        meson --cross-file=../package/crossfiles/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson --buildtype release --default-library=static ..
+        meson --cross-file=../package/crossfiles/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson --buildtype release --default-library=static --prefix=${{ github.workspace }}/lsw ..
         ninja
-        sudo ninja install
+        ninja install
     
     - name: Install libvpx
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/webmproject/libvpx.git --depth 1
         mkdir libvpx/builds && cd libvpx/builds
-        CROSS=${{ matrix.cpu_config.cpu }}-w64-mingw32- ../configure --target=${{ matrix.cpu_config.vpx_target }} --enable-vp9-highbitdepth --disable-docs --disable-tools --disable-examples --disable-webm-io --disable-vp8-encoder --disable-vp9-encoder
+        CROSS=${{ matrix.cpu_config.cpu }}-w64-mingw32- ../configure --target=${{ matrix.cpu_config.vpx_target }} --enable-vp9-highbitdepth --disable-docs --disable-tools --disable-examples --disable-webm-io --disable-vp8-encoder --disable-vp9-encoder --prefix=${{ github.workspace }}/lsw
         make -j$(nproc)
-        sudo make install -j$(nproc)
+        make install -j$(nproc)
         
     - name: Install nv-codec-headers
       run: |
@@ -82,9 +82,9 @@ jobs:
         git clone https://github.com/lu-zero/mfx_dispatch.git --depth 1
         cd mfx_dispatch
         autoreconf -i
-        ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32
+        ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32 --prefix=${{ github.workspace }}/lsw
         make -j$(nproc)
-        sudo make install -j$(nproc)
+        make install -j$(nproc)
       
     - name: Install FFmpeg
       run: |
@@ -92,9 +92,9 @@ jobs:
         git clone https://github.com/FFmpeg/FFmpeg.git -b release/${{ matrix.lsw_config.ffmpeg_version }}
         cd FFmpeg
         git cherry-pick 07bcedc232feeb9e30336624f4e9977d47ac43bc
-        ./configure --enable-version3 --enable-avresample --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="-lpthread" --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --cpu=${{ matrix.cpu_config.cpu }} --target-os=mingw32 --arch=${{ matrix.cpu_config.arch }} --enable-libdav1d --enable-libvpx --enable-libmfx
+        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --enable-version3 --enable-avresample --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="-lpthread" --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --cpu=${{ matrix.cpu_config.cpu }} --target-os=mingw32 --arch=${{ matrix.cpu_config.arch }} --prefix=${{ github.workspace }}/lsw --enable-libdav1d --enable-libvpx --enable-libmfx
         make -j$(nproc)
-        sudo make install -j$(nproc)
+        make install -j$(nproc)
   
     - name: Install obuparse
       run: |
@@ -103,24 +103,24 @@ jobs:
         cd obuparse
         ${{ matrix.cpu_config.cpu }}-w64-mingw32-gcc -c obuparse.c
         ${{ matrix.cpu_config.cpu }}-w64-mingw32-ar r libobuparse.a obuparse.o
-        sudo install obuparse.h /usr/local/include
-        sudo install libobuparse.a /usr/local/lib
+        install obuparse.h --prefix=${{ github.workspace }}/lsw/include
+        install libobuparse.a --prefix=${{ github.workspace }}/lsw/lib
         
     - name: Install L-SMASH
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/${{ matrix.l-smash_author }}/l-smash.git
         cd l-smash
-        ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags=-L/usr/local/lib
+        ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I${{ github.workspace }}/lsw/include --extra-ldflags=-L${{ github.workspace }}/lsw/lib --prefix=${{ github.workspace }}/lsw
         make lib -j$(nproc)
-        sudo make install-lib -j$(nproc)
+        make install-lib -j$(nproc)
         
     - name: Build L-SMASH Works
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works.git
         cd L-SMASH-Works/AviUtl
-        ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
+        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make -j$(nproc)
 
 
