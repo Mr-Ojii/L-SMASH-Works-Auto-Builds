@@ -122,7 +122,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/AviSynth/AviSynthPlus.git -b v3.7.2 --depth 1
         cd AviSynthPlus
-        sed 's/MSVC/__MINGW32__/' avs_core/filters/AviSource/avi_source.cpp
+        sed -i 's/MSVC/__MINGW32__/' avs_core/filters/AviSource/avi_source.cpp
         cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_PLUGINS=OFF -DENABLE_INTEL_SIMD=OFF -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/${{ matrix.cpu_config.cpu }}_avisynthplus_toolchain.cmake
         cmake --build build -j $(nproc)
         cmake --install build --prefix ${{ github.workspace }}/lsw
