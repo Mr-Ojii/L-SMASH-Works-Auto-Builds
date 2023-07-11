@@ -74,7 +74,8 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/FFmpeg/nv-codec-headers.git --depth 1
         cd nv-codec-headers
-        sudo make install -j$(nproc)
+        cat Makefile | sed -e "s#/usr/local#${{ github.workspace }}/lsw#" > Makefile
+        make install -j$(nproc)
         
     - name: Install mfx_dispatch
       run: |
