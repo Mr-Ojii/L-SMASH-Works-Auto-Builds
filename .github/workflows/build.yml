@@ -17,8 +17,8 @@ jobs:
         author: [HolyWu, VFR-maniac, Mr-Ojii]
         l-smash_author: [l-smash, Mr-Ojii, vimeo]
         config:
-          - { cpu: i686, arch: x86, vpx_target: x86-win32-gcc, user_arch: x86, }
-          - { cpu: x86_64, arch: x86_64, vpx_target: x86_64-win64-gcc, user_arch: x64 }
+          - { cpu: i686, arch: x86, vpx_target: x86-win32-gcc }
+          - { cpu: x86_64, arch: x86_64, vpx_target: x86_64-win64-gcc }
     
     steps:
     - uses: actions/checkout@v3
@@ -254,7 +254,7 @@ jobs:
         echo ${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} > RevInfo.txt
         
     - name: Rename Files(x64)
-      if: ${{ matrix.config.user_arch == 'x64' }}
+      if: ${{ matrix.config.arch == 'x86_64' }}
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
         mv lwinput.aui lwinput64.aui
@@ -263,7 +263,7 @@ jobs:
           
     - name: Upload artifact(x86)
       uses: actions/upload-artifact@v3
-      if: ${{ matrix.config.user_arch == 'x86' }}
+      if: ${{ matrix.config.arch == 'x86' }}
       with:
         name: ${{ matrix.author }}_${{ matrix.l-smash_author }}
         path: |
@@ -280,7 +280,7 @@ jobs:
           
     - name: Upload artifact(x64)
       uses: actions/upload-artifact@v3
-      if: ${{ matrix.config.user_arch == 'x64' }}
+      if: ${{ matrix.config.arch == 'x86_64' }}
       with:
         name: ${{ matrix.author }}_${{ matrix.l-smash_author }}
         path: |
