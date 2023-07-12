@@ -115,23 +115,43 @@ jobs:
         make lib -j$(nproc)
         make install-lib -j$(nproc)
 
-    # 2023/07/12現在 r4001ではビルド不能なため、バージョン指定
-    # また、Multiple definitions防止のため、勝手にちょっとだけパッチを当てる
     - name: Install AviSynthPlus
       run: |
         cd ${{ github.workspace }}
+        # 2023/07/12現在 r4001ではビルド不能なため、バージョン指定
         git clone https://github.com/AviSynth/AviSynthPlus.git -b v3.7.2 --depth 1
         cd AviSynthPlus
+        # Multiple definitions防止のため、勝手にちょっとだけパッチを当てる
         sed -i 's/MSVC/__MINGW32__/' avs_core/filters/AviSource/avi_source.cpp
         cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_PLUGINS=OFF -DENABLE_INTEL_SIMD=OFF -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/avisynthplus_crosscompiling_toolchain/${{ matrix.cpu_config.cpu }}.cmake
         cmake --build build -j $(nproc)
         cmake --install build --prefix ${{ github.workspace }}/lsw
-        
-    - name: Build L-SMASH Works
+
+    - name: Clone L-SMASH Works
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works.git
-        cd L-SMASH-Works/AviUtl
+
+    # VFR-maniac版はmesonに対応していないため、一時的に除外
+    - name: Build L-SMASH Works(AviSynth)
+      if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
+      run: |
+        cd ${{ github.workspace }}/L-SMASH-Works/AviSynth
+        # ヘッダファイルの階層問題より、AviSynthのヘッダを一つ上の階層にぶちまける
+        mv ${{ github.workspace }}/lsw/include/avisynth/* ${{ github.workspace }}/lsw/include
+        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig meson --cross-file=../../avisynth_lsw_crossfile/${{ matrix.lsw_config.cpu }}-w64-mingw32.meson build
+        ninja -C build
+
+    - name: Upload artifact test(AviSynth)
+      if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-${{ matrix.cpu_config.cpu }}-AviSynth
+        path: ${{ github.workspace }}/L-SMASH-Works/AviSynth/build/*.dll
+
+    - name: Build L-SMASH Works(AviUtl)
+      run: |
+        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
         PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make -j$(nproc)
 
@@ -302,7 +322,6 @@ jobs:
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build-x64.txt
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/RevInfo64.txt
-        
         
   create-archive:
     name: Create archive
