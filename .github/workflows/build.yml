@@ -56,7 +56,7 @@ jobs:
         git clone https://code.videolan.org/videolan/dav1d.git --depth 1
         cd dav1d
         mkdir build && cd build
-        meson --cross-file=../package/crossfiles/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson --buildtype release --default-library=static --prefix=${{ github.workspace }}/lsw ..
+        meson --cross-file=../package/crossfiles/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson --buildtype release --default-library=static -Denable_tests=false --prefix=${{ github.workspace }}/lsw ..
         ninja
         ninja install
     
