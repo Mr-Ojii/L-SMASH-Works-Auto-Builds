@@ -119,7 +119,7 @@ jobs:
       run: |
         cd ${{ github.workspace }}
         # 2023/07/12現在 r4001ではビルド不能なため、バージョン指定
-        git clone https://github.com/AviSynth/AviSynthPlus.git -b v3.7.2 --depth 1
+        git clone https://github.com/AviSynth/AviSynthPlus.git -b v3.7.3 --depth 1
         cd AviSynthPlus
         # Multiple definitions防止のため、勝手にちょっとだけパッチを当てる
         sed -i 's/MSVC/__MINGW32__/' avs_core/filters/AviSource/avi_source.cpp
