@@ -118,14 +118,12 @@ jobs:
     - name: Install AviSynthPlus
       run: |
         cd ${{ github.workspace }}
-        # 2023/07/12現在 r4001ではビルド不能なため、バージョン指定
-        git clone https://github.com/AviSynth/AviSynthPlus.git -b v3.7.3 --depth 1
+        git clone https://github.com/AviSynth/AviSynthPlus.git --depth 1
         cd AviSynthPlus
-        # Multiple definitions防止のため、勝手にちょっとだけパッチを当てる
-        sed -i 's/MSVC/__MINGW32__/' avs_core/filters/AviSource/avi_source.cpp
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_PLUGINS=OFF -DENABLE_INTEL_SIMD=OFF -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/avisynthplus_crosscompiling_toolchain/${{ matrix.cpu_config.cpu }}.cmake
-        cmake --build build -j $(nproc)
-        cmake --install build --prefix ${{ github.workspace }}/lsw
+        mkdir build && cd build
+        cmake ../ -DHEADERS_ONLY=ON
+        make VersionGen
+        cmake --install . --prefix ${{ github.workspace }}/lsw
 
     - name: Clone L-SMASH Works
       run: |
