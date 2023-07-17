@@ -122,7 +122,7 @@ jobs:
         cd AviSynthPlus
         # Multiple definitions防止のため、勝手にちょっとだけパッチを当てる
         sed -i 's/MSVC/__MINGW32__/' avs_core/filters/AviSource/avi_source.cpp
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_PLUGINS=OFF -DENABLE_INTEL_SIMD=OFF -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/avisynthplus_crosscompiling_toolchain/${{ matrix.cpu_config.cpu }}.cmake
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_PLUGINS=OFF -DENABLE_INTEL_SIMD=OFF -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake
         cmake --build build -j $(nproc)
         cmake --install build --prefix ${{ github.workspace }}/lsw
         
@@ -158,7 +158,7 @@ jobs:
         cd ${{ github.workspace }}/L-SMASH-Works/AviSynth
         # ヘッダファイルの階層問題より、AviSynthのヘッダを一つ上の階層にぶちまける
         mv ${{ github.workspace }}/lsw/include/avisynth/* ${{ github.workspace }}/lsw/include
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig meson --cross-file=../../avisynth_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
+        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig meson --cross-file=../../meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
         ninja -C build
 
     - name: Upload artifact test(AviSynth)
