@@ -167,14 +167,26 @@ jobs:
       with:
         name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-${{ matrix.cpu_config.cpu }}-AviSynth
         path: ${{ github.workspace }}/L-SMASH-Works/AviSynth/build/*.dll
-      
+
+    - name: Build L-SMASH Works(VapourSynth)
+      if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
+      run: |
+        cd ${{ github.workspace }}/L-SMASH-Works/VapourSynth
+        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig meson --cross-file=../../meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
+        ninja -C build
+        
+    - name: Upload artifact test(VapourSynth)
+      if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-${{ matrix.cpu_config.cpu }}-VapourSynth
+        path: ${{ github.workspace }}/L-SMASH-Works/VapourSynth/build/*.dll
 
     - name: Build L-SMASH Works(AviUtl)
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
         PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make -j$(nproc)
-
 
     - name: Set workflow Revision Info
       id: workflow-rev
