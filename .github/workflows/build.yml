@@ -125,6 +125,25 @@ jobs:
         cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_PLUGINS=OFF -DENABLE_INTEL_SIMD=OFF -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/avisynthplus_crosscompiling_toolchain/${{ matrix.cpu_config.cpu }}.cmake
         cmake --build build -j $(nproc)
         cmake --install build --prefix ${{ github.workspace }}/lsw
+        
+    - name: Install zimg
+      run: |
+        cd ${{ github.workspace }}
+        git clone https://github.com/sekrit-twc/zimg -b v3.0 --depth 1
+        cd zimg
+        ./autogen.sh
+        ./configure --host=${{ github.cpu_config.cpu }}-w64-mingw32 --prefix=${{ github.workspace }}/lsw
+        make -j$(nproc)
+        make install -j$(nproc)
+        
+    - name: Install VapourSynth
+      run: |
+        cd ${{ github.workspace }}
+        git clone https://github.com/vapoursynth/vapoursynth -b R62 --depth 1
+        cd vapoursynth
+        CC=i686-w64-mingw32-gcc-posix CXX=i686-w64-mingw32-g++-posix PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --host=i686-w64-mingw32 --disable-vsscript --disable-vspipe --disable-python-module --prefix=${{ github.workspace }}/lsw
+        make -j$(nproc)
+        make install -j$(nproc)
 
     - name: Clone L-SMASH Works
       run: |
@@ -147,6 +166,7 @@ jobs:
       with:
         name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-${{ matrix.cpu_config.cpu }}-AviSynth
         path: ${{ github.workspace }}/L-SMASH-Works/AviSynth/build/*.dll
+      
 
     - name: Build L-SMASH Works(AviUtl)
       run: |
