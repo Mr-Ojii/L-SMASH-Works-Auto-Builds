@@ -141,6 +141,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/vapoursynth/vapoursynth -b R62 --depth 1
         cd vapoursynth
+        ./autogen.sh
         CC=${{ matrix.cpu_config.cpu }}-w64-mingw32-gcc-posix CXX=${{ matrix.cpu_config.cpu }}-w64-mingw32-g++-posix PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32 --disable-vsscript --disable-vspipe --disable-python-module --prefix=${{ github.workspace }}/lsw
         make -j$(nproc)
         make install -j$(nproc)
