@@ -150,6 +150,15 @@ jobs:
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works.git
+        
+    - name: Set L-SMASH Works Revision Info
+      id: l-smash-works-rev
+      run: |
+        cd ${{ github.workspace }}/L-SMASH-Works
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+        SHA=`git rev-parse HEAD`
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
 
     # VFR-maniac版はmesonに対応していないため、一時的に除外
     - name: Build L-SMASH Works(AviSynth)
@@ -182,7 +191,7 @@ jobs:
         PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make
         mkdir build
-        mv libvslsmashsource.so.1 build/vslsmashsource.dll
+        mv libvslsmashsource.so.${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} build/vslsmashsource.dll
         
     - name: Upload artifact test(VapourSynth)
       uses: actions/upload-artifact@v3
@@ -267,16 +276,6 @@ jobs:
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
         SHA=`git rev-parse HEAD`
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
-        
-    - name: Set L-SMASH Works Revision Info
-      id: l-smash-works-rev
-      run: |
-        cd ${{ github.workspace }}/L-SMASH-Works
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
-        
         
     - name: Create BuildInfo File
       run: |
