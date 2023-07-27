@@ -101,7 +101,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/dwbuiten/obuparse.git --depth 1
         cd obuparse
-        ${{ matrix.cpu_config.cpu }}-w64-mingw32-gcc -c obuparse.c
+        ${{ matrix.cpu_config.cpu }}-w64-mingw32-gcc -O2 -c obuparse.c
         ${{ matrix.cpu_config.cpu }}-w64-mingw32-ar r libobuparse.a obuparse.o
         install obuparse.h ${{ github.workspace }}/lsw/include
         install libobuparse.a ${{ github.workspace }}/lsw/lib
