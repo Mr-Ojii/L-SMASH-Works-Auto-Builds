@@ -4,6 +4,7 @@
 # https://stackoverflow.com/questions/35772562/inlining-failed-in-call-to-always-inline-m128i-mm-cvtepu8-epi32-m128i-t
 # https://stackoverflow.com/questions/44962849/inlining-failed-in-call-to-always-inline-m256d-mm256-broadcast-sdconst-doub
 # https://stackoverflow.com/questions/54654290/error-inlining-failed-to-call-always-inline
+# https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 
 set(CMAKE_SYSTEM_NAME Windows)
 set(TOOLCHAIN_PREFIX x86_64-w64-mingw32)
@@ -21,4 +22,4 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=pentium4")
