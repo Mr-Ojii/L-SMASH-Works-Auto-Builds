@@ -24,7 +24,7 @@ jobs:
           - { cpu: x86_64, arch: x86_64, vpx_target: x86_64-win64-gcc }
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
       
@@ -371,7 +371,7 @@ jobs:
         author: [HolyWu, VFR-maniac, Mr-Ojii]
         l-smash_author: [l-smash, Mr-Ojii, vimeo]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - uses: actions/download-artifact@v3
       with:
@@ -413,7 +413,7 @@ jobs:
     needs: create-archive
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - uses: actions/download-artifact@v3
       with:
