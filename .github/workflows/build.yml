@@ -118,7 +118,7 @@ jobs:
     - name: Install AviSynthPlus
       run: |
         cd ${{ github.workspace }}
-        git clone https://github.com/AviSynth/AviSynthPlus.git --depth 1
+        git clone https://github.com/AviSynth/AviSynthPlus.git --depth 1 -b v3.7.3
         cd AviSynthPlus
         # Multiple definitions防止のため、勝手にちょっとだけパッチを当てる
         sed -i 's/MSVC/__MINGW32__/' avs_core/filters/AviSource/avi_source.cpp
