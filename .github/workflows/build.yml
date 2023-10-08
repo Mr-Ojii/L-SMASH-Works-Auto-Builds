@@ -439,7 +439,7 @@ jobs:
           fi
         done
         
-        gh release create "${TAG_NAME}" ${{ github.workspace }}/artifacts/*.zip -t "${RELEASE_NAME}" -n "AviUtl用には\`${AVIUTL_RECOMMEND_FILE}\`をダウンロードすることをお勧めします。\nまた、別バージョンからMr-Ojii版L-SMASH Worksに更新する場合、以下の記事をお読みください。\nhttps://scrapbox.io/Mr-Ojii/Mr-Ojii%E7%89%88_L-SMASH_Works%E3%81%AE%E6%9C%80%E6%96%B0%E7%89%88%E3%81%AB%E6%9B%B4%E6%96%B0%E3%81%99%E3%82%8B%E9%9A%9B%E3%81%AE%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A0%85"
+        gh release create "${TAG_NAME}" ${{ github.workspace }}/artifacts/*.zip -t "${RELEASE_NAME}" -n "AviUtl用には\`${AVIUTL_RECOMMEND_FILE}\`をダウンロードすることをお勧めします。" -n "また、別バージョンからMr-Ojii版L-SMASH Worksに更新する場合、以下の記事をお読みください。" -n "https://scrapbox.io/Mr-Ojii/Mr-Ojii%E7%89%88_L-SMASH_Works%E3%81%AE%E6%9C%80%E6%96%B0%E7%89%88%E3%81%AB%E6%9B%B4%E6%96%B0%E3%81%99%E3%82%8B%E9%9A%9B%E3%81%AE%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A0%85"
 
     - uses: dev-drprasad/delete-older-releases@v0.3.2
       with:
