@@ -425,7 +425,7 @@ jobs:
       run: |
         DATE_TIME=`date +'%Y-%m-%d-%H-%M-%S'`
         echo "DATE_TIME=${DATE_TIME}" >> $GITHUB_OUTPUT
-    # https://gist.github.com/superbrothers/af84a2f8af394a62352e06537a640746        
+          
     - name: Create a Release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
