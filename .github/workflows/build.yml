@@ -197,13 +197,19 @@ jobs:
         PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make
         mkdir build
-        mv libvslsmashsource.so.${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} build/vslsmashsource.dll
+        mv libvslsmashsource.so.${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} build/libvslsmashsource.dll
+
+    - name: Create Directory(VapourSynth)
+      run: |
+        cd ${{ github.workspace }}/L-SMASH-Works/VapourSynth
+        mkdir VapourSynth && mkdir VapourSynth/${{ matrix.cpu_config.user_arch }}
+        cp ${{ github.workspace }}/L-SMASH-Works/VapourSynth/build/libvslsmashsource.dll VapourSynth/${{ matrix.cpu_config.user_arch }}
         
     - name: Upload artifact test(VapourSynth)
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-${{ matrix.cpu_config.cpu }}-VapourSynth
-        path: ${{ github.workspace }}/L-SMASH-Works/VapourSynth/build/*.dll
+        name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-VapourSynth
+        path: ${{ github.workspace }}/L-SMASH-Works/VapourSynth/VapourSynth
 
     - name: Build L-SMASH Works(AviUtl)
       run: |
