@@ -170,20 +170,6 @@ jobs:
         PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig meson --cross-file=../../meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
         ninja -C build
 
-    - name: Create Directory(AviSynth)
-      if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
-      run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/AviSynth
-        mkdir AviSynth && mkdir AviSynth/${{ matrix.cpu_config.user_arch }}
-        cp ${{ github.workspace }}/L-SMASH-Works/AviSynth/build/*.dll AviSynth/${{ matrix.cpu_config.user_arch }}
-        
-    - name: Upload artifact test(AviSynth)
-      if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-AviSynth
-        path: ${{ github.workspace }}/L-SMASH-Works/AviSynth/AviSynth
-
     - name: Build L-SMASH Works(VapourSynth)(meson)
       if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
       run: |
@@ -200,17 +186,30 @@ jobs:
         mkdir build
         mv libvslsmashsource.so.${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} build/libvslsmashsource.dll
 
-    - name: Create Directory(VapourSynth)
+
+    - name: Create pub Directory
       run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/VapourSynth
-        mkdir VapourSynth && mkdir VapourSynth/${{ matrix.cpu_config.user_arch }}
-        cp ${{ github.workspace }}/L-SMASH-Works/VapourSynth/build/*.dll VapourSynth/${{ matrix.cpu_config.user_arch }}
+        cd ${{ github.workspace }}
+        mkdir pub
+
+    - name: Copy to pub Directory(AviSynth)
+      if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
+      run: |
+        cd ${{ github.workspace }}
+        mkdir pub/AviSynth && mkdir pub/AviSynth/${{ matrix.cpu_config.user_arch }}
+        cp L-SMASH-Works/AviSynth/build/*.dll pub/AviSynth/${{ matrix.cpu_config.user_arch }}
+
+    - name: Copy to pub Directory(VapourSynth)
+      run: |
+        cd ${{ github.workspace }}
+        mkdir pub/VapourSynth && mkdir pub/VapourSynth/${{ matrix.cpu_config.user_arch }}
+        cp L-SMASH-Works/VapourSynth/build/*.dll pub/VapourSynth/${{ matrix.cpu_config.user_arch }}
         
-    - name: Upload artifact test(VapourSynth)
+    - name: Upload artifact test(AviSynth/VapourSynth)
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-VapourSynth
-        path: ${{ github.workspace }}/L-SMASH-Works/VapourSynth/VapourSynth
+        name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-Synth
+        path: ${{ github.workspace }}/pub
 
     - name: Build L-SMASH Works(AviUtl)
       run: |
