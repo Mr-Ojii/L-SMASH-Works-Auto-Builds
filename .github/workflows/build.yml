@@ -20,8 +20,8 @@ jobs:
           - { author: Mr-Ojii, ffmpeg_version: 4.4 , ffmpeg_extra_flags: ""}
         l-smash_author: [l-smash, Mr-Ojii, vimeo]
         cpu_config:
-          - { cpu: i686, arch: x86, vpx_target: x86-win32-gcc }
-          - { cpu: x86_64, arch: x86_64, vpx_target: x86_64-win64-gcc }
+          - { cpu: i686, arch: x86, user_arch: x86, vpx_target: x86-win32-gcc }
+          - { cpu: x86_64, arch: x86_64, user_arch: x64, vpx_target: x86_64-win64-gcc }
     
     steps:
     - uses: actions/checkout@v4
@@ -170,12 +170,18 @@ jobs:
         PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig meson --cross-file=../../meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
         ninja -C build
 
+    - name: Create Directory(AviSynth)
+      run: |
+        cd ${{ github.workspace }}/L-SMASH-Works/AviSynth
+        mkdir AviSynth && mkdir AviSynth/${{ matrix.cpu_config.user_arch }}
+        cp ${{ github.workspace }}/L-SMASH-Works/AviSynth/build/*.dll AviSynth/${{ matrix.cpu_config.user_arch }}
+        
     - name: Upload artifact test(AviSynth)
       if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-${{ matrix.cpu_config.cpu }}-AviSynth
-        path: ${{ github.workspace }}/L-SMASH-Works/AviSynth/build/*.dll
+        name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-AviSynth
+        path: ${{ github.workspace }}/L-SMASH-Works/AviSynth/AviSynth
 
     - name: Build L-SMASH Works(VapourSynth)(meson)
       if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
