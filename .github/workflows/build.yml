@@ -174,7 +174,7 @@ jobs:
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviSynth
         mkdir AviSynth && mkdir AviSynth/${{ matrix.cpu_config.user_arch }}
-        cp ${{ github.workspace }}/L-SMASH-Works/AviSynth/build/*.dll AviSynth/${{ matrix.cpu_config.user_arch }}
+        cp ${{ github.workspace }}/L-SMASH-Works/AviSynth/build/liblsmashsource.dll AviSynth/${{ matrix.cpu_config.user_arch }}
         
     - name: Upload artifact test(AviSynth)
       if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
