@@ -49,6 +49,15 @@ jobs:
         CROSS_PREFIX=${{ matrix.cpu_config.cpu }}-w64-mingw32- ./configure --static --prefix=${{ github.workspace }}/lsw
         make -j$(nproc)
         make install -j$(nproc)
+
+    - name: Install Game Music Emu
+      run: |
+        cd ${{ github.workspace }}
+        git clone https://bitbucket.org/mpyne/game-music-emu.git --depth 1
+        cd game-music-emu
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake
+        cmake --build build -j $(nproc)
+        cmake --install build --prefix ${{ github.workspace }}/lsw
         
     - name: Install dav1d
       run: |
