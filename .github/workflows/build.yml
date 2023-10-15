@@ -15,7 +15,6 @@ jobs:
     strategy:
       matrix:
         lsw_config:
-          - { author: HolyWu, ffmpeg_version: 4.4, ffmpeg_extra_flags: "" }
           - { author: VFR-maniac, ffmpeg_version: 4.4, ffmpeg_extra_flags: "--enable-avresample" }
           - { author: Mr-Ojii, ffmpeg_version: 4.4 , ffmpeg_extra_flags: ""}
         l-smash_author: [l-smash, Mr-Ojii, vimeo]
@@ -389,7 +388,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        author: [HolyWu, VFR-maniac, Mr-Ojii]
+        author: [VFR-maniac, Mr-Ojii]
         l-smash_author: [l-smash, Mr-Ojii, vimeo]
     steps:
     - uses: actions/checkout@v4
