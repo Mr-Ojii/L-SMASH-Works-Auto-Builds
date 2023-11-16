@@ -54,9 +54,9 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://bitbucket.org/mpyne/game-music-emu.git --depth 1
         cd game-music-emu
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake
-        cmake --build build -j $(nproc)
-        cmake --install build --prefix ${{ github.workspace }}/lsw
+        # cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake
+        # cmake --build build -j $(nproc)
+        # cmake --install build --prefix ${{ github.workspace }}/lsw
         
     - name: Install dav1d
       run: |
