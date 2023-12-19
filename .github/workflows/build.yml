@@ -393,12 +393,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: ${{ matrix.author }}_${{ matrix.l-smash_author }}-x86
         path: x86
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: ${{ matrix.author }}_${{ matrix.l-smash_author }}-x64
         path: x64
@@ -447,7 +447,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         path: artifacts
     
