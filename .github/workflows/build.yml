@@ -359,7 +359,7 @@ jobs:
       uses: actions/upload-artifact@v3
       if: ${{ matrix.cpu_config.user_arch == 'x86' }}
       with:
-        name: ${{ matrix.lsw_config.author }}_${{ matrix.l-smash_author }}-${{ matrix.cpu_config.userarch }}
+        name: ${{ matrix.lsw_config.author }}_${{ matrix.l-smash_author }}-${{ matrix.cpu_config.user_arch }}
         path: |
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auf
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auc
