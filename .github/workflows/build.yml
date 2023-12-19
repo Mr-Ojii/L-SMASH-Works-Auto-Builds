@@ -403,7 +403,7 @@ jobs:
         name: ${{ matrix.author }}_${{ matrix.l-smash_author }}-x64
         path: x64
 
-    - uses: Copy Artifacts
+    - name: Copy Artifacts
       run: |
         cd ${{ github.workspace }}
         mkdir artifacts
