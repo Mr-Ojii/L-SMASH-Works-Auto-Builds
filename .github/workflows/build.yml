@@ -216,7 +216,7 @@ jobs:
     - name: Upload artifact test(AviSynth/VapourSynth)
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-Synth
+        name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-Synth-${{ matrix.cpu_config.user_arch }}
         path: ${{ github.workspace }}/pub
 
     - name: Build L-SMASH Works(AviUtl)
