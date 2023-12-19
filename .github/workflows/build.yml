@@ -359,7 +359,7 @@ jobs:
       uses: actions/upload-artifact@v3
       if: ${{ matrix.cpu_config.arch == 'x86' }}
       with:
-        name: ${{ matrix.lsw_config.author }}_${{ matrix.l-smash_author }}
+        name: ${{ matrix.lsw_config.author }}_${{ matrix.l-smash_author }}-${{ matrix.cpu_config.arch }}
         path: |
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auf
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auc
@@ -376,7 +376,7 @@ jobs:
       uses: actions/upload-artifact@v3
       if: ${{ matrix.cpu_config.arch == 'x86_64' }}
       with:
-        name: ${{ matrix.lsw_config.author }}_${{ matrix.l-smash_author }}
+        name: ${{ matrix.lsw_config.author }}_${{ matrix.l-smash_author }}-${{ matrix.cpu_config.arch }}
         path: |
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build-x64.txt
@@ -395,8 +395,20 @@ jobs:
     
     - uses: actions/download-artifact@v3
       with:
-        name: ${{ matrix.author }}_${{ matrix.l-smash_author }}
-        path: artifacts
+        name: ${{ matrix.author }}_${{ matrix.l-smash_author }}-x86
+        path: x86
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: ${{ matrix.author }}_${{ matrix.l-smash_author }}-x64
+        path: x64
+
+    - uses: Copy Artifacts
+      run: |
+        cd ${{ github.workspace }}
+        mkdir artifacts
+        cp -r x86/* artifacts
+        cp -r x64/* artifacts
         
     - name: Set RevInfo
       id: rev-info
@@ -424,7 +436,7 @@ jobs:
         
     - uses: actions/upload-artifact@v3
       with:
-        name: L-SMASH-Works
+        name: L-SMASH-Works-${{ matrix.author }}_${{ matrix.l-smash_author }}
         path: ${{ github.workspace }}/artifacts/*.zip
 
 
@@ -437,7 +449,6 @@ jobs:
     
     - uses: actions/download-artifact@v3
       with:
-        name: L-SMASH-Works
         path: artifacts
     
     - name: Get Date
@@ -451,6 +462,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd ${{ github.workspace }}/artifacts
+        mv ./*/*.zip ./
         RELEASE_NAME=Build-${{ steps.get_date.outputs.DATE_TIME }}
         TAG_NAME=build-${{ steps.get_date.outputs.DATE_TIME }}
         for asset in *.zip; do
