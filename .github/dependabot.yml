@@ -10,3 +10,9 @@ updates:
     schedule:
       interval: "weekly"
       timezone: "Asia/Tokyo"
+    # https://sue445.hatenablog.com/entry/2023/12/15/230043
+    groups:
+      artifact-actions:
+        patterns:
+          - "actions/upload-artifact"
+          - "actions/download-artifact"
