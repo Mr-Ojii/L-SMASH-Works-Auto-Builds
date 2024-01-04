@@ -433,7 +433,7 @@ jobs:
     - name: Create archive
       run: |
         cd ${{ github.workspace }}/artifacts
-        zip L-SMASH-Works_r${{ steps.rev-info.outputs.REV }}_${{ matrix.author }}_${{ matrix.l-smash_author }}_AviUtl -r *
+        zip L-SMASH-Works_r${{ steps.rev-info.outputs.REV }}_${{ matrix.author }}_${{ matrix.l-smash_author }} -r *
         
     - uses: actions/upload-artifact@v3
       with:
@@ -467,7 +467,7 @@ jobs:
         RELEASE_NAME=Build-${{ steps.get_date.outputs.DATE_TIME }}
         TAG_NAME=build-${{ steps.get_date.outputs.DATE_TIME }}
         for asset in *.zip; do
-          if [[ "$asset" =~ "Mr-Ojii_Mr-Ojii_AviUtl" ]]; then
+          if [[ "$asset" =~ "Mr-Ojii_Mr-Ojii" ]]; then
             AVIUTL_RECOMMEND_FILE=$asset
           fi
         done
