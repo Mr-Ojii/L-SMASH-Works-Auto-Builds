@@ -214,7 +214,7 @@ jobs:
         cp L-SMASH-Works/VapourSynth/build/*.dll pub/VapourSynth/${{ matrix.cpu_config.user_arch }}
         
     - name: Upload artifact test(AviSynth/VapourSynth)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-Synth-${{ matrix.cpu_config.user_arch }}
         path: ${{ github.workspace }}/pub
@@ -357,7 +357,7 @@ jobs:
         mv RevInfo.txt RevInfo64.txt
           
     - name: Upload artifact(x86)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: ${{ matrix.cpu_config.user_arch == 'x86' }}
       with:
         name: ${{ matrix.lsw_config.author }}_${{ matrix.l-smash_author }}-${{ matrix.cpu_config.user_arch }}
@@ -374,7 +374,7 @@ jobs:
           
           
     - name: Upload artifact(x64)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: ${{ matrix.cpu_config.user_arch == 'x64' }}
       with:
         name: ${{ matrix.lsw_config.author }}_${{ matrix.l-smash_author }}-${{ matrix.cpu_config.user_arch }}
@@ -394,12 +394,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: ${{ matrix.author }}_${{ matrix.l-smash_author }}-x86
         path: x86
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: ${{ matrix.author }}_${{ matrix.l-smash_author }}-x64
         path: x64
@@ -435,7 +435,7 @@ jobs:
         cd ${{ github.workspace }}/artifacts
         zip L-SMASH-Works_r${{ steps.rev-info.outputs.REV }}_${{ matrix.author }}_${{ matrix.l-smash_author }} -r *
         
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: L-SMASH-Works-${{ matrix.author }}_${{ matrix.l-smash_author }}
         path: ${{ github.workspace }}/artifacts/*.zip
@@ -448,7 +448,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         path: artifacts
     
