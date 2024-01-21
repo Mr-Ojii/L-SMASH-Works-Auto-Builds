@@ -99,7 +99,15 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/FFmpeg/FFmpeg.git -b release/${{ matrix.lsw_config.ffmpeg_version }}
         cd FFmpeg
-        git cherry-pick 07bcedc232feeb9e30336624f4e9977d47ac43bc
+        
+        # FFmpegが5.0以降かどうかでcherry-pickをするか判定
+        # ShellScriptは小数点を使えないので一応余裕をもって4桁4桁にする 4.4 は 00040004 になる。
+        FFVER=$(echo "${{ matrix.lsw_config.ffmpeg_ver }}" | awk -F. '{printf "%04d%04d", $1, $2}')
+        # 4桁4桁で判定する 00050000より小さい場合
+        if [ "${FFVER}" -lt "00050000" ]; then
+          git cherry-pick 07bcedc232feeb9e30336624f4e9977d47ac43bc
+        fi
+        
         PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --enable-version3 ${{ matrix.lsw_config.ffmpeg_extra_flags }} --disable-hwaccels --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="-lpthread" --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --cpu=${{ matrix.cpu_config.cpu }} --target-os=mingw32 --arch=${{ matrix.cpu_config.arch }} --prefix=${{ github.workspace }}/lsw --enable-libdav1d --enable-libvpx --enable-libmfx
         make -j$(nproc)
         make install -j$(nproc)
