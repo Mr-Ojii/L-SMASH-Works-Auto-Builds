@@ -308,35 +308,35 @@ jobs:
     - name: Create BuildInfo File
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works
-        echo "L-SMASH-Works-Auto-Builds r${{ steps.workflow-rev.outputs.REV_LIST_COUNT }}" >> "AviUtl/About-this-build.txt"
-        echo "https://github.com/Mr-Ojii/L-SMASH-Works-Auto-Builds" >> "AviUtl/About-this-build.txt"
-        echo "" >> "AviUtl/About-this-build.txt"
-        echo "${{ matrix.lsw_config.author }}/L-SMASH-Works r${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}" >> "AviUtl/About-this-build.txt"
-        echo "https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works" >> "AviUtl/About-this-build.txt"
-        echo "" >> "AviUtl/About-this-build.txt"
-        echo "FFmpeg ${{ matrix.lsw_config.ffmpeg_version }} (patched)" >> "AviUtl/About-this-build.txt"
-        echo "https://github.com/FFmpeg/FFmpeg" >> "AviUtl/About-this-build.txt"
-        echo "" >> "AviUtl/About-this-build.txt"
-        echo "${{ matrix.l-smash_author }}/L-SMASH r${{ steps.l-smash-rev.outputs.REV_LIST_COUNT }}" >> "AviUtl/About-this-build.txt"
-        echo "https://github.com/${{ matrix.l-smash_author }}/l-smash" >> "AviUtl/About-this-build.txt"
-        echo "" >> "AviUtl/About-this-build.txt"
-        echo "dav1d ${{ steps.dav1d-rev.outputs.REV_SHA }}" >> "AviUtl/About-this-build.txt" 
-        echo "https://github.com/videolan/dav1d" >> "AviUtl/About-this-build.txt"
-        echo "" >> "AviUtl/About-this-build.txt"
-        echo "libvpx ${{ steps.libvpx-rev.outputs.REV_SHA }}" >> "AviUtl/About-this-build.txt"
-        echo "https://github.com/webmproject/libvpx" >> "AviUtl/About-this-build.txt"
-        echo "" >> "AviUtl/About-this-build.txt"
-        echo "nv-codec-headers ${{ steps.nv-codec-headers-rev.outputs.REV_SHA }}" >> "AviUtl/About-this-build.txt"
-        echo "https://github.com/FFmpeg/nv-codec-headers" >> "AviUtl/About-this-build.txt"
-        echo "" >> "AviUtl/About-this-build.txt"
-        echo "mfx_dispatch ${{ steps.mfx_dispatch-rev.outputs.REV_SHA }}" >> "AviUtl/About-this-build.txt"
-        echo "https://github.com/lu-zero/mfx_dispatch" >> "AviUtl/About-this-build.txt"
-        echo "" >> "AviUtl/About-this-build.txt"
-        echo "zlib ${{ steps.zlib-rev.outputs.REV_SHA }}" >> "AviUtl/About-this-build.txt"
-        echo "https://github.com/madler/zlib" >> "AviUtl/About-this-build.txt"
-        echo "" >> "AviUtl/About-this-build.txt"
-        echo "obuparse ${{ steps.obuparse-rev.outputs.REV_SHA }}" >> "AviUtl/About-this-build.txt"
-        echo "https://github.com/dwbuiten/obuparse" >> "AviUtl/About-this-build.txt"
+        echo "L-SMASH-Works-Auto-Builds r${{ steps.workflow-rev.outputs.REV_LIST_COUNT }}
+        https://github.com/Mr-Ojii/L-SMASH-Works-Auto-Builds
+        
+        ${{ matrix.lsw_config.author }}/L-SMASH-Works r${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}
+        https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works
+        
+        FFmpeg ${{ matrix.lsw_config.ffmpeg_version }} (patched)
+        https://github.com/FFmpeg/FFmpeg
+        
+        ${{ matrix.l-smash_author }}/L-SMASH r${{ steps.l-smash-rev.outputs.REV_LIST_COUNT }}
+        https://github.com/${{ matrix.l-smash_author }}/l-smash
+        
+        dav1d ${{ steps.dav1d-rev.outputs.REV_SHA }} 
+        https://github.com/videolan/dav1d
+        
+        libvpx ${{ steps.libvpx-rev.outputs.REV_SHA }}
+        https://github.com/webmproject/libvpx
+        
+        nv-codec-headers ${{ steps.nv-codec-headers-rev.outputs.REV_SHA }}
+        https://github.com/FFmpeg/nv-codec-headers
+        
+        mfx_dispatch ${{ steps.mfx_dispatch-rev.outputs.REV_SHA }}
+        https://github.com/lu-zero/mfx_dispatch
+        
+        zlib ${{ steps.zlib-rev.outputs.REV_SHA }}
+        https://github.com/madler/zlib
+        
+        obuparse ${{ steps.obuparse-rev.outputs.REV_SHA }}
+        https://github.com/dwbuiten/obuparse" >> "AviUtl/About-this-build.txt"
     
     - name: Add License Files
       run: |
