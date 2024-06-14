@@ -398,7 +398,7 @@ jobs:
     strategy:
       matrix:
         author: [VFR-maniac, Mr-Ojii]
-        l-smash_author: [l-smash, Mr-Ojii, vimeo]
+        l-smash_author: [Mr-Ojii, vimeo]
     steps:
     - uses: actions/checkout@v4
     
