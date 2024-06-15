@@ -102,7 +102,7 @@ jobs:
         
         # FFmpegが5.0以降かどうかでcherry-pickをするか判定
         # ShellScriptは小数点を使えないので一応余裕をもって4桁4桁にする 4.4 は 00040004 になる。
-        FFVER=$(echo "${{ matrix.lsw_config.ffmpeg_ver }}" | awk -F. '{printf "%04d%04d", $1, $2}')
+        FFVER=$(echo "${{ matrix.lsw_config.ffmpeg_version }}" | awk -F. '{printf "%04d%04d", $1, $2}')
         # 4桁4桁で判定する 00050000より小さい場合
         if [ "${FFVER}" -lt "00050000" ]; then
           git cherry-pick 07bcedc232feeb9e30336624f4e9977d47ac43bc
