@@ -16,7 +16,7 @@ jobs:
       matrix:
         lsw_config:
           - { author: VFR-maniac, ffmpeg_version: 4.4, ffmpeg_patch: " (patched)", ffmpeg_extra_flags: "--enable-avresample" }
-          - { author: Mr-Ojii, ffmpeg_version: 4.4, ffmpeg_patch: " (patched)", ffmpeg_extra_flags: ""}
+          - { author: Mr-Ojii, ffmpeg_version: 5.0, ffmpeg_patch: "", ffmpeg_extra_flags: ""}
         l-smash_author: [Mr-Ojii, vimeo]
         cpu_config:
           - { cpu: i686, arch: x86, user_arch: x86, vpx_target: x86-win32-gcc }
