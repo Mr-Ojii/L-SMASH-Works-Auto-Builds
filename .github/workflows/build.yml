@@ -15,8 +15,8 @@ jobs:
     strategy:
       matrix:
         lsw_config:
-          - { author: VFR-maniac, ffmpeg_version: 4.4, ffmpeg_extra_flags: "--enable-avresample" }
-          - { author: Mr-Ojii, ffmpeg_version: 4.4 , ffmpeg_extra_flags: ""}
+          - { author: VFR-maniac, ffmpeg_version: 4.4, ffmpeg_patch: " (patched)", ffmpeg_extra_flags: "--enable-avresample" }
+          - { author: Mr-Ojii, ffmpeg_version: 4.4, ffmpeg_patch: " (patched)", ffmpeg_extra_flags: ""}
         l-smash_author: [Mr-Ojii, vimeo]
         cpu_config:
           - { cpu: i686, arch: x86, user_arch: x86, vpx_target: x86-win32-gcc }
@@ -99,12 +99,9 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/FFmpeg/FFmpeg.git -b release/${{ matrix.lsw_config.ffmpeg_version }}
         cd FFmpeg
-        
-        # FFmpegが5.0以降かどうかでcherry-pickをするか判定
-        # ShellScriptは小数点を使えないので一応余裕をもって4桁4桁にする 4.4 は 00040004 になる。
-        FFVER=$(echo "${{ matrix.lsw_config.ffmpeg_version }}" | awk -F. '{printf "%04d%04d", $1, $2}')
-        # 4桁4桁で判定する 00050000より小さい場合
-        if [ "${FFVER}" -lt "00050000" ]; then
+
+        # 文字が1文字以上存在すれば実行される
+        if [ "${{ matrix.lsw_config.ffmpeg_patch }}" ]; then
           git cherry-pick 07bcedc232feeb9e30336624f4e9977d47ac43bc
         fi
         
@@ -314,7 +311,7 @@ jobs:
         ${{ matrix.lsw_config.author }}/L-SMASH-Works r${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}
         https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works
         
-        FFmpeg ${{ matrix.lsw_config.ffmpeg_version }} (patched)
+        FFmpeg ${{ matrix.lsw_config.ffmpeg_version }}${{ matrix.lsw_config.ffmpeg_patch }}
         https://github.com/FFmpeg/FFmpeg
         
         ${{ matrix.l-smash_author }}/L-SMASH r${{ steps.l-smash-rev.outputs.REV_LIST_COUNT }}
