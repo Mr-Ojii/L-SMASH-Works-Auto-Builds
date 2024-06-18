@@ -1,6 +1,6 @@
 # Ref
 # https://mesonbuild.com/Cross-compilation.html
-# LDFLAGSってlink_argsのとこでいいんですかね
+# https://mesonbuild.com/Machine-files.html
 
 [binaries]
 c = 'i686-w64-mingw32-gcc'
@@ -11,7 +11,7 @@ windres = 'i686-w64-mingw32-windres'
 pkgconfig = 'i686-w64-mingw32-pkg-config'
 exe_wrapper = 'wine'
 
-[properties]
+[built-in options]
 c_link_args = ['-static-libgcc', '-static', '-lpthread']
 cpp_link_args = ['-static-libstdc++', '-static', '-lpthread']
 
