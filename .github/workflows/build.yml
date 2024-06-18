@@ -11,7 +11,7 @@ on:
 jobs:
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         lsw_config:
@@ -391,7 +391,7 @@ jobs:
   create-archive:
     name: Create archive
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         author: [VFR-maniac, Mr-Ojii]
@@ -449,7 +449,7 @@ jobs:
   create-release:
     name: Create release
     needs: create-archive
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
     
