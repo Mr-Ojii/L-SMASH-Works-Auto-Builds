@@ -96,6 +96,16 @@ jobs:
         ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32 --prefix=${{ github.workspace }}/lsw
         make -j$(nproc)
         make install -j$(nproc)
+
+    - name: Install libvpl
+      run: |
+        cd ${{ github.workspace }}
+        git clone https://github.com/intel/libvpl.git --depth 1
+        cd libvpl
+        mkdir build && cd build
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/cmake_toolchainfile/i686.cmake" -DBUILD_EXPERIMENTAL=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/lsw" ..
+        ninja
+        ninja install
       
     - name: Install FFmpeg
       run: |
@@ -286,6 +296,15 @@ jobs:
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
         SHA=`git rev-parse HEAD`
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+
+    - name: Set libvpl Revision Info
+      id: libvpl-rev
+      run: |
+        cd ${{ github.workspace }}/libvpl
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+        SHA=`git rev-parse HEAD`
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
     - name: Set obuparse Revision Info
       id: obuparse-rev
@@ -331,6 +350,9 @@ jobs:
         
         mfx_dispatch ${{ steps.mfx_dispatch-rev.outputs.REV_SHA }}
         https://github.com/lu-zero/mfx_dispatch
+
+        libvpl ${{ steps.libvpl-rev.outputs.REV_SHA }}
+        https://github.com/intel/libvpl
         
         zlib ${{ steps.zlib-rev.outputs.REV_SHA }}
         https://github.com/madler/zlib
