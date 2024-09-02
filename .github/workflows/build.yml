@@ -18,8 +18,8 @@ jobs:
     strategy:
       matrix:
         lsw_config:
-          - { author: VFR-maniac, ffmpeg_version: "4.4", ffmpeg_patch: " (patched)", ffmpeg_extra_flags: "--enable-avresample --enable-libmfx" }
-          - { author: Mr-Ojii, ffmpeg_version: "6.1", ffmpeg_patch: "", ffmpeg_extra_flags: "--enable-libvpl"}
+          - { author: VFR-maniac, ffmpeg_version: "4.4", ffmpeg_patch: " (patched)", ffmpeg_extra_flags: "--enable-avresample" }
+          - { author: Mr-Ojii, ffmpeg_version: "6.1", ffmpeg_patch: "", ffmpeg_extra_flags: ""}
         l-smash_author: [Mr-Ojii, vimeo]
         cpu_config:
           - { cpu: i686, arch: x86, user_arch: x86, vpx_target: x86-win32-gcc }
@@ -118,7 +118,7 @@ jobs:
           git cherry-pick 07bcedc232feeb9e30336624f4e9977d47ac43bc
         fi
         
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --enable-version3 --disable-hwaccels --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="-lpthread" --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --target-os=mingw32 --arch=${{ matrix.cpu_config.arch }} --prefix=${{ github.workspace }}/lsw --enable-libdav1d --enable-libvpx ${{ matrix.lsw_config.ffmpeg_extra_flags }}
+        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --enable-version3 ${{ matrix.lsw_config.ffmpeg_extra_flags }} --disable-hwaccels --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="-lpthread" --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --target-os=mingw32 --arch=${{ matrix.cpu_config.arch }} --prefix=${{ github.workspace }}/lsw --enable-libdav1d --enable-libvpx --enable-libmfx
         make -j$(nproc)
         make install -j$(nproc)
   
