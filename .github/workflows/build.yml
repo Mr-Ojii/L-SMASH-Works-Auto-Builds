@@ -74,7 +74,8 @@ jobs:
     - name: Install libvpx
       run: |
         cd ${{ github.workspace }}
-        git clone https://github.com/webmproject/libvpx.git --depth 1
+        git clone https://github.com/webmproject/libvpx.git --depth 100
+        git reset --hard 32de9c2becdd5d96d84d37be9f7fb9de43f24a4d
         mkdir libvpx/builds && cd libvpx/builds
         CROSS=${{ matrix.cpu_config.cpu }}-w64-mingw32- ../configure --target=${{ matrix.cpu_config.vpx_target }} --enable-vp9-highbitdepth --disable-docs --disable-tools --disable-examples --disable-webm-io --disable-vp8-encoder --disable-vp9-encoder --prefix=${{ github.workspace }}/lsw
         make -j$(nproc)
