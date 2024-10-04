@@ -291,6 +291,7 @@ jobs:
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
     - name: Set mfx_dispatch Revision Info
+      if: ${{ matrix.lsw_config.intel == 'mfx' }}
       id: mfx_dispatch-rev
       run: |
         cd ${{ github.workspace }}/mfx_dispatch
@@ -300,6 +301,7 @@ jobs:
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
 
     - name: Set libvpl Revision Info
+      if: ${{ matrix.lsw_config.intel == 'vpl' }}
       id: libvpl-rev
       run: |
         cd ${{ github.workspace }}/libvpl
@@ -350,17 +352,20 @@ jobs:
         nv-codec-headers ${{ steps.nv-codec-headers-rev.outputs.REV_SHA }}
         https://github.com/FFmpeg/nv-codec-headers
         
-        mfx_dispatch ${{ steps.mfx_dispatch-rev.outputs.REV_SHA }}
-        https://github.com/lu-zero/mfx_dispatch
-
-        libvpl ${{ steps.libvpl-rev.outputs.REV_SHA }}
-        https://github.com/intel/libvpl
-        
         zlib ${{ steps.zlib-rev.outputs.REV_SHA }}
         https://github.com/madler/zlib
         
         obuparse ${{ steps.obuparse-rev.outputs.REV_SHA }}
-        https://github.com/dwbuiten/obuparse" >> "AviUtl/About-this-build.txt"
+        https://github.com/dwbuiten/obuparse
+        " >> "AviUtl/About-this-build.txt"
+        
+        if [ "${{ matrix.lsw_config.intel }}" == "mfx" ]; then
+          echo "mfx_dispatch ${{ steps.mfx_dispatch-rev.outputs.REV_SHA }}
+          https://github.com/lu-zero/mfx_dispatch" >> "AviUtl/About-this-build.txt"
+        else
+          echo "libvpl ${{ steps.libvpl-rev.outputs.REV_SHA }}
+          https://github.com/intel/libvpl" >> "AviUtl/About-this-build.txt"
+        fi
     
     - name: Add License Files
       run: |
@@ -370,7 +375,11 @@ jobs:
         cp ${{ github.workspace }}/l-smash/LICENSE L-SMASH.txt
         cp ${{ github.workspace }}/FFmpeg/COPYING.LGPLv3 FFmpeg.txt
         cp ${{ github.workspace }}/libvpx/LICENSE libvpx.txt
-        cp ${{ github.workspace }}/mfx_dispatch/LICENSE mfx_dispatch.txt
+        if [ "${{ matrix.lsw_config.intel }}" == "mfx" ]; then
+          cp ${{ github.workspace }}/mfx_dispatch/LICENSE mfx_dispatch.txt
+        else
+          cp ${{ github.workspace }}/libvpl/LICENSE libvpl.txt
+        fi
         echo "[InternetShortcut]" > zlib.url
         echo "URL=https://zlib.net/zlib_license.html" >> zlib.url
         cp ${{ github.workspace }}/obuparse/LICENSE obuparse.txt
