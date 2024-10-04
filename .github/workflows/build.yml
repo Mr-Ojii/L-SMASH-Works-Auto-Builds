@@ -88,7 +88,7 @@ jobs:
         sudo make install -j$(nproc)
         
     - name: Install mfx_dispatch
-      if: ${{ matrix.lsw_config.intel == "mfx" }}
+      if: ${{ matrix.lsw_config.intel == 'mfx' }}
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/lu-zero/mfx_dispatch.git --depth 1
@@ -99,7 +99,7 @@ jobs:
         make install -j$(nproc)
 
     - name: Install libvpl
-      if: ${{ matrix.lsw_config.intel == "vpl" }}
+      if: ${{ matrix.lsw_config.intel == 'vpl' }}
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/intel/libvpl.git --depth 1
