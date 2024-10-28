@@ -508,7 +508,7 @@ jobs:
         RELEASE_NAME=Build-${{ steps.get_date.outputs.DATE_TIME }}
         TAG_NAME=build-${{ steps.get_date.outputs.DATE_TIME }}
         for asset in *.zip; do
-          if [[ "$asset" =~ "Mr-Ojii_Mr-Ojii" ]]; then
+          if [[ "$asset" =~ "Mr-Ojii_vimeo" ]]; then
             AVIUTL_RECOMMEND_FILE=$asset
           fi
         done
