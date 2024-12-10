@@ -170,7 +170,7 @@ jobs:
           git cherry-pick 07bcedc232feeb9e30336624f4e9977d47ac43bc
         fi
         
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --enable-version3 --disable-hwaccels --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="-lpthread" --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --target-os=mingw32 --arch=${{ matrix.cpu_config.arch }} --prefix=${{ github.workspace }}/lsw --enable-libdav1d --enable-libvpx --enable-lib${{ matrix.lsw_config.intel }} ${{ matrix.lsw_config.ffmpeg_extra_flags }}
+        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --enable-version3 --disable-hwaccels --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="-lpthread" --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --target-os=mingw32 --arch=${{ matrix.cpu_config.arch }} --prefix=${{ github.workspace }}/lsw --enable-libdav1d --enable-libvpx --enable-libgme --enable-lib${{ matrix.lsw_config.intel }} ${{ matrix.lsw_config.ffmpeg_extra_flags }}
         make -j$(nproc)
         make install -j$(nproc)
   
@@ -307,6 +307,8 @@ jobs:
         
         obuparse ${{ steps.obuparse-rev.outputs.REV_SHA }}
         https://github.com/dwbuiten/obuparse
+
+        game-music-emu ${{ steps.game-music-emu-rev.outputs.REV_SHA }}
         " >> "AviUtl/About-this-build.txt"
         
         if [ "${{ matrix.lsw_config.intel }}" == "mfx" ]; then
@@ -333,6 +335,7 @@ jobs:
         echo "[InternetShortcut]" > zlib.url
         echo "URL=https://zlib.net/zlib_license.html" >> zlib.url
         cp ${{ github.workspace }}/obuparse/LICENSE obuparse.txt
+        cp ${{ github.workspace }}/game-music-emu/license.txt game-music-emu.txt
 
     - name: Create RevInfo.txt
       run: |
