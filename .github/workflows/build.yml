@@ -309,6 +309,7 @@ jobs:
         https://github.com/dwbuiten/obuparse
 
         game-music-emu ${{ steps.game-music-emu-rev.outputs.REV_SHA }}
+        https://github.com/libgme/game-music-emu
         " >> "AviUtl/About-this-build.txt"
         
         if [ "${{ matrix.lsw_config.intel }}" == "mfx" ]; then
