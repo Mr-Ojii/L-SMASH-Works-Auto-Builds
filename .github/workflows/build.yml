@@ -424,7 +424,7 @@ jobs:
         cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/README.ja pub
         cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/LICENSE pub
         cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build.txt pub
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/Licenses pub
+        cp -r ${{ github.workspace }}/L-SMASH-Works/AviUtl/Licenses pub
         cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/RevInfo.txt pub
 
     - name: Copy to pub Directory(AviUtl, x64)
