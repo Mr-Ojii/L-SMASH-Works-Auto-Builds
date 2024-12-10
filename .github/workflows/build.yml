@@ -405,19 +405,41 @@ jobs:
         mkdir pub/VapourSynth && mkdir pub/VapourSynth/${{ matrix.cpu_config.user_arch }}
         cp L-SMASH-Works/VapourSynth/build/*.dll pub/VapourSynth/${{ matrix.cpu_config.user_arch }}
         
-    - name: Upload artifact test(AviSynth/VapourSynth)
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-Synth-${{ matrix.cpu_config.user_arch }}
-        path: ${{ github.workspace }}/pub
-        
     - name: Rename Files(x64)
-      if: ${{ matrix.cpu_config.arch == 'x86_64' }}
+      if: ${{ matrix.cpu_config.user_arch == 'x64' }}
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
         mv lwinput.aui lwinput64.aui
         mv About-this-build.txt About-this-build-x64.txt
         mv RevInfo.txt RevInfo64.txt
+
+    - name: Copy to pub Directory(AviUtl, x86)
+      if: ${{ matrix.cpu_config.user_arch == 'x86' }}
+      run: |
+        cd ${{ github.workspace }}
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auf pub
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auc pub
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui pub
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/README pub
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/README.ja pub
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/LICENSE pub
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build.txt pub
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/Licenses pub
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/RevInfo.txt pub
+
+    - name: Copy to pub Directory(AviUtl, x64)
+      if: ${{ matrix.cpu_config.user_arch == 'x64' }}
+      run: |
+        cd ${{ github.workspace }}
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui pub
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build-x64.txt pub
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/RevInfo64.txt pub
+        
+    - name: Upload artifact test(AviSynth/VapourSynth)
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-Synth-${{ matrix.cpu_config.user_arch }}
+        path: ${{ github.workspace }}/pub
           
     - name: Upload artifact(x86)
       uses: actions/upload-artifact@v4
@@ -434,7 +456,6 @@ jobs:
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build.txt
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/Licenses
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/RevInfo.txt
-          
           
     - name: Upload artifact(x64)
       uses: actions/upload-artifact@v4
