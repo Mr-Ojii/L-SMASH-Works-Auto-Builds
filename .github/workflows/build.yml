@@ -29,20 +29,24 @@ jobs:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-      
+
+    # ビルド用ソフトウェアのインストール
     - name: Install depend lib
       run: |
         sudo apt-get update -y
         sudo apt-get install -y autoconf cmake libtool nasm mingw-w64 meson ninja-build pkg-config
-      
+
+    # pkg-configまでcross-prefixがつくので、シンボリックリンクを貼る
     - name: Create pkg-config symbolic link
       run: sudo ln -s /usr/bin/pkg-config /usr/bin/${{ matrix.cpu_config.cpu }}-w64-mingw32-pkg-config
-      
+
+    # cherry-pickをする際に必要
     - name: Set git config
       run: |
         git config --global user.name Mr-Ojii
         git config --global user.email okaschan@gmail.com
-      
+
+    # ここから依存ライブラリのインストール
     - name: Install zlib
       run: |
         cd ${{ github.workspace }}
@@ -173,12 +177,15 @@ jobs:
         CC=${{ matrix.cpu_config.cpu }}-w64-mingw32-gcc-posix CXX=${{ matrix.cpu_config.cpu }}-w64-mingw32-g++-posix PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32 --disable-vsscript --disable-vspipe --disable-python-module --prefix=${{ github.workspace }}/lsw
         make -j$(nproc)
         make install -j$(nproc)
+    # ここまで依存ライブラリのインストール
 
     - name: Clone L-SMASH Works
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works.git
-        
+
+    # BuildInfo File 周り
+    # LSWのビルド時に使用するので、先に取得しておく必要がある
     - name: Set L-SMASH Works Revision Info
       id: l-smash-works-rev
       run: |
@@ -187,64 +194,7 @@ jobs:
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
         SHA=`git rev-parse HEAD`
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
-
-    # VFR-maniac版はmesonに対応していないため、一時的に除外
-    - name: Build L-SMASH Works(AviSynth)
-      if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
-      run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/AviSynth
-        # ヘッダファイルの階層問題より、AviSynthのヘッダを一つ上の階層にぶちまける
-        mv ${{ github.workspace }}/lsw/include/avisynth/* ${{ github.workspace }}/lsw/include
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig meson setup --cross-file=${{ github.workspace }}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
-        ninja -C build
-
-    - name: Build L-SMASH Works(VapourSynth)(meson)
-      if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
-      run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/VapourSynth
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig meson setup --cross-file=${{ github.workspace }}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
-        ninja -C build
         
-    - name: Build L-SMASH Works(VapourSynth)(makefile)
-      if: ${{ matrix.lsw_config.author == 'VFR-maniac' }}
-      run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/VapourSynth
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
-        make
-        mkdir build
-        mv libvslsmashsource.so.${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} build/libvslsmashsource.dll
-
-
-    - name: Create pub Directory
-      run: |
-        cd ${{ github.workspace }}
-        mkdir pub
-
-    - name: Copy to pub Directory(AviSynth)
-      if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
-      run: |
-        cd ${{ github.workspace }}
-        mkdir pub/AviSynth && mkdir pub/AviSynth/${{ matrix.cpu_config.user_arch }}
-        cp L-SMASH-Works/AviSynth/build/*.dll pub/AviSynth/${{ matrix.cpu_config.user_arch }}
-
-    - name: Copy to pub Directory(VapourSynth)
-      run: |
-        cd ${{ github.workspace }}
-        mkdir pub/VapourSynth && mkdir pub/VapourSynth/${{ matrix.cpu_config.user_arch }}
-        cp L-SMASH-Works/VapourSynth/build/*.dll pub/VapourSynth/${{ matrix.cpu_config.user_arch }}
-        
-    - name: Upload artifact test(AviSynth/VapourSynth)
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-Synth-${{ matrix.cpu_config.user_arch }}
-        path: ${{ github.workspace }}/pub
-
-    - name: Build L-SMASH Works(AviUtl)
-      run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
-        make -j$(nproc)
-
     - name: Set workflow Revision Info
       id: workflow-rev
       run: |
@@ -343,7 +293,7 @@ jobs:
         ${{ matrix.l-smash_author }}/L-SMASH r${{ steps.l-smash-rev.outputs.REV_LIST_COUNT }}
         https://github.com/${{ matrix.l-smash_author }}/l-smash
         
-        dav1d ${{ steps.dav1d-rev.outputs.REV_SHA }} 
+        dav1d ${{ steps.dav1d-rev.outputs.REV_SHA }}
         https://github.com/videolan/dav1d
         
         libvpx ${{ steps.libvpx-rev.outputs.REV_SHA }}
@@ -383,11 +333,69 @@ jobs:
         echo "[InternetShortcut]" > zlib.url
         echo "URL=https://zlib.net/zlib_license.html" >> zlib.url
         cp ${{ github.workspace }}/obuparse/LICENSE obuparse.txt
-        
+
     - name: Create RevInfo.txt
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
         echo ${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} > RevInfo.txt
+
+    # ここからLSWのビルド
+    # VFR-maniac版はmesonに対応していないため、一時的に除外
+    - name: Build L-SMASH Works(AviSynth)
+      if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
+      run: |
+        cd ${{ github.workspace }}/L-SMASH-Works/AviSynth
+        # ヘッダファイルの階層問題より、AviSynthのヘッダを一つ上の階層にぶちまける
+        mv ${{ github.workspace }}/lsw/include/avisynth/* ${{ github.workspace }}/lsw/include
+        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig meson setup --cross-file=${{ github.workspace }}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
+        ninja -C build
+
+    - name: Build L-SMASH Works(VapourSynth)(meson)
+      if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
+      run: |
+        cd ${{ github.workspace }}/L-SMASH-Works/VapourSynth
+        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig meson setup --cross-file=${{ github.workspace }}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
+        ninja -C build
+        
+    - name: Build L-SMASH Works(VapourSynth)(makefile)
+      if: ${{ matrix.lsw_config.author == 'VFR-maniac' }}
+      run: |
+        cd ${{ github.workspace }}/L-SMASH-Works/VapourSynth
+        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
+        make
+        mkdir build
+        mv libvslsmashsource.so.${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} build/libvslsmashsource.dll
+
+    - name: Build L-SMASH Works(AviUtl)
+      run: |
+        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
+        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
+        make -j$(nproc)
+
+    # Releaseのためのディレクトリ
+    - name: Create pub Directory
+      run: |
+        cd ${{ github.workspace }}
+        mkdir pub
+
+    - name: Copy to pub Directory(AviSynth)
+      if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
+      run: |
+        cd ${{ github.workspace }}
+        mkdir pub/AviSynth && mkdir pub/AviSynth/${{ matrix.cpu_config.user_arch }}
+        cp L-SMASH-Works/AviSynth/build/*.dll pub/AviSynth/${{ matrix.cpu_config.user_arch }}
+
+    - name: Copy to pub Directory(VapourSynth)
+      run: |
+        cd ${{ github.workspace }}
+        mkdir pub/VapourSynth && mkdir pub/VapourSynth/${{ matrix.cpu_config.user_arch }}
+        cp L-SMASH-Works/VapourSynth/build/*.dll pub/VapourSynth/${{ matrix.cpu_config.user_arch }}
+        
+    - name: Upload artifact test(AviSynth/VapourSynth)
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-Synth-${{ matrix.cpu_config.user_arch }}
+        path: ${{ github.workspace }}/pub
         
     - name: Rename Files(x64)
       if: ${{ matrix.cpu_config.arch == 'x86_64' }}
@@ -423,7 +431,9 @@ jobs:
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build-x64.txt
           ${{ github.workspace }}/L-SMASH-Works/AviUtl/RevInfo64.txt
-        
+
+
+  # x86とx64のファイルをまとめて1つのzipにするための処理
   create-archive:
     name: Create archive
     needs: build
@@ -481,7 +491,7 @@ jobs:
         name: L-SMASH-Works-${{ matrix.author }}_${{ matrix.l-smash_author }}
         path: ${{ github.workspace }}/artifacts/*.zip
 
-
+  # Releaseをするための処理
   create-release:
     name: Create release
     needs: create-archive
