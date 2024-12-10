@@ -48,6 +48,7 @@ jobs:
 
     # ここから依存ライブラリのインストール
     - name: Install zlib
+      id: zlib-rev
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/madler/zlib.git --depth 1
@@ -55,8 +56,14 @@ jobs:
         CROSS_PREFIX=${{ matrix.cpu_config.cpu }}-w64-mingw32- ./configure --static --prefix=${{ github.workspace }}/lsw
         make -j$(nproc)
         make install -j$(nproc)
+        
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+        SHA=`git rev-parse HEAD`
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
 
     - name: Install Game Music Emu
+      id: game-music-emu-rev
       run: |
         cd ${{ github.workspace }}
         git clone https://bitbucket.org/mpyne/game-music-emu.git --depth 1
@@ -65,7 +72,13 @@ jobs:
         # cmake --build build -j $(nproc)
         # cmake --install build --prefix ${{ github.workspace }}/lsw
         
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+        SHA=`git rev-parse HEAD`
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+        
     - name: Install dav1d
+      id: dav1d-rev
       run: |
         cd ${{ github.workspace }}
         git clone https://code.videolan.org/videolan/dav1d.git --depth 1
@@ -74,8 +87,14 @@ jobs:
         meson setup --cross-file=../package/crossfiles/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson --buildtype release --default-library=static -Denable_tests=false --prefix=${{ github.workspace }}/lsw ..
         ninja
         ninja install
+        
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+        SHA=`git rev-parse HEAD`
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
     
     - name: Install libvpx
+      id: libvpx-rev
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/webmproject/libvpx.git --depth 1
@@ -84,15 +103,27 @@ jobs:
         make -j$(nproc)
         make install -j$(nproc)
         
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+        SHA=`git rev-parse HEAD`
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+        
     - name: Install nv-codec-headers
+      id: nv-codec-headers-rev
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/FFmpeg/nv-codec-headers.git --depth 1
         cd nv-codec-headers
         sudo make install -j$(nproc)
         
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+        SHA=`git rev-parse HEAD`
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+        
     - name: Install mfx_dispatch
       if: ${{ matrix.lsw_config.intel == 'mfx' }}
+      id: mfx_dispatch-rev
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/lu-zero/mfx_dispatch.git --depth 1
@@ -101,9 +132,15 @@ jobs:
         ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32 --prefix=${{ github.workspace }}/lsw
         make -j$(nproc)
         make install -j$(nproc)
+        
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+        SHA=`git rev-parse HEAD`
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
 
     - name: Install libvpl
       if: ${{ matrix.lsw_config.intel == 'vpl' }}
+      id: libvpl-rev
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/intel/libvpl.git --depth 1
@@ -112,6 +149,11 @@ jobs:
         cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake" -DBUILD_EXPERIMENTAL=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/lsw" ..
         ninja
         ninja install
+        
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+        SHA=`git rev-parse HEAD`
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
       
     - name: Install FFmpeg
       run: |
@@ -129,6 +171,7 @@ jobs:
         make install -j$(nproc)
   
     - name: Install obuparse
+      id: obuparse-rev
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/dwbuiten/obuparse.git --depth 1
@@ -138,7 +181,13 @@ jobs:
         install obuparse.h ${{ github.workspace }}/lsw/include
         install libobuparse.a ${{ github.workspace }}/lsw/lib
         
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+        SHA=`git rev-parse HEAD`
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+        
     - name: Install L-SMASH
+      id: l-smash-rev
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/${{ matrix.l-smash_author }}/l-smash.git
@@ -146,8 +195,14 @@ jobs:
         ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I${{ github.workspace }}/lsw/include --extra-ldflags=-L${{ github.workspace }}/lsw/lib --prefix=${{ github.workspace }}/lsw
         make lib -j$(nproc)
         make install-lib -j$(nproc)
+        
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+        SHA=`git rev-parse HEAD`
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
 
     - name: Install AviSynthPlus
+      id: avisynthplus-rev
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/AviSynth/AviSynthPlus.git --depth 1 -b v3.7.3
@@ -158,7 +213,13 @@ jobs:
         cmake --build build -j $(nproc)
         cmake --install build --prefix ${{ github.workspace }}/lsw
         
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+        SHA=`git rev-parse HEAD`
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+        
     - name: Install zimg
+      id: zimg-rev
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/sekrit-twc/zimg -b v3.0 --depth 1
@@ -168,7 +229,13 @@ jobs:
         make -j$(nproc)
         make install -j$(nproc)
         
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+        SHA=`git rev-parse HEAD`
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+        
     - name: Install VapourSynth
+      id: vapoursynth-rev
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/vapoursynth/vapoursynth --depth 1
@@ -177,102 +244,31 @@ jobs:
         CC=${{ matrix.cpu_config.cpu }}-w64-mingw32-gcc-posix CXX=${{ matrix.cpu_config.cpu }}-w64-mingw32-g++-posix PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32 --disable-vsscript --disable-vspipe --disable-python-module --prefix=${{ github.workspace }}/lsw
         make -j$(nproc)
         make install -j$(nproc)
-    # ここまで依存ライブラリのインストール
-
-    - name: Clone L-SMASH Works
-      run: |
-        cd ${{ github.workspace }}
-        git clone https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works.git
-
-    # BuildInfo File 周り
-    # LSWのビルド時に使用するので、先に取得しておく必要がある
-    - name: Set L-SMASH Works Revision Info
-      id: l-smash-works-rev
-      run: |
-        cd ${{ github.workspace }}/L-SMASH-Works
+        
         REVCOUNT=`git rev-list --count HEAD`
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
         SHA=`git rev-parse HEAD`
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+    # ここまで依存ライブラリのインストール
+
+    - name: Clone L-SMASH Works
+      id: l-smash-works-rev
+      run: |
+        cd ${{ github.workspace }}
+        git clone https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works.git
         
+        cd L-SMASH-Works
+        REVCOUNT=`git rev-list --count HEAD`
+        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+        SHA=`git rev-parse HEAD`
+        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+
+    # BuildInfo File 周り
+    # LSWのビルド時に使用するので、先に取得しておく必要がある
     - name: Set workflow Revision Info
       id: workflow-rev
       run: |
         cd ${{ github.workspace }}
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
-              
-    - name: Set zlib Revision Info
-      id: zlib-rev
-      run: |
-        cd ${{ github.workspace }}/zlib
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
-        
-    - name: Set dav1d Revision Info
-      id: dav1d-rev
-      run: |
-        cd ${{ github.workspace }}/dav1d
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
-        
-    - name: Set libvpx Revision Info
-      id: libvpx-rev
-      run: |
-        cd ${{ github.workspace }}/libvpx
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
-        
-    - name: Set nv-codec-headers Revision Info
-      id: nv-codec-headers-rev
-      run: |
-        cd ${{ github.workspace }}/nv-codec-headers
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
-        
-    - name: Set mfx_dispatch Revision Info
-      if: ${{ matrix.lsw_config.intel == 'mfx' }}
-      id: mfx_dispatch-rev
-      run: |
-        cd ${{ github.workspace }}/mfx_dispatch
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
-
-    - name: Set libvpl Revision Info
-      if: ${{ matrix.lsw_config.intel == 'vpl' }}
-      id: libvpl-rev
-      run: |
-        cd ${{ github.workspace }}/libvpl
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
-        
-    - name: Set obuparse Revision Info
-      id: obuparse-rev
-      run: |
-        cd ${{ github.workspace }}/obuparse
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
-        
-    - name: Set L-SMASH Revision Info
-      id: l-smash-rev
-      run: |
-        cd ${{ github.workspace }}/l-smash
         REVCOUNT=`git rev-list --count HEAD`
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
         SHA=`git rev-parse HEAD`
