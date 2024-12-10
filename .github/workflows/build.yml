@@ -78,6 +78,9 @@ jobs:
         cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/lsw -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake
         cmake --build build -j $(nproc)
         cmake --install build --prefix ${{ github.workspace }}/lsw
+        
+        rm -rf build
+        
         # Static (LSWはStaticをビルドしなければエラーとなる)
         cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/lsw -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake
         cmake --build build -j $(nproc)
