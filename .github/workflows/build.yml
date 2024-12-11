@@ -361,14 +361,14 @@ jobs:
         cd ${{ github.workspace }}/L-SMASH-Works/AviSynth
         # ヘッダファイルの階層問題より、AviSynthのヘッダを一つ上の階層にぶちまける
         mv ${{ github.workspace }}/lsw/include/avisynth/* ${{ github.workspace }}/lsw/include
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig meson setup --cross-file=${{ github.workspace }}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
+        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig meson setup --prefer-static --cross-file=${{ github.workspace }}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
         ninja -C build
 
     - name: Build L-SMASH Works(VapourSynth)(meson)
       if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/VapourSynth
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig meson setup --cross-file=${{ github.workspace }}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
+        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig meson setup --prefer-static --cross-file=${{ github.workspace }}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
         ninja -C build
         
     - name: Build L-SMASH Works(VapourSynth)(makefile)
