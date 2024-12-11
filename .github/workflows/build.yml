@@ -435,37 +435,11 @@ jobs:
         cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build-x64.txt pub
         cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/RevInfo64.txt pub
         
-    - name: Upload artifact test(AviSynth/VapourSynth)
+    - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-Synth-${{ matrix.cpu_config.user_arch }}
+        name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-${{ matrix.cpu_config.user_arch }}
         path: ${{ github.workspace }}/pub
-          
-    - name: Upload artifact(x86)
-      uses: actions/upload-artifact@v4
-      if: ${{ matrix.cpu_config.user_arch == 'x86' }}
-      with:
-        name: ${{ matrix.lsw_config.author }}_${{ matrix.l-smash_author }}-${{ matrix.cpu_config.user_arch }}
-        path: |
-          ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auf
-          ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auc
-          ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui
-          ${{ github.workspace }}/L-SMASH-Works/AviUtl/README
-          ${{ github.workspace }}/L-SMASH-Works/AviUtl/README.ja
-          ${{ github.workspace }}/L-SMASH-Works/AviUtl/LICENSE
-          ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build.txt
-          ${{ github.workspace }}/L-SMASH-Works/AviUtl/Licenses
-          ${{ github.workspace }}/L-SMASH-Works/AviUtl/RevInfo.txt
-          
-    - name: Upload artifact(x64)
-      uses: actions/upload-artifact@v4
-      if: ${{ matrix.cpu_config.user_arch == 'x64' }}
-      with:
-        name: ${{ matrix.lsw_config.author }}_${{ matrix.l-smash_author }}-${{ matrix.cpu_config.user_arch }}
-        path: |
-          ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui
-          ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build-x64.txt
-          ${{ github.workspace }}/L-SMASH-Works/AviUtl/RevInfo64.txt
 
 
   # x86とx64のファイルをまとめて1つのzipにするための処理
@@ -496,6 +470,18 @@ jobs:
         mkdir artifacts
         cp -r x86/* artifacts
         cp -r x64/* artifacts
+        
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-Test-${{ matrix.cpu_config.user_arch }}
+        path: ${{ github.workspace }}/artifacts
+
+    - name: Delete test files
+      run: |
+        cd ${{ github.workspace }}
+        rm -rf AviSynth
+        rm -rf VapourSynth
         
     - name: Set RevInfo
       id: rev-info
