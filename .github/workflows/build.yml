@@ -479,7 +479,7 @@ jobs:
 
     - name: Delete test files
       run: |
-        cd ${{ github.workspace }}
+        cd ${{ github.workspace }}/artifacts
         rm -rf AviSynth
         rm -rf VapourSynth
         
