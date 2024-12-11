@@ -474,7 +474,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.lsw_config.author }}_${{ matrix.l-smash_author }}_Test_${{ matrix.cpu_config.user_arch }}
+        name: ${{ matrix.author }}_${{ matrix.l-smash_author }}_Test
         path: ${{ github.workspace }}/artifacts
 
     - name: Delete test files
