@@ -438,7 +438,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-${{ matrix.cpu_config.user_arch }}
+        name: ${{ matrix.lsw_config.author }}_${{ matrix.l-smash_author }}_${{ matrix.cpu_config.user_arch }}
         path: ${{ github.workspace }}/pub
 
 
@@ -456,12 +456,12 @@ jobs:
     
     - uses: actions/download-artifact@v4
       with:
-        name: ${{ matrix.author }}_${{ matrix.l-smash_author }}-x86
+        name: ${{ matrix.author }}_${{ matrix.l-smash_author }}_x86
         path: x86
 
     - uses: actions/download-artifact@v4
       with:
-        name: ${{ matrix.author }}_${{ matrix.l-smash_author }}-x64
+        name: ${{ matrix.author }}_${{ matrix.l-smash_author }}_x64
         path: x64
 
     - name: Copy Artifacts
@@ -474,7 +474,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-Test-${{ matrix.cpu_config.user_arch }}
+        name: ${{ matrix.lsw_config.author }}_${{ matrix.l-smash_author }}_Test_${{ matrix.cpu_config.user_arch }}
         path: ${{ github.workspace }}/artifacts
 
     - name: Delete test files
