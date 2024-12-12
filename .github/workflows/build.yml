@@ -97,10 +97,9 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://code.videolan.org/videolan/dav1d.git --depth 1
         cd dav1d
-        mkdir build && cd build
-        meson setup --cross-file=../package/crossfiles/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson --buildtype release --default-library=static -Denable_tests=false --prefix=${{ github.workspace }}/lsw ..
-        ninja
-        ninja install
+        meson setup --cross-file=./package/crossfiles/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson --buildtype release --default-library=static -Denable_tests=false --prefix=${{ github.workspace }}/lsw build
+        ninja -C build
+        ninja install -C build
         
         REVCOUNT=`git rev-list --count HEAD`
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
@@ -159,10 +158,9 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/intel/libvpl.git --depth 1
         cd libvpl
-        mkdir build && cd build
-        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake" -DBUILD_EXPERIMENTAL=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/lsw" ..
-        ninja
-        ninja install
+        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake" -DBUILD_EXPERIMENTAL=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/lsw" .
+        cmake --build build -j$(nproc)
+        cmake --install build --prefix=${{ github.workspace }}/lsw
         
         REVCOUNT=`git rev-list --count HEAD`
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
