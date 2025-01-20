@@ -158,7 +158,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/intel/libvpl.git --depth 1
         cd libvpl
-        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake" -DBUILD_EXPERIMENTAL=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/lsw" .
+        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake" -DBUILD_EXPERIMENTAL=OFF -DBUILD_SHARED_LIBS=OFF -DCXX_LIB=-lstdc++ -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/lsw" .
         cmake --build build -j$(nproc)
         cmake --install build --prefix=${{ github.workspace }}/lsw
         
