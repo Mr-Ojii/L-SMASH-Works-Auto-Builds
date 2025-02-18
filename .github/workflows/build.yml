@@ -55,8 +55,9 @@ jobs:
       id: zlib-rev
       run: |
         cd ${{ github.workspace }}
-        git clone https://github.com/madler/zlib.git --depth 1
+        git clone https://github.com/madler/zlib.git --depth 10
         cd zlib
+        git checkout 8a844d434f0eef87d972ae6406b00968f7c52944
         CROSS_PREFIX=${{ matrix.cpu_config.cpu }}-w64-mingw32- ./configure --static --prefix=${{ github.workspace }}/lsw
         make -j$(nproc)
         make install -j$(nproc)
