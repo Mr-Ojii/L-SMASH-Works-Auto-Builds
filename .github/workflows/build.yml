@@ -322,11 +322,15 @@ jobs:
         " >> "AviUtl/About-this-build.txt"
         
         if [ "${{ matrix.lsw_config.intel }}" == "mfx" ]; then
-          echo "mfx_dispatch ${{ steps.mfx_dispatch-rev.outputs.REV_SHA }}
-          https://github.com/lu-zero/mfx_dispatch" >> "AviUtl/About-this-build.txt"
+
+        echo "mfx_dispatch ${{ steps.mfx_dispatch-rev.outputs.REV_SHA }}
+        https://github.com/lu-zero/mfx_dispatch" >> "AviUtl/About-this-build.txt"
+
         else
-          echo "libvpl ${{ steps.libvpl-rev.outputs.REV_SHA }}
-          https://github.com/intel/libvpl" >> "AviUtl/About-this-build.txt"
+
+        echo "libvpl ${{ steps.libvpl-rev.outputs.REV_SHA }}
+        https://github.com/intel/libvpl" >> "AviUtl/About-this-build.txt"
+
         fi
     
     - name: Add License Files
