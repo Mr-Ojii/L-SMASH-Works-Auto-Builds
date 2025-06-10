@@ -294,6 +294,7 @@ jobs:
       env: 
         MSYS2_PATH_TYPE: inherit
       id: vapoursynth-rev
+      shell: msys2 {0}
       run: |
         cd ${HOME}
         git clone https://github.com/vapoursynth/vapoursynth --depth 1
