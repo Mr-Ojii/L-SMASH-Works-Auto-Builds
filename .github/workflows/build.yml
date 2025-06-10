@@ -60,6 +60,7 @@ jobs:
 
     # cherry-pickをする際に必要
     - name: Set git config
+      shell: msys2 {0}
       run: |
         git config --global user.name Mr-Ojii
         git config --global user.email okaschan@gmail.com
@@ -67,6 +68,7 @@ jobs:
     # ここから依存ライブラリのインストール
     - name: Install zlib
       id: zlib-rev
+      shell: msys2 {0}
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/madler/zlib.git --depth 1
@@ -82,6 +84,7 @@ jobs:
 
     - name: Install Game Music Emu
       id: game-music-emu-rev
+      shell: msys2 {0}
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/libgme/game-music-emu.git --depth 1
@@ -107,6 +110,7 @@ jobs:
 
     - name: Install libvpx
       id: libvpx-rev
+      shell: msys2 {0}
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/webmproject/libvpx.git --depth 1
@@ -122,6 +126,7 @@ jobs:
         
     - name: Install dav1d
       id: dav1d-rev
+      shell: msys2 {0}
       run: |
         cd ${{ github.workspace }}
         git clone https://code.videolan.org/videolan/dav1d.git --depth 1
@@ -138,6 +143,7 @@ jobs:
         
     - name: Install nv-codec-headers
       id: nv-codec-headers-rev
+      shell: msys2 {0}
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/FFmpeg/nv-codec-headers.git --depth 1
@@ -152,6 +158,7 @@ jobs:
     - name: Install mfx_dispatch
       if: ${{ matrix.lsw_config.intel == 'mfx' }}
       id: mfx_dispatch-rev
+      shell: msys2 {0}
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/lu-zero/mfx_dispatch.git --depth 1
@@ -169,6 +176,7 @@ jobs:
     - name: Install libvpl
       if: ${{ matrix.lsw_config.intel == 'vpl' }}
       id: libvpl-rev
+      shell: msys2 {0}
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/intel/libvpl.git --depth 1
@@ -187,6 +195,7 @@ jobs:
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
       
     - name: Install FFmpeg
+      shell: msys2 {0}
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/FFmpeg/FFmpeg.git -b release/${{ matrix.lsw_config.ffmpeg_version }}
@@ -204,6 +213,7 @@ jobs:
   
     - name: Install obuparse
       id: obuparse-rev
+      shell: msys2 {0}
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/dwbuiten/obuparse.git --depth 1
@@ -220,6 +230,7 @@ jobs:
         
     - name: Install L-SMASH
       id: l-smash-rev
+      shell: msys2 {0}
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/${{ matrix.l-smash_author }}/l-smash.git
@@ -237,6 +248,7 @@ jobs:
       env: 
         MSYS2_PATH_TYPE: inherit
       id: avisynthplus-rev
+      shell: msys2 {0}
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/AviSynth/AviSynthPlus.git --depth 1 -b v3.7.3
@@ -256,6 +268,7 @@ jobs:
       env: 
         MSYS2_PATH_TYPE: inherit
       id: zimg-rev
+      shell: msys2 {0}
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/sekrit-twc/zimg -b v3.0 --depth 1
@@ -291,6 +304,7 @@ jobs:
 
     - name: Clone L-SMASH Works
       id: l-smash-works-rev
+      shell: msys2 {0}
       run: |
         cd ${{ github.workspace }}
         git clone https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works.git
@@ -390,6 +404,7 @@ jobs:
     - name: Build L-SMASH Works(AviSynth)
       env: 
         MSYS2_PATH_TYPE: inherit
+      shell: msys2 {0}
       if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviSynth
@@ -401,6 +416,7 @@ jobs:
     - name: Build L-SMASH Works(VapourSynth)(meson)
       env: 
         MSYS2_PATH_TYPE: inherit
+      shell: msys2 {0}
       if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/VapourSynth
@@ -410,6 +426,7 @@ jobs:
     - name: Build L-SMASH Works(VapourSynth)(makefile)
       env: 
         MSYS2_PATH_TYPE: inherit
+      shell: msys2 {0}
       if: ${{ matrix.lsw_config.author == 'VFR-maniac' }}
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/VapourSynth
@@ -419,6 +436,9 @@ jobs:
         mv libvslsmashsource.so.${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} build/libvslsmashsource.dll
 
     - name: Build L-SMASH Works(AviUtl)
+      env: 
+        MSYS2_PATH_TYPE: inherit
+      shell: msys2 {0}
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
         PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
