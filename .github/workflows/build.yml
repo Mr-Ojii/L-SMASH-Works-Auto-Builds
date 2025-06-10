@@ -185,9 +185,11 @@ jobs:
         cmake --build build --config Release -j$(nproc)
         cmake --install build --prefix=${HOME}/lsw
         # なぜかx86ディレクトリ内に展開されるため、一階層上に移動する
-        cp -r ${HOME}/lsw/lib/x86/* ${HOME}/lsw/lib/
-        rm -rf ${HOME}/lsw/lib/x86
-        sed -i -e 's#${pcfiledir}/..#${pcfiledir}#g' ${HOME}/lsw/lib/pkgconfig/vpl.pc
+        if [ "${{ matrix.cpu_config.arch }}" == "x86" ]; then
+          cp -r ${HOME}/lsw/lib/x86/* ${HOME}/lsw/lib/
+          rm -rf ${HOME}/lsw/lib/x86
+          sed -i -e 's#${pcfiledir}/..#${pcfiledir}#g' ${HOME}/lsw/lib/pkgconfig/vpl.pc
+        fi
 
         REVCOUNT=`git rev-list --count HEAD`
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
