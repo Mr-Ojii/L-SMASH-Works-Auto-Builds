@@ -244,27 +244,33 @@ jobs:
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
         SHA=`git rev-parse HEAD`
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+        
 
-    - name: Install AviSynthPlus
-      env: 
-        MSYS2_PATH_TYPE: inherit
-      id: avisynthplus-rev
+    - name: Clone L-SMASH Works
+      id: l-smash-works-rev
       shell: msys2 {0}
       run: |
         cd ${HOME}
-        git clone https://github.com/AviSynth/AviSynthPlus.git --depth 1 -b v3.7.3
-        cd AviSynthPlus
-        # Multiple definitions防止のため、勝手にちょっとだけパッチを当てる
-        sed -i 's/MSVC/__MINGW32__/' avs_core/filters/AviSource/avi_source.cpp
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_PLUGINS=OFF -DENABLE_INTEL_SIMD=OFF -DCMAKE_TOOLCHAIN_FILE=${HOME}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake
-        cmake --build build -j $(nproc)
-        cmake --install build --prefix ${HOME}/lsw
+        git clone https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works.git
         
+        cd L-SMASH-Works
         REVCOUNT=`git rev-list --count HEAD`
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
         SHA=`git rev-parse HEAD`
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
-        
+
+    # とりあえず、ここまででAviUtl用のビルドに必要な依存ライブラリをインストールは完了しているため、ビルド確認用にここにおく
+    - name: Build L-SMASH Works(AviUtl)
+      env: 
+        MSYS2_PATH_TYPE: inherit
+      shell: msys2 {0}
+      run: |
+        cd ${HOME}/L-SMASH-Works/AviUtl
+        PKG_CONFIG_PATH=${HOME}/lsw/lib/pkgconfig ./configure --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
+        make -j$(nproc)
+
+
+    # 次にVapourSynth用のビルド
     - name: Install zimg
       env: 
         MSYS2_PATH_TYPE: inherit
@@ -301,23 +307,19 @@ jobs:
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
         SHA=`git rev-parse HEAD`
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
-    # ここまで依存ライブラリのインストール
 
-    - name: Clone L-SMASH Works
-      id: l-smash-works-rev
+    - name: Build L-SMASH Works(VapourSynth)(meson)
+      env: 
+        MSYS2_PATH_TYPE: inherit
       shell: msys2 {0}
       run: |
-        cd ${HOME}
-        git clone https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works.git
-        
-        cd L-SMASH-Works
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+        cd ${HOME}/L-SMASH-Works/VapourSynth
+        PKG_CONFIG_PATH=${HOME}/lsw/lib/pkgconfig meson setup --prefer-static --cross-file=${HOME}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
+        ninja -C build
+
+
 
     # BuildInfo File 周り
-    # LSWのビルド時に使用するので、先に取得しておく必要がある
     - name: Set workflow Revision Info
       env: 
         MSYS2_PATH_TYPE: inherit
@@ -401,49 +403,39 @@ jobs:
         echo ${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} > RevInfo.txt
 
     # ここからLSWのビルド
-    # VFR-maniac版はmesonに対応していないため、一時的に除外
-    - name: Build L-SMASH Works(AviSynth)
-      env: 
-        MSYS2_PATH_TYPE: inherit
-      shell: msys2 {0}
-      if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
-      run: |
-        cd ${HOME}/L-SMASH-Works/AviSynth
-        # ヘッダファイルの階層問題より、AviSynthのヘッダを一つ上の階層にぶちまける
-        mv ${HOME}/lsw/include/avisynth/* ${HOME}/lsw/include
-        PKG_CONFIG_PATH=${HOME}/lsw/lib/pkgconfig meson setup --prefer-static --cross-file=${HOME}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
-        ninja -C build
+    # まずAviUtl用のビルドを行う
 
-    - name: Build L-SMASH Works(VapourSynth)(meson)
-      env: 
-        MSYS2_PATH_TYPE: inherit
-      shell: msys2 {0}
-      if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
-      run: |
-        cd ${HOME}/L-SMASH-Works/VapourSynth
-        PKG_CONFIG_PATH=${HOME}/lsw/lib/pkgconfig meson setup --prefer-static --cross-file=${HOME}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
-        ninja -C build
+    # - name: Install AviSynthPlus
+    #   env: 
+    #     MSYS2_PATH_TYPE: inherit
+    #   id: avisynthplus-rev
+    #   shell: msys2 {0}
+    #   run: |
+    #     cd ${HOME}
+    #     git clone https://github.com/AviSynth/AviSynthPlus.git --depth 1 -b v3.7.3
+    #     cd AviSynthPlus
+    #     # Multiple definitions防止のため、勝手にちょっとだけパッチを当てる
+    #     sed -i 's/MSVC/__MINGW32__/' avs_core/filters/AviSource/avi_source.cpp
+    #     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_PLUGINS=OFF -DENABLE_INTEL_SIMD=OFF -DCMAKE_TOOLCHAIN_FILE=${HOME}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake
+    #     cmake --build build -j $(nproc)
+    #     cmake --install build --prefix ${HOME}/lsw
         
-    - name: Build L-SMASH Works(VapourSynth)(makefile)
-      env: 
-        MSYS2_PATH_TYPE: inherit
-      shell: msys2 {0}
-      if: ${{ matrix.lsw_config.author == 'VFR-maniac' }}
-      run: |
-        cd ${HOME}/L-SMASH-Works/VapourSynth
-        PKG_CONFIG_PATH=${HOME}/lsw/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
-        make
-        mkdir build
-        mv libvslsmashsource.so.${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} build/libvslsmashsource.dll
+    #     REVCOUNT=`git rev-list --count HEAD`
+    #     echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+    #     SHA=`git rev-parse HEAD`
+    #     echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
 
-    - name: Build L-SMASH Works(AviUtl)
-      env: 
-        MSYS2_PATH_TYPE: inherit
-      shell: msys2 {0}
-      run: |
-        cd ${HOME}/L-SMASH-Works/AviUtl
-        PKG_CONFIG_PATH=${HOME}/lsw/lib/pkgconfig ./configure --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
-        make -j$(nproc)
+    # - name: Build L-SMASH Works(AviSynth)
+    #   env: 
+    #     MSYS2_PATH_TYPE: inherit
+    #   shell: msys2 {0}
+    #   run: |
+    #     cd ${HOME}/L-SMASH-Works/AviSynth
+    #     # ヘッダファイルの階層問題より、AviSynthのヘッダを一つ上の階層にぶちまける
+    #     mv ${HOME}/lsw/include/avisynth/* ${HOME}/lsw/include
+    #     PKG_CONFIG_PATH=${HOME}/lsw/lib/pkgconfig meson setup --prefer-static --cross-file=${HOME}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
+    #     ninja -C build
+
 
     # Releaseのためのディレクトリ
     - name: Create pub Directory
@@ -451,18 +443,17 @@ jobs:
         cd ${{ github.workspace }}
         mkdir pub
 
-    - name: Copy to pub Directory(AviSynth)
-      if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
-      run: |
-        cd ${{ github.workspace }}
-        mkdir pub/AviSynth && mkdir pub/AviSynth/${{ matrix.cpu_config.user_arch }}
-        cp L-SMASH-Works/AviSynth/build/*.dll pub/AviSynth/${{ matrix.cpu_config.user_arch }}
+    # - name: Copy to pub Directory(AviSynth)
+    #   run: |
+    #     cd ${{ github.workspace }}
+    #     mkdir pub/AviSynth && mkdir pub/AviSynth/${{ matrix.cpu_config.user_arch }}
+    #     cp L-SMASH-Works/AviSynth/build/*.dll pub/AviSynth/${{ matrix.cpu_config.user_arch }}
 
-    - name: Copy to pub Directory(VapourSynth)
-      run: |
-        cd ${{ github.workspace }}
-        mkdir pub/VapourSynth && mkdir pub/VapourSynth/${{ matrix.cpu_config.user_arch }}
-        cp L-SMASH-Works/VapourSynth/build/*.dll pub/VapourSynth/${{ matrix.cpu_config.user_arch }}
+    # - name: Copy to pub Directory(VapourSynth)
+    #   run: |
+    #     cd ${{ github.workspace }}
+    #     mkdir pub/VapourSynth && mkdir pub/VapourSynth/${{ matrix.cpu_config.user_arch }}
+    #     cp L-SMASH-Works/VapourSynth/build/*.dll pub/VapourSynth/${{ matrix.cpu_config.user_arch }}
         
     - name: Rename Files(x64)
       if: ${{ matrix.cpu_config.user_arch == 'x64' }}
@@ -508,7 +499,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        author: [VFR-maniac, Mr-Ojii]
+        author: [Mr-Ojii]
         l-smash_author: [Mr-Ojii, vimeo]
     steps:
     - uses: actions/checkout@v4
