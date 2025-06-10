@@ -315,7 +315,7 @@ jobs:
       shell: msys2 {0}
       run: |
         cd ${HOME}/L-SMASH-Works/VapourSynth
-        PKG_CONFIG_PATH=${HOME}/lsw/lib/pkgconfig meson setup --prefer-static --cross-file=${HOME}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
+        PKG_CONFIG_PATH=${HOME}/lsw/lib/pkgconfig meson setup --prefer-static build
         ninja -C build
 
 
@@ -417,7 +417,7 @@ jobs:
     #     cd AviSynthPlus
     #     # Multiple definitions防止のため、勝手にちょっとだけパッチを当てる
     #     sed -i 's/MSVC/__MINGW32__/' avs_core/filters/AviSource/avi_source.cpp
-    #     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_PLUGINS=OFF -DENABLE_INTEL_SIMD=OFF -DCMAKE_TOOLCHAIN_FILE=${HOME}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake
+    #     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_PLUGINS=OFF -DENABLE_INTEL_SIMD=OFF
     #     cmake --build build -j $(nproc)
     #     cmake --install build --prefix ${HOME}/lsw
         
@@ -434,7 +434,7 @@ jobs:
     #     cd ${HOME}/L-SMASH-Works/AviSynth
     #     # ヘッダファイルの階層問題より、AviSynthのヘッダを一つ上の階層にぶちまける
     #     mv ${HOME}/lsw/include/avisynth/* ${HOME}/lsw/include
-    #     PKG_CONFIG_PATH=${HOME}/lsw/lib/pkgconfig meson setup --prefer-static --cross-file=${HOME}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
+    #     PKG_CONFIG_PATH=${HOME}/lsw/lib/pkgconfig meson setup --prefer-static build
     #     ninja -C build
 
 
