@@ -70,12 +70,12 @@ jobs:
       id: zlib-rev
       shell: msys2 {0}
       run: |
-        cd ${{ github.workspace }}
+        cd ${HOME}
         git clone https://github.com/madler/zlib.git --depth 1
         cd zlib
-        cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/lsw
+        cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${HOME}/lsw
         cmake --build build --config Release -j$(nproc)
-        cmake --install build --prefix=${{ github.workspace }}/lsw
+        cmake --install build --prefix=${HOME}/lsw
         
         REVCOUNT=`git rev-list --count HEAD`
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
@@ -86,22 +86,22 @@ jobs:
       id: game-music-emu-rev
       shell: msys2 {0}
       run: |
-        cd ${{ github.workspace }}
+        cd ${HOME}
         git clone https://github.com/libgme/game-music-emu.git --depth 1
         cd game-music-emu
         
         # SharedとStaticの2回、ビルドとインストールを行う
         # Shared (FFmpegはSharedをビルドしないければエラーとなる)
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/lsw -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=ON
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${HOME}/lsw -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=ON
         cmake --build build --config Release -j $(nproc)
-        cmake --install build --prefix ${{ github.workspace }}/lsw
+        cmake --install build --prefix ${HOME}/lsw
         
         rm -rf build
         
         # Static (LSWはStaticをビルドしなければエラーとなる)
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/lsw -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=OFF
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${HOME}/lsw -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=OFF
         cmake --build build --config Release -j $(nproc)
-        cmake --install build --prefix ${{ github.workspace }}/lsw
+        cmake --install build --prefix ${HOME}/lsw
         
         REVCOUNT=`git rev-list --count HEAD`
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
@@ -112,10 +112,10 @@ jobs:
       id: libvpx-rev
       shell: msys2 {0}
       run: |
-        cd ${{ github.workspace }}
+        cd ${HOME}
         git clone https://github.com/webmproject/libvpx.git --depth 1
         mkdir libvpx/builds && cd libvpx/builds
-        ../configure --target=${{ matrix.cpu_config.vpx_target }} --enable-vp9-highbitdepth --disable-docs --disable-tools --disable-examples --disable-webm-io --disable-vp8-encoder --disable-vp9-encoder --prefix=${{ github.workspace }}/lsw
+        ../configure --target=${{ matrix.cpu_config.vpx_target }} --enable-vp9-highbitdepth --disable-docs --disable-tools --disable-examples --disable-webm-io --disable-vp8-encoder --disable-vp9-encoder --prefix=${HOME}/lsw
         make -j$(nproc)
         make install -j$(nproc)
         
@@ -128,10 +128,10 @@ jobs:
       id: dav1d-rev
       shell: msys2 {0}
       run: |
-        cd ${{ github.workspace }}
+        cd ${HOME}
         git clone https://code.videolan.org/videolan/dav1d.git --depth 1
         cd dav1d
-        meson setup --buildtype release --default-library=static -Denable_tests=false --prefix=${{ github.workspace }}/lsw build
+        meson setup --buildtype release --default-library=static -Denable_tests=false --prefix=${HOME}/lsw build
         ninja -C build
         ninja install -C build
         
@@ -145,7 +145,7 @@ jobs:
       id: nv-codec-headers-rev
       shell: msys2 {0}
       run: |
-        cd ${{ github.workspace }}
+        cd ${HOME}
         git clone https://github.com/FFmpeg/nv-codec-headers.git --depth 1
         cd nv-codec-headers
         make install -j$(nproc)
@@ -160,11 +160,11 @@ jobs:
       id: mfx_dispatch-rev
       shell: msys2 {0}
       run: |
-        cd ${{ github.workspace }}
+        cd ${HOME}
         git clone https://github.com/lu-zero/mfx_dispatch.git --depth 1
         cd mfx_dispatch
         autoreconf -i
-        ./configure --prefix=${{ github.workspace }}/lsw
+        ./configure --prefix=${HOME}/lsw
         make -j$(nproc)
         make install -j$(nproc)
         
@@ -178,16 +178,16 @@ jobs:
       id: libvpl-rev
       shell: msys2 {0}
       run: |
-        cd ${{ github.workspace }}
+        cd ${HOME}
         git clone https://github.com/intel/libvpl.git --depth 1
         cd libvpl
         cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_EXPERIMENTAL=OFF -DBUILD_SHARED_LIBS=OFF -DCXX_LIB=-lstdc++ -DCMAKE_INSTALL_PREFIX="${HOME}/lsw" .
         cmake --build build --config Release -j$(nproc)
-        cmake --install build --prefix=${{ github.workspace }}/lsw
+        cmake --install build --prefix=${HOME}/lsw
         # なぜかx86ディレクトリ内に展開されるため、一階層上に移動する
-        cp -r ${{ github.workspace }}/lsw/lib/x86/* ${{ github.workspace }}/lsw/lib/
-        rm -rf ${{ github.workspace }}/lsw/lib/x86
-        sed -i -e 's#${pcfiledir}/..#${pcfiledir}#g' ${{ github.workspace }}/lsw/lib/pkgconfig/vpl.pc
+        cp -r ${HOME}/lsw/lib/x86/* ${HOME}/lsw/lib/
+        rm -rf ${HOME}/lsw/lib/x86
+        sed -i -e 's#${pcfiledir}/..#${pcfiledir}#g' ${HOME}/lsw/lib/pkgconfig/vpl.pc
 
         REVCOUNT=`git rev-list --count HEAD`
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
@@ -197,7 +197,7 @@ jobs:
     - name: Install FFmpeg
       shell: msys2 {0}
       run: |
-        cd ${{ github.workspace }}
+        cd ${HOME}
         git clone https://github.com/FFmpeg/FFmpeg.git -b release/${{ matrix.lsw_config.ffmpeg_version }}
         cd FFmpeg
 
@@ -206,7 +206,7 @@ jobs:
           git cherry-pick 07bcedc232feeb9e30336624f4e9977d47ac43bc
         fi
         
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --enable-version3 --disable-hwaccels --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="-lpthread" --target-os=mingw32 --arch=${{ matrix.cpu_config.arch }} --prefix=${{ github.workspace }}/lsw --enable-libdav1d --enable-libvpx ${{ matrix.lsw_config.ffmpeg_extra_flags }}
+        PKG_CONFIG_PATH=${HOME}/lsw/lib/pkgconfig ./configure --enable-version3 --disable-hwaccels --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="-lpthread" --target-os=mingw32 --arch=${{ matrix.cpu_config.arch }} --prefix=${HOME}/lsw --enable-libdav1d --enable-libvpx ${{ matrix.lsw_config.ffmpeg_extra_flags }}
         # --enable-libgme --enable-lib${{ matrix.lsw_config.intel }}
         make -j$(nproc)
         make install -j$(nproc)
@@ -215,13 +215,13 @@ jobs:
       id: obuparse-rev
       shell: msys2 {0}
       run: |
-        cd ${{ github.workspace }}
+        cd ${HOME}
         git clone https://github.com/dwbuiten/obuparse.git --depth 1
         cd obuparse
         gcc -O2 -c obuparse.c
         ar r libobuparse.a obuparse.o
-        install obuparse.h ${{ github.workspace }}/lsw/include
-        install libobuparse.a ${{ github.workspace }}/lsw/lib
+        install obuparse.h ${HOME}/lsw/include
+        install libobuparse.a ${HOME}/lsw/lib
         
         REVCOUNT=`git rev-list --count HEAD`
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
@@ -232,10 +232,10 @@ jobs:
       id: l-smash-rev
       shell: msys2 {0}
       run: |
-        cd ${{ github.workspace }}
+        cd ${HOME}
         git clone https://github.com/${{ matrix.l-smash_author }}/l-smash.git
         cd l-smash
-        ./configure --extra-cflags=-I${{ github.workspace }}/lsw/include --extra-ldflags=-L${{ github.workspace }}/lsw/lib --prefix=${{ github.workspace }}/lsw
+        ./configure --extra-cflags=-I${HOME}/lsw/include --extra-ldflags=-L${HOME}/lsw/lib --prefix=${HOME}/lsw
         make lib -j$(nproc)
         make install-lib -j$(nproc)
         
@@ -250,14 +250,14 @@ jobs:
       id: avisynthplus-rev
       shell: msys2 {0}
       run: |
-        cd ${{ github.workspace }}
+        cd ${HOME}
         git clone https://github.com/AviSynth/AviSynthPlus.git --depth 1 -b v3.7.3
         cd AviSynthPlus
         # Multiple definitions防止のため、勝手にちょっとだけパッチを当てる
         sed -i 's/MSVC/__MINGW32__/' avs_core/filters/AviSource/avi_source.cpp
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_PLUGINS=OFF -DENABLE_INTEL_SIMD=OFF -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_PLUGINS=OFF -DENABLE_INTEL_SIMD=OFF -DCMAKE_TOOLCHAIN_FILE=${HOME}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake
         cmake --build build -j $(nproc)
-        cmake --install build --prefix ${{ github.workspace }}/lsw
+        cmake --install build --prefix ${HOME}/lsw
         
         REVCOUNT=`git rev-list --count HEAD`
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
@@ -270,11 +270,11 @@ jobs:
       id: zimg-rev
       shell: msys2 {0}
       run: |
-        cd ${{ github.workspace }}
+        cd ${HOME}
         git clone https://github.com/sekrit-twc/zimg -b v3.0 --depth 1
         cd zimg
         ./autogen.sh
-        ./configure --prefix=${{ github.workspace }}/lsw
+        ./configure --prefix=${HOME}/lsw
         make -j$(nproc)
         make install -j$(nproc)
         
@@ -288,11 +288,11 @@ jobs:
         MSYS2_PATH_TYPE: inherit
       id: vapoursynth-rev
       run: |
-        cd ${{ github.workspace }}
+        cd ${HOME}
         git clone https://github.com/vapoursynth/vapoursynth --depth 1
         cd vapoursynth
         ./autogen.sh
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32 --disable-vsscript --disable-vspipe --disable-python-module --prefix=${{ github.workspace }}/lsw
+        PKG_CONFIG_PATH=${HOME}/lsw/lib/pkgconfig ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32 --disable-vsscript --disable-vspipe --disable-python-module --prefix=${HOME}/lsw
         make -j$(nproc)
         make install -j$(nproc)
         
@@ -306,7 +306,7 @@ jobs:
       id: l-smash-works-rev
       shell: msys2 {0}
       run: |
-        cd ${{ github.workspace }}
+        cd ${HOME}
         git clone https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works.git
         
         cd L-SMASH-Works
@@ -407,10 +407,10 @@ jobs:
       shell: msys2 {0}
       if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
       run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/AviSynth
+        cd ${HOME}/L-SMASH-Works/AviSynth
         # ヘッダファイルの階層問題より、AviSynthのヘッダを一つ上の階層にぶちまける
-        mv ${{ github.workspace }}/lsw/include/avisynth/* ${{ github.workspace }}/lsw/include
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig meson setup --prefer-static --cross-file=${{ github.workspace }}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
+        mv ${HOME}/lsw/include/avisynth/* ${HOME}/lsw/include
+        PKG_CONFIG_PATH=${HOME}/lsw/lib/pkgconfig meson setup --prefer-static --cross-file=${HOME}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
         ninja -C build
 
     - name: Build L-SMASH Works(VapourSynth)(meson)
@@ -419,8 +419,8 @@ jobs:
       shell: msys2 {0}
       if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
       run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/VapourSynth
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig meson setup --prefer-static --cross-file=${{ github.workspace }}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
+        cd ${HOME}/L-SMASH-Works/VapourSynth
+        PKG_CONFIG_PATH=${HOME}/lsw/lib/pkgconfig meson setup --prefer-static --cross-file=${HOME}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
         ninja -C build
         
     - name: Build L-SMASH Works(VapourSynth)(makefile)
@@ -429,8 +429,8 @@ jobs:
       shell: msys2 {0}
       if: ${{ matrix.lsw_config.author == 'VFR-maniac' }}
       run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/VapourSynth
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
+        cd ${HOME}/L-SMASH-Works/VapourSynth
+        PKG_CONFIG_PATH=${HOME}/lsw/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make
         mkdir build
         mv libvslsmashsource.so.${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} build/libvslsmashsource.dll
@@ -440,8 +440,8 @@ jobs:
         MSYS2_PATH_TYPE: inherit
       shell: msys2 {0}
       run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
+        cd ${HOME}/L-SMASH-Works/AviUtl
+        PKG_CONFIG_PATH=${HOME}/lsw/lib/pkgconfig ./configure --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make -j$(nproc)
 
     # Releaseのためのディレクトリ
