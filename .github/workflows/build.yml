@@ -22,7 +22,6 @@ jobs:
     strategy:
       matrix:
         lsw_config:
-          - { author: VFR-maniac, ffmpeg_version: "4.4", ffmpeg_patch: " (patched)", intel: "mfx", ffmpeg_extra_flags: "--enable-avresample" }
           - { author: Mr-Ojii, ffmpeg_version: "7.1", ffmpeg_patch: "", intel: "vpl", ffmpeg_extra_flags: ""}
         l-smash_author: [Mr-Ojii, vimeo]
         cpu_config:
