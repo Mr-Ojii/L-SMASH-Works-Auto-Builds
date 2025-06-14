@@ -318,7 +318,7 @@ jobs:
         echo "------------ PATH1 ------------"
         echo ${PATH}
         echo "-------------------------------"
-        export PATH=$(echo ${PATH} | sed -i "s#/${{ matrix.cpu_config.sys }}/bin:/usr/local/bin:/usr/bin:/bin:##g")
+        export PATH=$(echo ${PATH} | sed "s#/${{ matrix.cpu_config.sys }}/bin:/usr/local/bin:/usr/bin:/bin:##g")
         echo "------------ PATH2 ------------"
         echo ${PATH}
         echo "-------------------------------"
