@@ -315,13 +315,8 @@ jobs:
       shell: msys2 {0}
       run: |
         cd ${HOME}/L-SMASH-Works/VapourSynth
-        echo "------------ PATH1 ------------"
-        echo ${PATH}
-        echo "-------------------------------"
         export PATH=$(echo ${PATH} | sed "s#/${{ matrix.cpu_config.sys }}/bin:/usr/local/bin:/usr/bin:/bin:##g")
-        echo "------------ PATH2 ------------"
-        echo ${PATH}
-        echo "-------------------------------"
+        export PATH=${PATH}:/${{ matrix.cpu_config.sys }}/bin:/usr/local/bin:/usr/bin:/bin
         PKG_CONFIG_PATH=${HOME}/lsw/lib/pkgconfig meson setup --prefer-static build
         ninja -C build
 
