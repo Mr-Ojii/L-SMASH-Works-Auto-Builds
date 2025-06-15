@@ -310,8 +310,8 @@ jobs:
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
 
     - name: Build L-SMASH Works(VapourSynth)(meson)
-      env: 
-        MSYS2_PATH_TYPE: inherit
+      # env: 
+      #   MSYS2_PATH_TYPE: inherit
       shell: msys2 {0}
       run: |
         cd ${HOME}/L-SMASH-Works/VapourSynth
