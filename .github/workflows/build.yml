@@ -324,14 +324,12 @@ jobs:
 
     # BuildInfo File 周り
     - name: Set workflow Revision Info
-      env: 
-        MSYS2_PATH_TYPE: inherit
       id: workflow-rev
       run: |
         cd ${{ github.workspace }}
-        REVCOUNT=`git rev-list --count HEAD`
+        $REVCOUNT=`git rev-list --count HEAD`
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
+        $SHA=`git rev-parse HEAD`
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
     - name: Create BuildInfo File
