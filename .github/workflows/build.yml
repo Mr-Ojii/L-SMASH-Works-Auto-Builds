@@ -382,6 +382,16 @@ jobs:
         mkdir build
         mv libvslsmashsource.so.${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} build/libvslsmashsource.dll
 
+      
+    - name: Build L-SMASH Works(AviUtl Exedit2)
+      if: ${{ matrix.cpu_config.user_arch == 'x64' && matrix.lsw_config.author == 'Mr-Ojii' }}
+      run: |
+        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
+        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --aviutl2 --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
+        make -j$(nproc)
+        mv lwinput.aui lwinput.aui2
+        make distclean
+
     - name: Build L-SMASH Works(AviUtl)
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
@@ -395,15 +405,6 @@ jobs:
         mv lwinput.aui lwinput64.aui
         mv About-this-build.txt About-this-build-x64.txt
         mv RevInfo.txt RevInfo64.txt
-      
-    - name: Build L-SMASH Works(AviUtl Exedit2)
-      if: ${{ matrix.cpu_config.user_arch == 'x64' && matrix.lsw_config.author == 'Mr-Ojii' }}
-      run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
-        make distclean
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --aviutl2 --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
-        make -j$(nproc)
-        mv lwinput.aui lwinput.aui2
 
     # Releaseのためのディレクトリ
     - name: Create pub Directory
