@@ -388,6 +388,23 @@ jobs:
         PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make -j$(nproc)
 
+    - name: Rename Files(x64)
+      if: ${{ matrix.cpu_config.user_arch == 'x64' }}
+      run: |
+        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
+        mv lwinput.aui lwinput64.aui
+        mv About-this-build.txt About-this-build-x64.txt
+        mv RevInfo.txt RevInfo64.txt
+      
+    - name: Build L-SMASH Works(AviUtl Exedit2)
+      if: ${{ matrix.cpu_config.user_arch == 'x64' && matrix.lsw_config.author == 'Mr-Ojii' }}
+      run: |
+        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
+        make distclean
+        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --aviutl2 --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
+        make -j$(nproc)
+        mv lwinput.aui lwinput.aui2
+
     # Releaseのためのディレクトリ
     - name: Create pub Directory
       run: |
@@ -407,13 +424,6 @@ jobs:
         mkdir pub/VapourSynth && mkdir pub/VapourSynth/${{ matrix.cpu_config.user_arch }}
         cp L-SMASH-Works/VapourSynth/build/*.dll pub/VapourSynth/${{ matrix.cpu_config.user_arch }}
         
-    - name: Rename Files(x64)
-      if: ${{ matrix.cpu_config.user_arch == 'x64' }}
-      run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
-        mv lwinput.aui lwinput64.aui
-        mv About-this-build.txt About-this-build-x64.txt
-        mv RevInfo.txt RevInfo64.txt
 
     - name: Copy to pub Directory(AviUtl, x86)
       if: ${{ matrix.cpu_config.user_arch == 'x86' }}
@@ -436,6 +446,13 @@ jobs:
         cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui pub
         cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build-x64.txt pub
         cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/RevInfo64.txt pub
+
+    - name: Copy to pub Directory(AviUtl Exedit2)
+      if: ${{ matrix.cpu_config.user_arch == 'x64' && matrix.lsw_config.author == 'Mr-Ojii' }}
+      run: |
+        cd ${{ github.workspace }}
+        mkdir pub/AviUtl2
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/lwinput.aui2 pub/AviUtl2
         
     - name: Upload artifact
       uses: actions/upload-artifact@v4
