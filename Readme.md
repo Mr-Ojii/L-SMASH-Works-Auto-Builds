@@ -7,7 +7,7 @@ The L-SMASH library uses the [Mr-Ojii version](https://github.com/Mr-Ojii/l-smas
 
 As of 2024/07/09, only builds for the following are supported.
 - AviUtl
-- AviUtl ExEdit2 (Mr-Ojii version only)
+- AviUtl ExEdit2 (Mr-Ojii version LSW only)
 
 Translated by DeepL
 
@@ -16,6 +16,6 @@ Translated by DeepL
 
 L-SMASHのライブラリは[Mr-Ojii版](https://github.com/Mr-Ojii/l-smash.git)と[vimeo版](https://github.com/vimeo/l-smash.git)を使用しています。
 
-2025/07/09現在、以下のもののプラグインのビルドのみ対応しています。
+2025/07/09現在、以下のプラグインのビルドのみ対応しています。
 - AviUtl
-- AviUtl ExEdit2 (Mr-Ojii版のみ)
+- AviUtl ExEdit2 (Mr-Ojii版 LSW のみ)
