@@ -430,9 +430,10 @@ jobs:
       if: ${{ matrix.cpu_config.user_arch == 'x86' }}
       run: |
         cd ${{ github.workspace }}
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auf pub
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auc pub
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui pub
+        mkdir pub/AviUtl
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auf pub/AviUtl
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auc pub/AviUtl
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui pub/AviUtl
         cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/README pub
         cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/README.ja pub
         cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/LICENSE pub
@@ -444,7 +445,8 @@ jobs:
       if: ${{ matrix.cpu_config.user_arch == 'x64' }}
       run: |
         cd ${{ github.workspace }}
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui pub
+        mkdir pub/AviUtl
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui pub/AviUtl
         cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build-x64.txt pub
         cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/RevInfo64.txt pub
 
