@@ -22,7 +22,7 @@ L-SMASHのライブラリは[Mr-Ojii版](https://github.com/Mr-Ojii/l-smash.git)
 1. Releases ページより、おすすめとされている .zip をダウンロード
 2. zip ファイルを解凍
 3. zipを解凍したフォルダ内の `AviUtl` フォルダ内の `lwcolor.auc, lwdumper.auf, lwinput.aui, lwinput64.aui, lwmuxer.auf` を `<aviutl.exeのフォルダ>/plugins` に配置
-4. AviUtl を起動し、`ファイル`→`環境設定`→`入力プラグイン優先度の設定`に`L-SMASH Works File Reader`が追加されていることを確認してください。
+4. AviUtl を起動し、`ファイル`→`環境設定`→`入力プラグイン優先度の設定`に`L-SMASH Works File Reader`が追加されていることを確認
 5. 確認ができたら導入完了です。確認ができない場合、zip のダウンロード不良の可能性があるため、手順1からやり直してください。
 
 ### AviUtl ExEdit2 (Mr-Ojii版 LSW のみ)
@@ -31,6 +31,6 @@ L-SMASHのライブラリは[Mr-Ojii版](https://github.com/Mr-Ojii/l-smash.git)
 2. zip ファイルを解凍
 3. zipを解凍したフォルダ内の `AviUtl2` フォルダ内の `lwinput.aui2` を `C:\ProgramData\aviutl2\Plugin` に配置  
   ※「lwinput.aui**2**」 である必要があります。確認してください。
-4. AviUtl ExEdit2 を起動し、`設定`→`入力プラグインの設定`に`L-SMASH Works File Reader for AviUtl2`が追加されていることを確認してください。  
+4. AviUtl ExEdit2 を起動し、`設定`→`入力プラグインの設定`に`L-SMASH Works File Reader for AviUtl2`が追加されていることを確認  
   ※「L-SMASH Works File Reader **for AviUtl2**」 である必要があります。 `for AviUtl2` の表記がない場合、誤って無印版を導入しているため、正常に動作しない可能性があります。
 5. 確認ができたら導入完了です。確認ができない場合、zip のダウンロード不良の可能性があるため、手順1からやり直してください。
