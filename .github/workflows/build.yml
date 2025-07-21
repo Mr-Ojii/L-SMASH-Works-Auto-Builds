@@ -556,12 +556,14 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        cd ${{ github.workspace }}
+        RECOMMEND=$(cat recommend.txt)
         cd ${{ github.workspace }}/artifacts
         mv ./*/*.zip ./
         RELEASE_NAME=Build-${{ steps.get_date.outputs.DATE_TIME }}
         TAG_NAME=build-${{ steps.get_date.outputs.DATE_TIME }}
         for asset in *.zip; do
-          if [[ "$asset" =~ "Mr-Ojii_vimeo" ]]; then
+          if [[ "$asset" =~ "${RECOMMEND}" ]]; then
             AVIUTL_RECOMMEND_FILE=$asset
           fi
         done
