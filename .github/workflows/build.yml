@@ -432,8 +432,8 @@ jobs:
         cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auf pub/AviUtl
         cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auc pub/AviUtl
         cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui pub/AviUtl
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/README pub
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/README.ja pub
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/README pub/AviUtl
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/README.ja pub/AviUtl
         cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/LICENSE pub
         cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build.txt pub
         cp -r ${{ github.workspace }}/L-SMASH-Works/AviUtl/Licenses pub
@@ -454,6 +454,8 @@ jobs:
         cd ${{ github.workspace }}
         mkdir pub/AviUtl2
         cp ${{ github.workspace }}/L-SMASH-Works/AviUtl2/lwinput.aui2 pub/AviUtl2
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl2/README pub/AviUtl2
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl2/README.ja pub/AviUtl2
         
     - name: Upload artifact
       uses: actions/upload-artifact@v4
