@@ -386,11 +386,9 @@ jobs:
     - name: Build L-SMASH Works(AviUtl Exedit2)
       if: ${{ matrix.cpu_config.user_arch == 'x64' && matrix.lsw_config.author == 'Mr-Ojii' }}
       run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --aviutl2 --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
+        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl2
+        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make -j$(nproc)
-        mv lwinput.aui lwinput.aui2
-        make distclean
 
     - name: Build L-SMASH Works(AviUtl)
       run: |
@@ -455,7 +453,7 @@ jobs:
       run: |
         cd ${{ github.workspace }}
         mkdir pub/AviUtl2
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/lwinput.aui2 pub/AviUtl2
+        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl2/lwinput.aui2 pub/AviUtl2
         
     - name: Upload artifact
       uses: actions/upload-artifact@v4
