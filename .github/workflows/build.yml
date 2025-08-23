@@ -18,12 +18,13 @@ jobs:
     env:
       CFLAGS: -O2
       CXXFLAGS: -O2
+      INSTALL_PREFIX: ${{ github.workspace }}/lsw
     runs-on: ubuntu-24.04
     strategy:
       matrix:
         lsw_config:
           - { author: VFR-maniac, ffmpeg_version: "4.4", ffmpeg_patch: " (patched)", intel: "mfx", ffmpeg_extra_flags: "--enable-avresample" }
-          - { author: Mr-Ojii, ffmpeg_version: "7.1", ffmpeg_patch: "", intel: "vpl", ffmpeg_extra_flags: ""}
+          - { author: Mr-Ojii, ffmpeg_version: "8.0", ffmpeg_patch: "", intel: "vpl", ffmpeg_extra_flags: ""}
         l-smash_author: [Mr-Ojii, vimeo]
         cpu_config:
           - { cpu: i686, arch: x86, user_arch: x86, vpx_target: x86-win32-gcc }
@@ -57,7 +58,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/madler/zlib.git --depth 1
         cd zlib
-        CROSS_PREFIX=${{ matrix.cpu_config.cpu }}-w64-mingw32- ./configure --static --prefix=${{ github.workspace }}/lsw
+        CROSS_PREFIX=${{ matrix.cpu_config.cpu }}-w64-mingw32- ./configure --static --prefix=${INSTALL_PREFIX}
         make -j$(nproc)
         make install -j$(nproc)
         
@@ -75,16 +76,16 @@ jobs:
         
         # SharedとStaticの2回、ビルドとインストールを行う
         # Shared (FFmpegはSharedをビルドしないければエラーとなる)
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/lsw -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake
         cmake --build build -j $(nproc)
-        cmake --install build --prefix ${{ github.workspace }}/lsw
+        cmake --install build --prefix ${INSTALL_PREFIX}
         
         rm -rf build
         
         # Static (LSWはStaticをビルドしなければエラーとなる)
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/lsw -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake
         cmake --build build -j $(nproc)
-        cmake --install build --prefix ${{ github.workspace }}/lsw
+        cmake --install build --prefix ${INSTALL_PREFIX}
         
         REVCOUNT=`git rev-list --count HEAD`
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
@@ -97,7 +98,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://code.videolan.org/videolan/dav1d.git --depth 1
         cd dav1d
-        meson setup --cross-file=./package/crossfiles/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson --buildtype release --default-library=static -Denable_tests=false --prefix=${{ github.workspace }}/lsw build
+        meson setup --cross-file=./package/crossfiles/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson --buildtype release --default-library=static -Denable_tests=false --prefix=${INSTALL_PREFIX} build
         ninja -C build
         ninja install -C build
         
@@ -112,7 +113,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/webmproject/libvpx.git --depth 1
         mkdir libvpx/builds && cd libvpx/builds
-        CROSS=${{ matrix.cpu_config.cpu }}-w64-mingw32- ../configure --target=${{ matrix.cpu_config.vpx_target }} --enable-vp9-highbitdepth --disable-docs --disable-tools --disable-examples --disable-webm-io --disable-vp8-encoder --disable-vp9-encoder --prefix=${{ github.workspace }}/lsw
+        CROSS=${{ matrix.cpu_config.cpu }}-w64-mingw32- ../configure --target=${{ matrix.cpu_config.vpx_target }} --enable-vp9-highbitdepth --disable-docs --disable-tools --disable-examples --disable-webm-io --disable-vp8-encoder --disable-vp9-encoder --prefix=${INSTALL_PREFIX}
         make -j$(nproc)
         make install -j$(nproc)
         
@@ -142,7 +143,7 @@ jobs:
         git clone https://github.com/lu-zero/mfx_dispatch.git --depth 1
         cd mfx_dispatch
         autoreconf -i
-        ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32 --prefix=${{ github.workspace }}/lsw
+        ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32 --prefix=${INSTALL_PREFIX}
         make -j$(nproc)
         make install -j$(nproc)
         
@@ -158,9 +159,9 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/intel/libvpl.git --depth 1
         cd libvpl
-        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake" -DBUILD_EXPERIMENTAL=OFF -DBUILD_SHARED_LIBS=OFF -DCXX_LIB=-lstdc++ -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/lsw" .
+        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake" -DBUILD_EXPERIMENTAL=OFF -DBUILD_SHARED_LIBS=OFF -DCXX_LIB=-lstdc++ -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" .
         cmake --build build -j$(nproc)
-        cmake --install build --prefix=${{ github.workspace }}/lsw
+        cmake --install build --prefix=${INSTALL_PREFIX}
         
         REVCOUNT=`git rev-list --count HEAD`
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
@@ -178,7 +179,7 @@ jobs:
           git cherry-pick 07bcedc232feeb9e30336624f4e9977d47ac43bc
         fi
         
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --enable-version3 --disable-hwaccels --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="-lpthread" --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --target-os=mingw32 --arch=${{ matrix.cpu_config.arch }} --prefix=${{ github.workspace }}/lsw --enable-libdav1d --enable-libvpx --enable-libgme --enable-lib${{ matrix.lsw_config.intel }} ${{ matrix.lsw_config.ffmpeg_extra_flags }}
+        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --enable-version3 --disable-hwaccels --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="-lpthread" --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --target-os=mingw32 --arch=${{ matrix.cpu_config.arch }} --prefix=${INSTALL_PREFIX} --enable-libdav1d --enable-libvpx --enable-libgme --enable-lib${{ matrix.lsw_config.intel }} ${{ matrix.lsw_config.ffmpeg_extra_flags }}
         make -j$(nproc)
         make install -j$(nproc)
   
@@ -190,8 +191,8 @@ jobs:
         cd obuparse
         ${{ matrix.cpu_config.cpu }}-w64-mingw32-gcc -O2 -c obuparse.c
         ${{ matrix.cpu_config.cpu }}-w64-mingw32-ar r libobuparse.a obuparse.o
-        install obuparse.h ${{ github.workspace }}/lsw/include
-        install libobuparse.a ${{ github.workspace }}/lsw/lib
+        install obuparse.h ${INSTALL_PREFIX}/include
+        install libobuparse.a ${INSTALL_PREFIX}/lib
         
         REVCOUNT=`git rev-list --count HEAD`
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
@@ -204,7 +205,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/${{ matrix.l-smash_author }}/l-smash.git
         cd l-smash
-        ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I${{ github.workspace }}/lsw/include --extra-ldflags=-L${{ github.workspace }}/lsw/lib --prefix=${{ github.workspace }}/lsw
+        ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I${INSTALL_PREFIX}/include --extra-ldflags=-L${INSTALL_PREFIX}/lib --prefix=${INSTALL_PREFIX}
         make lib -j$(nproc)
         make install-lib -j$(nproc)
         
@@ -223,7 +224,7 @@ jobs:
         sed -i 's/MSVC/__MINGW32__/' avs_core/filters/AviSource/avi_source.cpp
         cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_PLUGINS=OFF -DENABLE_INTEL_SIMD=OFF -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake
         cmake --build build -j $(nproc)
-        cmake --install build --prefix ${{ github.workspace }}/lsw
+        cmake --install build --prefix ${INSTALL_PREFIX}
         
         REVCOUNT=`git rev-list --count HEAD`
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
@@ -237,7 +238,7 @@ jobs:
         git clone https://github.com/sekrit-twc/zimg -b v3.0 --depth 1
         cd zimg
         ./autogen.sh
-        ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32 --prefix=${{ github.workspace }}/lsw
+        ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32 --prefix=${INSTALL_PREFIX}
         make -j$(nproc)
         make install -j$(nproc)
         
@@ -253,7 +254,7 @@ jobs:
         git clone https://github.com/vapoursynth/vapoursynth --depth 1
         cd vapoursynth
         ./autogen.sh
-        CC=${{ matrix.cpu_config.cpu }}-w64-mingw32-gcc-posix CXX=${{ matrix.cpu_config.cpu }}-w64-mingw32-g++-posix PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32 --disable-vsscript --disable-vspipe --disable-python-module --prefix=${{ github.workspace }}/lsw
+        CC=${{ matrix.cpu_config.cpu }}-w64-mingw32-gcc-posix CXX=${{ matrix.cpu_config.cpu }}-w64-mingw32-g++-posix PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32 --disable-vsscript --disable-vspipe --disable-python-module --prefix=${INSTALL_PREFIX}
         make -j$(nproc)
         make install -j$(nproc)
         
@@ -362,22 +363,22 @@ jobs:
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviSynth
         # ヘッダファイルの階層問題より、AviSynthのヘッダを一つ上の階層にぶちまける
-        mv ${{ github.workspace }}/lsw/include/avisynth/* ${{ github.workspace }}/lsw/include
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig meson setup --prefer-static --cross-file=${{ github.workspace }}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
+        mv ${INSTALL_PREFIX}/include/avisynth/* ${INSTALL_PREFIX}/include
+        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig meson setup --prefer-static --cross-file=${{ github.workspace }}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
         ninja -C build
 
     - name: Build L-SMASH Works(VapourSynth)(meson)
       if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/VapourSynth
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig meson setup --prefer-static --cross-file=${{ github.workspace }}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
+        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig meson setup --prefer-static --cross-file=${{ github.workspace }}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
         ninja -C build
         
     - name: Build L-SMASH Works(VapourSynth)(makefile)
       if: ${{ matrix.lsw_config.author == 'VFR-maniac' }}
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/VapourSynth
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
+        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make
         mkdir build
         mv libvslsmashsource.so.${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} build/libvslsmashsource.dll
@@ -387,13 +388,13 @@ jobs:
       if: ${{ matrix.cpu_config.user_arch == 'x64' && matrix.lsw_config.author == 'Mr-Ojii' }}
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl2
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
+        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make -j$(nproc)
 
     - name: Build L-SMASH Works(AviUtl)
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
-        PKG_CONFIG_PATH=${{ github.workspace }}/lsw/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
+        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make -j$(nproc)
 
     - name: Rename Files(x64)
