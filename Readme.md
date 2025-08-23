@@ -34,3 +34,4 @@ L-SMASHのライブラリは[Mr-Ojii版](https://github.com/Mr-Ojii/l-smash.git)
 4. AviUtl ExEdit2 を起動し、`設定`→`入力プラグインの設定`に`L-SMASH Works File Reader for AviUtl2`が追加されていることを確認  
   ※「L-SMASH Works File Reader **for AviUtl2**」 である必要があります。 `for AviUtl2` の表記がない場合、誤って無印版を導入しているため、正常に動作しない可能性があります。
 5. 確認ができたら導入完了です。確認ができない場合、zip のダウンロード不良の可能性があるため、手順1からやり直してください。
+6. これは必須ではありませんが、`L-SMASH Works File Reader for AviUtl2` に `.mp4` や `.mov` を読み込ませたい場合、`Media Foundation file reader` より優先度を高くしてください。
