@@ -23,9 +23,10 @@ jobs:
     strategy:
       matrix:
         lsw_config:
-          - { author: VFR-maniac, ffmpeg_version: "4.4", ffmpeg_patch: " (patched)", intel: "mfx", ffmpeg_extra_flags: "--enable-avresample" }
-          - { author: Mr-Ojii, ffmpeg_version: "8.0", ffmpeg_patch: "", intel: "vpl", ffmpeg_extra_flags: ""}
-        l-smash_author: [Mr-Ojii, vimeo]
+          - { author: VFR-maniac, ffmpeg_variant: "original", ffmpeg_branch: "release/4.4", ffmpeg_patch: " (patched)", intel: "mfx", ffmpeg_extra_flags: "--enable-avresample" }
+          - { author: Mr-Ojii, ffmpeg_variant: "original", ffmpeg_branch: "release/8.0", ffmpeg_patch: "", intel: "vpl", ffmpeg_extra_flags: ""}
+          - { author: HomeOfAviSynthPlusEvolution, ffmpeg_variant: "avi", ffmpeg_branch: "custom-patches-for-lsmashsource", ffmpeg_patch: "", intel: "vpl", ffmpeg_extra_flags: ""}
+        l-smash_author: [Mr-Ojii, vimeo, HomeOfAviSynthPlusEvolution]
         cpu_config:
           - { cpu: i686, arch: x86, user_arch: x86, vpx_target: x86-win32-gcc }
           - { cpu: x86_64, arch: x86_64, user_arch: x64, vpx_target: x86_64-win64-gcc }
@@ -170,8 +171,13 @@ jobs:
       
     - name: Install FFmpeg
       run: |
-        cd ${{ github.workspace }}
-        git clone https://github.com/FFmpeg/FFmpeg.git -b release/${{ matrix.lsw_config.ffmpeg_version }}
+        if [ "${{ matrix.lsw_config.ffmpeg_patch }}" == "original" ]; then
+          cd ${{ github.workspace }}
+          git clone https://github.com/FFmpeg/FFmpeg.git -b ${{ matrix.lsw_config.ffmpeg_version }}
+        elif [ "${{ matrix.lsw_config.ffmpeg_patch }}" == "avi" ]; then
+          git clone https://github.com/HomeOfAviSynthPlusEvolution/FFmpeg.git -b ${{ matrix.lsw_config.ffmpeg_branch }}
+        fi
+
         cd FFmpeg
 
         # 文字が1文字以上存在すれば実行される
@@ -296,7 +302,7 @@ jobs:
         ${{ matrix.lsw_config.author }}/L-SMASH-Works r${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}
         https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works
         
-        FFmpeg ${{ matrix.lsw_config.ffmpeg_version }}${{ matrix.lsw_config.ffmpeg_patch }}
+        FFmpeg ${{ matrix.lsw_config.ffmpeg_branch }}${{ matrix.lsw_config.ffmpeg_patch }}
         https://github.com/FFmpeg/FFmpeg
         
         ${{ matrix.l-smash_author }}/L-SMASH r${{ steps.l-smash-rev.outputs.REV_LIST_COUNT }}
