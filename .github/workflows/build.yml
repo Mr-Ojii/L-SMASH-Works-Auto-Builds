@@ -459,7 +459,7 @@ jobs:
         cp ${{ github.workspace }}/L-SMASH-Works/AviUtl2/README.ja pub/AviUtl2
         
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: ${{ matrix.lsw_config.author }}_${{ matrix.l-smash_author }}_${{ matrix.cpu_config.user_arch }}
         path: ${{ github.workspace }}/pub
@@ -477,12 +477,12 @@ jobs:
     steps:
     - uses: actions/checkout@v5
     
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v6
       with:
         name: ${{ matrix.author }}_${{ matrix.l-smash_author }}_x86
         path: x86
 
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v6
       with:
         name: ${{ matrix.author }}_${{ matrix.l-smash_author }}_x64
         path: x64
@@ -495,7 +495,7 @@ jobs:
         cp -r x64/* artifacts
         
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: ${{ matrix.author }}_${{ matrix.l-smash_author }}_Test
         path: ${{ github.workspace }}/artifacts
@@ -530,7 +530,7 @@ jobs:
         cd ${{ github.workspace }}/artifacts
         zip L-SMASH-Works_r${{ steps.rev-info.outputs.REV }}_${{ matrix.author }}_${{ matrix.l-smash_author }} -r *
         
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       with:
         name: L-SMASH-Works-${{ matrix.author }}_${{ matrix.l-smash_author }}
         path: ${{ github.workspace }}/artifacts/*.zip
@@ -543,7 +543,7 @@ jobs:
     steps:
     - uses: actions/checkout@v5
     
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v6
       with:
         path: artifacts
     
