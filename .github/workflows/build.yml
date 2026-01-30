@@ -76,9 +76,9 @@ jobs:
         cmake --build build --config Release --parallel
         cmake --install build --config Release --prefix=${HOME}/lsw
         
-        REVCOUNT=`git rev-list --count HEAD`
+        $REVCOUNT=git rev-list --count HEAD
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
+        $SHA=git rev-parse HEAD
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
 
     - name: Install Game Music Emu
@@ -102,9 +102,9 @@ jobs:
         cmake --build build --config Release --parallel
         cmake --install build --config Release --prefix ${HOME}/lsw
         
-        REVCOUNT=`git rev-list --count HEAD`
+        $REVCOUNT=git rev-list --count HEAD
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
+        $SHA=git rev-parse HEAD
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
 
     - name: Install libvpx
@@ -134,9 +134,9 @@ jobs:
         ninja -C build
         ninja install -C build
         
-        REVCOUNT=`git rev-list --count HEAD`
+        $REVCOUNT=git rev-list --count HEAD
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
+        $SHA=git rev-parse HEAD
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
     
         
@@ -190,9 +190,9 @@ jobs:
           sed -i -e 's#${pcfiledir}/..#${pcfiledir}#g' ${HOME}/lsw/lib/pkgconfig/vpl.pc
         fi
 
-        REVCOUNT=`git rev-list --count HEAD`
+        $REVCOUNT=git rev-list --count HEAD
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
+        $SHA=git rev-parse HEAD
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
       
     - name: Install FFmpeg
@@ -223,9 +223,9 @@ jobs:
         copy obuparse.h ${HOME}\lsw\include
         copy obuparse.lib ${HOME}\lsw\lib
         
-        REVCOUNT=`git rev-list --count HEAD`
+        $REVCOUNT=git rev-list --count HEAD
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
+        $SHA=git rev-parse HEAD
         echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
     - name: Install L-SMASH
