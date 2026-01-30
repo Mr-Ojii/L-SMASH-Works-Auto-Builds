@@ -59,7 +59,7 @@ jobs:
 
     # cherry-pickをする際に必要
     - name: Set git config
-      shell: msys2 {0}
+      shell: pwsh {0}
       run: |
         git config --global user.name Mr-Ojii
         git config --global user.email okaschan@gmail.com
@@ -67,14 +67,14 @@ jobs:
     # ここから依存ライブラリのインストール
     - name: Install zlib
       id: zlib-rev
-      shell: msys2 {0}
+      shell: pwsh {0}
       run: |
         cd ${HOME}
         git clone https://github.com/madler/zlib.git --depth 1
         cd zlib
-        cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${HOME}/lsw
-        cmake --build build --config Release -j$(nproc)
-        cmake --install build --prefix=${HOME}/lsw
+        cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_GENERATOR_PLATFORM=Win32 -DCMAKE_INSTALL_PREFIX=${HOME}/lsw
+        cmake --build build --config Release --parallel
+        cmake --install build --config Release --prefix=${HOME}/lsw
         
         REVCOUNT=`git rev-list --count HEAD`
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
@@ -83,7 +83,7 @@ jobs:
 
     - name: Install Game Music Emu
       id: game-music-emu-rev
-      shell: msys2 {0}
+      shell: pwsh {0}
       run: |
         cd ${HOME}
         git clone https://github.com/libgme/game-music-emu.git --depth 1
@@ -91,16 +91,16 @@ jobs:
         
         # SharedとStaticの2回、ビルドとインストールを行う
         # Shared (FFmpegはSharedをビルドしないければエラーとなる)
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${HOME}/lsw -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=ON
-        cmake --build build --config Release -j $(nproc)
-        cmake --install build --prefix ${HOME}/lsw
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_GENERATOR_PLATFORM=Win32 -DCMAKE_INSTALL_PREFIX=${HOME}/lsw -DENABLE_UBSAN=OFF -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DBUILD_SHARED_LIBS=ON
+        cmake --build build --config Release --parallel
+        cmake --install build --config Release --prefix ${HOME}/lsw
         
         rm -rf build
         
         # Static (LSWはStaticをビルドしなければエラーとなる)
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${HOME}/lsw -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=OFF
-        cmake --build build --config Release -j $(nproc)
-        cmake --install build --prefix ${HOME}/lsw
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_GENERATOR_PLATFORM=Win32 -DCMAKE_INSTALL_PREFIX=${HOME}/lsw -DENABLE_UBSAN=OFF -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DBUILD_SHARED_LIBS=OFF
+        cmake --build build --config Release --parallel
+        cmake --install build --config Release --prefix ${HOME}/lsw
         
         REVCOUNT=`git rev-list --count HEAD`
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
@@ -125,12 +125,12 @@ jobs:
         
     - name: Install dav1d
       id: dav1d-rev
-      shell: msys2 {0}
+      shell: pwsh {0}
       run: |
         cd ${HOME}
         git clone https://code.videolan.org/videolan/dav1d.git --depth 1
         cd dav1d
-        meson setup --buildtype release --default-library=static -Denable_tests=false --prefix=${HOME}/lsw build
+        meson setup --buildtype release --default-library=static -Denable_tests=false -Db_vscrt=mt --prefix=${HOME}/lsw build
         ninja -C build
         ninja install -C build
         
@@ -175,14 +175,14 @@ jobs:
     - name: Install libvpl
       if: ${{ matrix.lsw_config.intel == 'vpl' }}
       id: libvpl-rev
-      shell: msys2 {0}
+      shell: pwsh {0}
       run: |
         cd ${HOME}
         git clone https://github.com/intel/libvpl.git --depth 1
         cd libvpl
-        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_EXPERIMENTAL=OFF -DBUILD_SHARED_LIBS=OFF -DCXX_LIB=-lstdc++ -DCMAKE_INSTALL_PREFIX="${HOME}/lsw" .
-        cmake --build build --config Release -j$(nproc)
-        cmake --install build --prefix=${HOME}/lsw
+        cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_GENERATOR_PLATFORM=Win32 -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DBUILD_EXPERIMENTAL=OFF -DBUILD_SHARED_LIBS=OFF -DCXX_LIB=-lstdc++ -DCMAKE_INSTALL_PREFIX="${HOME}/lsw" .
+        cmake --build build --config Release --parallel
+        cmake --install build --config Release --prefix=${HOME}/lsw
         # なぜかx86ディレクトリ内に展開されるため、一階層上に移動する
         if [ "${{ matrix.cpu_config.arch }}" == "x86" ]; then
           cp -r ${HOME}/lsw/lib/x86/* ${HOME}/lsw/lib/
@@ -206,23 +206,22 @@ jobs:
         if [ "${{ matrix.lsw_config.ffmpeg_patch }}" ]; then
           git cherry-pick 07bcedc232feeb9e30336624f4e9977d47ac43bc
         fi
-        
-        PKG_CONFIG_PATH=${HOME}/lsw/lib/pkgconfig ./configure --enable-version3 --disable-hwaccels --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="-lpthread" --target-os=mingw32 --arch=${{ matrix.cpu_config.arch }} --prefix=${HOME}/lsw --enable-libdav1d --enable-libvpx ${{ matrix.lsw_config.ffmpeg_extra_flags }}
+        PKG_CONFIG_PATH=${HOME}/lsw/lib/pkgconfig ./configure --enable-version3 --disable-hwaccels --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="z.lib" --extra-ldflags="-LIBPATH:${HOME}/lsw/lib" --target-os=win32 --arch=${{ matrix.cpu_config.arch }} --prefix=${HOME}/lsw --enable-libdav1d --enable-libvpx --enable-libgme --enable-lib${{ matrix.lsw_config.intel }} ${{ matrix.lsw_config.ffmpeg_extra_flags }}
         # --enable-libgme --enable-lib${{ matrix.lsw_config.intel }}
         make -j$(nproc)
         make install -j$(nproc)
   
     - name: Install obuparse
       id: obuparse-rev
-      shell: msys2 {0}
+      shell: pwsh {0}
       run: |
         cd ${HOME}
         git clone https://github.com/dwbuiten/obuparse.git --depth 1
         cd obuparse
-        gcc -O2 -c obuparse.c
-        ar r libobuparse.a obuparse.o
-        install obuparse.h ${HOME}/lsw/include
-        install libobuparse.a ${HOME}/lsw/lib
+        cl /c /EHsc /O2 /MT obuparse.c
+        lib /OUT:obuparse.lib obuparse.obj
+        copy obuparse.h ${HOME}\lsw\include
+        copy obuparse.lib ${HOME}\lsw\lib
         
         REVCOUNT=`git rev-list --count HEAD`
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
@@ -236,9 +235,7 @@ jobs:
         cd ${HOME}
         git clone https://github.com/${{ matrix.l-smash_author }}/l-smash.git
         cd l-smash
-        ./configure --extra-cflags=-I${HOME}/lsw/include --extra-ldflags=-L${HOME}/lsw/lib --prefix=${HOME}/lsw
-        make lib -j$(nproc)
-        make install-lib -j$(nproc)
+        msbuild L-SMASH.sln /p:Configuration=Release /p:Platform=Win32 /p:TargetFrameworkVersion=v4.8 /p:PlatformToolset=v143
         
         REVCOUNT=`git rev-list --count HEAD`
         echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
