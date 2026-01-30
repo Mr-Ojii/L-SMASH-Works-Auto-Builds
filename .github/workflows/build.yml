@@ -95,7 +95,7 @@ jobs:
         cmake --build build --config Release --parallel
         cmake --install build --config Release --prefix ${HOME}/lsw
         
-        rm -rf build
+        rm -r -fo build
         
         # Static (LSWはStaticをビルドしなければエラーとなる)
         cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_GENERATOR_PLATFORM=Win32 -DCMAKE_INSTALL_PREFIX=${HOME}/lsw -DENABLE_UBSAN=OFF -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DBUILD_SHARED_LIBS=OFF
@@ -186,7 +186,7 @@ jobs:
         # なぜかx86ディレクトリ内に展開されるため、一階層上に移動する
         if [ "${{ matrix.cpu_config.arch }}" == "x86" ]; then
           cp -r ${HOME}/lsw/lib/x86/* ${HOME}/lsw/lib/
-          rm -rf ${HOME}/lsw/lib/x86
+          rm -r -fo ${HOME}/lsw/lib/x86
           sed -i -e 's#${pcfiledir}/..#${pcfiledir}#g' ${HOME}/lsw/lib/pkgconfig/vpl.pc
         fi
 
