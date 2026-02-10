@@ -384,7 +384,7 @@ jobs:
         mv libvslsmashsource.so.${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} build/libvslsmashsource.dll
 
       
-    - name: Build L-SMASH Works(AviUtl Exedit2)
+    - name: Build L-SMASH Works(AviUtl ExEdit2)
       if: ${{ matrix.cpu_config.user_arch == 'x64' && matrix.lsw_config.author == 'Mr-Ojii' }}
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/AviUtl2
