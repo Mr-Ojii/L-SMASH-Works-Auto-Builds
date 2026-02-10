@@ -19,6 +19,8 @@ jobs:
       CFLAGS: -O2
       CXXFLAGS: -O2
       INSTALL_PREFIX: ${{ github.workspace }}/lsw
+      CMAKE_TOOLCHAIN_PREFIX: ${{ github.workspace }}/cmake_toolchainfile
+      MESON_CROSSFILE_PREFIX: ${{ github.workspace }}/meson_lsw_crossfile
     runs-on: ubuntu-24.04
     strategy:
       matrix:
@@ -76,14 +78,14 @@ jobs:
         
         # SharedとStaticの2回、ビルドとインストールを行う
         # Shared (FFmpegはSharedをビルドしないければエラーとなる)
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_PREFIX}/${{ matrix.cpu_config.cpu }}.cmake
         cmake --build build -j $(nproc)
         cmake --install build --prefix ${INSTALL_PREFIX}
         
         rm -rf build
         
         # Static (LSWはStaticをビルドしなければエラーとなる)
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_PREFIX}/${{ matrix.cpu_config.cpu }}.cmake
         cmake --build build -j $(nproc)
         cmake --install build --prefix ${INSTALL_PREFIX}
         
@@ -159,7 +161,7 @@ jobs:
         cd ${{ github.workspace }}
         git clone https://github.com/intel/libvpl.git --depth 1
         cd libvpl
-        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake" -DBUILD_EXPERIMENTAL=OFF -DBUILD_SHARED_LIBS=OFF -DCXX_LIB=-lstdc++ -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" .
+        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TOOLCHAIN_PREFIX}/${{ matrix.cpu_config.cpu }}.cmake" -DBUILD_EXPERIMENTAL=OFF -DBUILD_SHARED_LIBS=OFF -DCXX_LIB=-lstdc++ -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" .
         cmake --build build -j$(nproc)
         cmake --install build --prefix=${INSTALL_PREFIX}
         
@@ -222,7 +224,7 @@ jobs:
         cd AviSynthPlus
         # Multiple definitions防止のため、勝手にちょっとだけパッチを当てる
         sed -i 's/MSVC/__MINGW32__/' avs_core/filters/AviSource/avi_source.cpp
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_PLUGINS=OFF -DENABLE_INTEL_SIMD=OFF -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/cmake_toolchainfile/${{ matrix.cpu_config.cpu }}.cmake
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_PLUGINS=OFF -DENABLE_INTEL_SIMD=OFF -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_PREFIX}/${{ matrix.cpu_config.cpu }}.cmake
         cmake --build build -j $(nproc)
         cmake --install build --prefix ${INSTALL_PREFIX}
         
@@ -364,14 +366,14 @@ jobs:
         cd ${{ github.workspace }}/L-SMASH-Works/AviSynth
         # ヘッダファイルの階層問題より、AviSynthのヘッダを一つ上の階層にぶちまける
         mv ${INSTALL_PREFIX}/include/avisynth/* ${INSTALL_PREFIX}/include
-        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig meson setup --prefer-static --cross-file=${{ github.workspace }}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
+        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig meson setup --prefer-static --cross-file=${MESON_CROSSFILE_PREFIX}/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
         ninja -C build
 
     - name: Build L-SMASH Works(VapourSynth)(meson)
       if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
       run: |
         cd ${{ github.workspace }}/L-SMASH-Works/VapourSynth
-        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig meson setup --prefer-static --cross-file=${{ github.workspace }}/meson_lsw_crossfile/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
+        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig meson setup --prefer-static --cross-file=${MESON_CROSSFILE_PREFIX}/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
         ninja -C build
         
     - name: Build L-SMASH Works(VapourSynth)(makefile)
