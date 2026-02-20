@@ -33,6 +33,8 @@ jobs:
       with:
         fetch-depth: 0
 
+    - uses: actions/setup-python@v1
+
     - uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: ${{ matrix.cpu_config.user_arch }}
