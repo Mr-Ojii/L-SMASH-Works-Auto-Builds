@@ -213,7 +213,7 @@ jobs:
         if [ "${{ matrix.lsw_config.ffmpeg_patch }}" ]; then
           git cherry-pick 07bcedc232feeb9e30336624f4e9977d47ac43bc
         fi
-        PKG_CONFIG_PATH="${HOME}/lsw/lib/pkgconfig" ./configure --enable-version3 --disable-hwaccels --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="z.lib" --extra-ldflags="-LIBPATH:${HOME}/lsw/lib" --target-os=win32 --arch=${{ matrix.cpu_config.arch }} --prefix="${HOME}/lsw" --enable-libdav1d --enable-libvpx --enable-libgme --enable-lib${{ matrix.lsw_config.intel }} ${{ matrix.lsw_config.ffmpeg_extra_flags }}
+        PKG_CONFIG_PATH="${HOME}/lsw/lib/pkgconfig" ./configure --toolchain=msvc --enable-version3 --disable-hwaccels --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="z.lib" --extra-ldflags="-LIBPATH:${HOME}/lsw/lib" --target-os=win32 --arch=${{ matrix.cpu_config.arch }} --prefix="${HOME}/lsw" --enable-libdav1d --enable-libvpx --enable-libgme --enable-lib${{ matrix.lsw_config.intel }} ${{ matrix.lsw_config.ffmpeg_extra_flags }}
         # --enable-libgme --enable-lib${{ matrix.lsw_config.intel }}
         make -j$(nproc)
         make install -j$(nproc)
