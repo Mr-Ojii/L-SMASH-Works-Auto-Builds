@@ -48,7 +48,7 @@ jobs:
       with:
         update: true
         msystem: ${{ matrix.cpu_config.sys }}
-        path-type: minimal
+        path-type: inherit
         install: >-
           base-devel
           git
