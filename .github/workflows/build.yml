@@ -321,6 +321,13 @@ jobs:
 
         game-music-emu ${{ steps.game-music-emu-rev.outputs.REV_SHA }}
         https://github.com/libgme/game-music-emu
+
+        zimg ${{ steps.zimg-rev.outputs.REV_SHA }}
+        https://github.com/sekrit-twc/zimg
+        
+        vapoursynth ${{ steps.vapoursynth-rev.outputs.REV_SHA }}
+        https://github.com/vapoursynth/vapoursynth
+        
         " >> "AviUtl/About-this-build.txt"
         
         if [ "${{ matrix.lsw_config.intel }}" == "mfx" ]; then
@@ -352,6 +359,8 @@ jobs:
         echo "URL=https://zlib.net/zlib_license.html" >> zlib.url
         cp ${{ github.workspace }}/obuparse/LICENSE obuparse.txt
         cp ${{ github.workspace }}/game-music-emu/license.txt game-music-emu.txt
+        cp ${{ github.workspace }}/zimg/COPYING zimg.txt
+        cp ${{ github.workspace }}/vapoursynth/COPYING.LESSER vapoursynth.txt
 
     - name: Create RevInfo.txt
       run: |
@@ -506,7 +515,6 @@ jobs:
       run: |
         cd ${{ github.workspace }}/artifacts
         rm -rf AviSynth
-        rm -rf VapourSynth
         
     - name: Set RevInfo
       id: rev-info

@@ -8,6 +8,7 @@ The L-SMASH library uses the [Mr-Ojii version](https://github.com/Mr-Ojii/l-smas
 As of 2024/08/24, only builds for the following are supported.
 - AviUtl
 - AviUtl ExEdit2 (Mr-Ojii version LSW only)
+- VapourSynth
 
 Translated by DeepL
 
@@ -35,3 +36,10 @@ L-SMASHのライブラリは[Mr-Ojii版](https://github.com/Mr-Ojii/l-smash.git)
   ※「L-SMASH Works File Reader **for AviUtl2**」 である必要があります。 `for AviUtl2` の表記がない場合、誤って無印版を導入しているため、正常に動作しない可能性があります。
 5. 確認ができたら導入完了です。確認ができない場合、zip のダウンロード不良の可能性があるため、手順1からやり直してください。
 6. これは必須ではありませんが、`L-SMASH Works File Reader for AviUtl2` に `.mp4` や `.mov` を読み込ませたい場合、`Media Foundation file reader` より優先度を高くしてください。
+
+### VapourSynth
+#### おすすめ導入方法
+1. Releases ページより、おすすめとされている .zip をダウンロード
+2. zip ファイルを解凍
+3. zipを解凍したフォルダ内の `VapourSynth` フォルダ内の `x86`, `x64` のいずれかの使用アーキテクチャのディレクトリに入っている `libvslsmashsource.dll` を VapourSynth の既定のディレクトリに配置
+4. `core.lsmas.LWLibavSource` などで確認ができたら導入完了です。確認ができない場合、zip のダウンロード不良の可能性があるため、手順1からやり直してください。
