@@ -506,7 +506,7 @@ jobs:
     - name: Build L-SMASH Works(AviSynth)
       if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
       run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/AviSynth
+        cd ${{ github.workspace }}/build/L-SMASH-Works/AviSynth
         # ヘッダファイルの階層問題より、AviSynthのヘッダを一つ上の階層にぶちまける
         mv ${INSTALL_PREFIX}/include/avisynth/* ${INSTALL_PREFIX}/include
         PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig meson setup --prefer-static --cross-file=${MESON_CROSSFILE_PREFIX}/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
@@ -515,14 +515,14 @@ jobs:
     - name: Build L-SMASH Works(VapourSynth)(meson)
       if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
       run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/VapourSynth
+        cd ${{ github.workspace }}/build/L-SMASH-Works/VapourSynth
         PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig meson setup --prefer-static --cross-file=${MESON_CROSSFILE_PREFIX}/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
         ninja -C build
 
     - name: Build L-SMASH Works(VapourSynth)(makefile)
       if: ${{ matrix.lsw_config.author == 'VFR-maniac' }}
       run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/VapourSynth
+        cd ${{ github.workspace }}/build/L-SMASH-Works/VapourSynth
         PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make
         mkdir build
@@ -532,20 +532,20 @@ jobs:
     - name: Build L-SMASH Works(AviUtl ExEdit2)
       if: ${{ matrix.cpu_config.user_arch == 'x64' && matrix.lsw_config.author == 'Mr-Ojii' }}
       run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl2
+        cd ${{ github.workspace }}/build/L-SMASH-Works/AviUtl2
         PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make -j$(nproc)
 
     - name: Build L-SMASH Works(AviUtl)
       run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
+        cd ${{ github.workspace }}/build/L-SMASH-Works/AviUtl
         PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make -j$(nproc)
 
     - name: Rename Files(x64)
       if: ${{ matrix.cpu_config.user_arch == 'x64' }}
       run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
+        cd ${{ github.workspace }}/build/L-SMASH-Works/AviUtl
         mv lwinput.aui lwinput64.aui
 
     # Releaseのためのディレクトリ
@@ -568,29 +568,29 @@ jobs:
       run: |
         cd ${{ github.workspace }}
         mkdir pub/AviUtl
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auf pub/AviUtl
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auc pub/AviUtl
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui pub/AviUtl
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/README pub/AviUtl
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/README.ja pub/AviUtl
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/LICENSE pub/AviUtl
+        cp ${{ github.workspace }}/build/L-SMASH-Works/AviUtl/*.auf pub/AviUtl
+        cp ${{ github.workspace }}/build/L-SMASH-Works/AviUtl/*.auc pub/AviUtl
+        cp ${{ github.workspace }}/build/L-SMASH-Works/AviUtl/*.aui pub/AviUtl
+        cp ${{ github.workspace }}/build/L-SMASH-Works/AviUtl/README pub/AviUtl
+        cp ${{ github.workspace }}/build/L-SMASH-Works/AviUtl/README.ja pub/AviUtl
+        cp ${{ github.workspace }}/build/L-SMASH-Works/AviUtl/LICENSE pub/AviUtl
 
     - name: Copy to pub Directory(AviUtl, x64)
       if: ${{ matrix.cpu_config.user_arch == 'x64' }}
       run: |
         cd ${{ github.workspace }}
         mkdir pub/AviUtl
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui pub/AviUtl
+        cp ${{ github.workspace }}/build/L-SMASH-Works/AviUtl/*.aui pub/AviUtl
 
     - name: Copy to pub Directory(AviUtl Exedit2)
       if: ${{ matrix.cpu_config.user_arch == 'x64' && matrix.lsw_config.author == 'Mr-Ojii' }}
       run: |
         cd ${{ github.workspace }}
         mkdir pub/AviUtl2
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl2/lwinput.aui2 pub/AviUtl2
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl2/README pub/AviUtl2
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl2/README.ja pub/AviUtl2
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl2/LICENSE pub/AviUtl2
+        cp ${{ github.workspace }}/build/L-SMASH-Works/AviUtl2/lwinput.aui2 pub/AviUtl2
+        cp ${{ github.workspace }}/build/L-SMASH-Works/AviUtl2/README pub/AviUtl2
+        cp ${{ github.workspace }}/build/L-SMASH-Works/AviUtl2/README.ja pub/AviUtl2
+        cp ${{ github.workspace }}/build/L-SMASH-Works/AviUtl2/LICENSE pub/AviUtl2
 
     - name: Upload artifact
       uses: actions/upload-artifact@v7
