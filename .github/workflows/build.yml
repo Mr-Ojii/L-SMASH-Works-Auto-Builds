@@ -223,7 +223,7 @@ jobs:
       id: l-smash-works-rev
       run: |
         cd ${{ github.workspace }}/build
-        git clone https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works.git --depth 1
+        git clone https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works.git
         cd L-SMASH-Works
 
         echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
@@ -311,6 +311,11 @@ jobs:
         fi
         echo "[InternetShortcut]" > zlib.url
         echo "URL=https://zlib.net/zlib_license.html" >> zlib.url
+
+    - name: Create RevInfo File
+      run: |
+        cd ${{ github.workspace }}/pub
+        echo "${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}" > RevInfo.txt
 
     - name: Upload BuildInfo and Licenses
       uses: actions/upload-artifact@v7
@@ -820,74 +825,56 @@ jobs:
         path: ${{ github.workspace }}/pub
 
 
-  # # x86とx64のファイルをまとめて1つのzipにするための処理
-  # create-archive:
-  #   name: Create archive
-  #   needs: build
-  #   runs-on: ubuntu-24.04
-  #   strategy:
-  #     matrix:
-  #       author: [VFR-maniac, Mr-Ojii]
-  #       l-smash_author: [Mr-Ojii, vimeo]
-  #   steps:
-  #   - uses: actions/checkout@v6
+  # job 4. Ubuntu, Windows 環境でビルドしたファイルをダウンロードし、x86とx64のファイルをまとめて1つのzipにする
+  create-archive:
+    name: Create archive
+    needs: [windows-build, ubuntu-build]
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        author: [VFR-maniac, Mr-Ojii]
+        l-smash_author: [Mr-Ojii, vimeo]
+    steps:
+    - uses: actions/checkout@v6
 
-  #   - uses: actions/download-artifact@v8
-  #     with:
-  #       name: ${{ matrix.author }}_${{ matrix.l-smash_author }}_x86
-  #       path: x86
+    - uses: actions/download-artifact@v8
+      with:
+        pattern: "*-build-${{ matrix.author }}-${{ matrix.l-smash_author }}-*"
+        path: artifacts
+        merge-multiple: true
 
-  #   - uses: actions/download-artifact@v8
-  #     with:
-  #       name: ${{ matrix.author }}_${{ matrix.l-smash_author }}_x64
-  #       path: x64
+    - uses: actions/download-artifact@v8
+      with:
+        name: docs-${{ matrix.author }}-${{ matrix.l-smash_author }}
+        path: artifacts
 
-  #   - name: Copy Artifacts
-  #     run: |
-  #       cd ${{ github.workspace }}
-  #       mkdir artifacts
-  #       cp -r x86/* artifacts
-  #       cp -r x64/* artifacts
+    - name: Upload artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: artifacts-${{ matrix.author }}-${{ matrix.l-smash_author }}
+        path: ${{ github.workspace }}/artifacts
 
-  #   - name: Upload artifact
-  #     uses: actions/upload-artifact@v7
-  #     with:
-  #       name: ${{ matrix.author }}_${{ matrix.l-smash_author }}_Test
-  #       path: ${{ github.workspace }}/artifacts
+    # - name: Set RevInfo
+    #   id: rev-info
+    #   run: |
+    #     cd ${{ github.workspace }}/artifacts
+    #     if [ "$(cat RevInfo.txt)" != "$(cat RevInfo64.txt)" ]; then
+    #       exit 1
+    #     fi
+    #     echo -n "REV=" > Rev.txt
+    #     cat RevInfo.txt >> Rev.txt
+    #     cat Rev.txt >> $GITHUB_OUTPUT
+    #     rm Rev.txt RevInfo.txt RevInfo64.txt
 
-  #   - name: Delete test files
-  #     run: |
-  #       cd ${{ github.workspace }}/artifacts
-  #       rm -rf AviSynth
+    # - name: Create archive
+    #   run: |
+    #     cd ${{ github.workspace }}/artifacts
+    #     zip L-SMASH-Works_r${{ steps.rev-info.outputs.REV }}_${{ matrix.author }}_${{ matrix.l-smash_author }} -r *
 
-  #   - name: Set RevInfo
-  #     id: rev-info
-  #     run: |
-  #       cd ${{ github.workspace }}/artifacts
-  #       if [ "$(cat RevInfo.txt)" != "$(cat RevInfo64.txt)" ]; then
-  #         exit 1
-  #       fi
-  #       echo -n "REV=" > Rev.txt
-  #       cat RevInfo.txt >> Rev.txt
-  #       cat Rev.txt >> $GITHUB_OUTPUT
-  #       rm Rev.txt RevInfo.txt RevInfo64.txt
-
-  #   - name: Check diff
-  #     run: |
-  #       cd ${{ github.workspace }}/artifacts
-  #       if [ "$(diff About-this-build.txt About-this-build-x64.txt)" == "" ]; then
-  #         rm About-this-build-x64.txt
-  #       fi
-
-  #   - name: Create archive
-  #     run: |
-  #       cd ${{ github.workspace }}/artifacts
-  #       zip L-SMASH-Works_r${{ steps.rev-info.outputs.REV }}_${{ matrix.author }}_${{ matrix.l-smash_author }} -r *
-
-  #   - uses: actions/upload-artifact@v7
-  #     with:
-  #       name: L-SMASH-Works-${{ matrix.author }}_${{ matrix.l-smash_author }}
-  #       path: ${{ github.workspace }}/artifacts/*.zip
+    # - uses: actions/upload-artifact@v7
+    #   with:
+    #     name: L-SMASH-Works-${{ matrix.author }}_${{ matrix.l-smash_author }}
+    #     path: ${{ github.workspace }}/artifacts/*.zip
 
   # # Releaseをするための処理
   # create-release:
