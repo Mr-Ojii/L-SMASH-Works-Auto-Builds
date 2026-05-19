@@ -848,33 +848,22 @@ jobs:
         name: docs-${{ matrix.author }}-${{ matrix.l-smash_author }}
         path: artifacts
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v7
+    - name: Set RevInfo
+      id: rev-info
+      run: |
+        cd ${{ github.workspace }}/artifacts
+        echo -n "REV=$(cat RevInfo.txt)" >> $GITHUB_OUTPUT
+        rm RevInfo.txt
+
+    - name: Create archive
+      run: |
+        cd ${{ github.workspace }}/artifacts
+        zip L-SMASH-Works_r${{ steps.rev-info.outputs.REV }}_${{ matrix.author }}_${{ matrix.l-smash_author }} -r *
+
+    - uses: actions/upload-artifact@v7
       with:
-        name: artifacts-${{ matrix.author }}-${{ matrix.l-smash_author }}
-        path: ${{ github.workspace }}/artifacts
-
-    # - name: Set RevInfo
-    #   id: rev-info
-    #   run: |
-    #     cd ${{ github.workspace }}/artifacts
-    #     if [ "$(cat RevInfo.txt)" != "$(cat RevInfo64.txt)" ]; then
-    #       exit 1
-    #     fi
-    #     echo -n "REV=" > Rev.txt
-    #     cat RevInfo.txt >> Rev.txt
-    #     cat Rev.txt >> $GITHUB_OUTPUT
-    #     rm Rev.txt RevInfo.txt RevInfo64.txt
-
-    # - name: Create archive
-    #   run: |
-    #     cd ${{ github.workspace }}/artifacts
-    #     zip L-SMASH-Works_r${{ steps.rev-info.outputs.REV }}_${{ matrix.author }}_${{ matrix.l-smash_author }} -r *
-
-    # - uses: actions/upload-artifact@v7
-    #   with:
-    #     name: L-SMASH-Works-${{ matrix.author }}_${{ matrix.l-smash_author }}
-    #     path: ${{ github.workspace }}/artifacts/*.zip
+        name: L-SMASH-Works-${{ matrix.author }}_${{ matrix.l-smash_author }}
+        path: ${{ github.workspace }}/artifacts/*.zip
 
   # # Releaseをするための処理
   # create-release:
