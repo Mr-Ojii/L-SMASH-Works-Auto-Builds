@@ -222,7 +222,7 @@ jobs:
     - name: Clone L-SMASH Works
       id: l-smash-works-rev
       run: |
-        cd ${{ github.workspace }}
+        cd ${{ github.workspace }}/build
         git clone https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works.git --depth 1
         cd L-SMASH-Works
 
