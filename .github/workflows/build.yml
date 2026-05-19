@@ -760,7 +760,7 @@ jobs:
       if: ${{ !cancelled() }}
       run: |
         SYG_INSTALL_PREFIX=$(cygpath -u "${INSTALL_PREFIX}")
-        cd $(cygpath -u "${{ github.workspace }}")
+        cd $(cygpath -u "${{ github.workspace }}")/build
 
         echo "--- lib ---"
         ls -l ${SYG_INSTALL_PREFIX}/lib
