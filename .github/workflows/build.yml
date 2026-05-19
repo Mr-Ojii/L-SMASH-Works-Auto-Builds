@@ -602,7 +602,7 @@ jobs:
   windows-build:
     needs: clone
     env:
-      INSTALL_PREFIX: ${{ github.workspace }}/L-SMASH-Works/build${{matrix.cpu_config.build_arch }}_msvc
+      INSTALL_PREFIX: ${{ github.workspace }}/build/L-SMASH-Works/build${{matrix.cpu_config.build_arch }}_msvc
       MSYS2_PATH_TYPE: inherit
 
     runs-on: windows-latest
