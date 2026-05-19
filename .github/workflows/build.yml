@@ -330,6 +330,7 @@ jobs:
         path: ${{ github.workspace }}/build.tar.gz
 
 
+  # job 2. Ubuntu 環境で L-SMASH Worksをビルド (AvuUtl, AviUtl ExEdit2, VapourSynth)
   ubuntu-build:
     needs: clone
     env:
@@ -595,6 +596,228 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: ubuntu-build-${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-${{ matrix.cpu_config.user_arch }}
+        path: ${{ github.workspace }}/pub
+
+  # job 3. Windows 環境で L-SMASH Worksをビルド (AviSynth)
+  windows-build:
+    needs: clone
+    env:
+      INSTALL_PREFIX: ${{ github.workspace }}/L-SMASH-Works/build${{matrix.cpu_config.build_arch }}_msvc
+      MSYS2_PATH_TYPE: inherit
+
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        lsw_config:
+          - { author: Mr-Ojii, ffmpeg_version: "7.1", ffmpeg_patch: "", intel: "vpl", ffmpeg_extra_flags: ""}
+        l-smash_author: [Mr-Ojii]
+        cpu_config:
+          - { cpu: i686, arch: x86, user_arch: x86, build_arch: 32, sys: mingw32, vpx_target: x86-win32-vs17, ffmpeg_target_os: win32, msvc_platform: Win32, msvc_dir: "Release" }
+          - { cpu: x86_64, arch: x86_64, user_arch: x64, build_arch: 64, sys: mingw64, vpx_target: x86_64-win64-vs17, ffmpeg_target_os: win64, msvc_platform: x64, msvc_dir: "x64\\Release" }
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Download Cloned Repositories
+      uses: actions/download-artifact@v7
+      with:
+        name: build-${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}
+        path: ${{ github.workspace }}
+
+    - name: Extract Cloned Repositories
+      run: |
+        cd ${{ github.workspace }}
+        tar -xzf build.tar.gz
+
+    - uses: actions/setup-python@v6
+
+    - name: Install Meson and Ninja
+      run: |
+        python -m pip install --upgrade pip
+        pip install meson ninja
+
+    - uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: ${{ matrix.cpu_config.user_arch }}
+
+    - uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        msystem: ${{ matrix.cpu_config.sys }}
+        path-type: inherit
+        install: >-
+          base-devel
+          git
+          autotools
+          autoconf
+          cmake
+          meson
+          nasm
+          yasm
+          ninja
+          pkgconf
+
+    # 以下 pwsh でのビルド
+    - name: Clone L-SMASH-Works
+      run: |
+        cd ${{ github.workspace }}
+        mkdir ${Env:INSTALL_PREFIX}
+        mkdir ${Env:INSTALL_PREFIX}/lib
+        mkdir ${Env:INSTALL_PREFIX}/include
+
+    - name: Install obuparse
+      run: |
+        cd ${{ github.workspace }}/build/obuparse
+        cl /c /EHsc /O2 /MT obuparse.c
+        lib /OUT:obuparse.lib obuparse.obj
+        copy obuparse.h ${Env:INSTALL_PREFIX}\include
+        copy obuparse.lib ${Env:INSTALL_PREFIX}\lib
+
+    - name: Install l-smash
+      run: |
+        cd ${{ github.workspace }}/build/l-smash
+        copy obuparse\obuparse.h l-smash
+        copy obuparse\obuparse.lib l-smash
+        cd l-smash
+        msbuild L-SMASH.sln /p:Configuration=Release /p:ConfigurationType=StaticLibrary /p:Platform=${{ matrix.cpu_config.msvc_platform }} /p:TargetFrameworkVersion=v4.8 /p:PlatformToolset=v143
+        copy lsmash.h ${Env:INSTALL_PREFIX}\include
+        copy ${{ matrix.cpu_config.msvc_dir }}\liblsmash.lib ${Env:INSTALL_PREFIX}\lib
+
+    - name: Install zlib
+      run: |
+        cd ${{ github.workspace }}/build/zlib
+        cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_GENERATOR_PLATFORM=${{ matrix.cpu_config.msvc_platform }} -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="${Env:INSTALL_PREFIX}"
+        cmake --build build --config Release --parallel
+        cmake --install build --config Release --prefix="${Env:INSTALL_PREFIX}"
+        move ${Env:INSTALL_PREFIX}\lib\zs.lib ${Env:INSTALL_PREFIX}\lib\zlib.lib
+
+    - name: Install Game Music Emu
+      run: |
+        cd ${{ github.workspace }}/build/game-music-emu
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_GENERATOR_PLATFORM=${{ matrix.cpu_config.msvc_platform }} -DCMAKE_INSTALL_PREFIX="${Env:INSTALL_PREFIX}" -DENABLE_UBSAN=OFF -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DBUILD_SHARED_LIBS=OFF
+        cmake --build build --config Release --parallel
+        cmake --install build --config Release --prefix "${Env:INSTALL_PREFIX}"
+
+    - name: Install dav1d
+      run: |
+        cd ${{ github.workspace }}/build/dav1d
+        meson setup --buildtype release --default-library=static -Denable_tests=false -Db_vscrt=mt --prefix="${Env:INSTALL_PREFIX}" build
+        ninja -C build
+        ninja install -C build
+        move ${Env:INSTALL_PREFIX}\lib\libdav1d.a ${Env:INSTALL_PREFIX}\lib\dav1d.lib
+
+    - name: Install libvpl
+      if: ${{ matrix.lsw_config.intel == 'vpl' }}
+      run: |
+        cd ${{ github.workspace }}/build/libvpl
+        cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_GENERATOR_PLATFORM=${{ matrix.cpu_config.msvc_platform }} -DCMAKE_C_FLAGS_RELEASE="/MT /O2 /Ob2 /DNDEBUG" -DCMAKE_CXX_FLAGS_RELEASE="/MT /O2 /Ob2 /DNDEBUG" -DBUILD_EXPERIMENTAL=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="${Env:INSTALL_PREFIX}" .
+        cmake --build build --config Release --parallel
+        cmake --install build --config Release --prefix="${Env:INSTALL_PREFIX}"
+
+    # 以下 msys2 でのビルド
+    - name: Install nv-codec-headers
+      shell: msys2 {0}
+      run: |
+        SYG_INSTALL_PREFIX=$(cygpath -u "${INSTALL_PREFIX}")
+        cd $(cygpath -u "${{ github.workspace }}")/build/nv-codec-headers
+        sed -i "s|/usr/local|${SYG_INSTALL_PREFIX}|" Makefile
+        make install -j$(nproc)
+
+    - name: Install libvpx
+      shell: msys2 {0}
+      run: |
+        SYG_INSTALL_PREFIX=$(cygpath -u "${INSTALL_PREFIX}")
+        cd $(cygpath -u "${{ github.workspace }}")/build/libvpx
+        mkdir builds && cd builds
+        ../configure --target=${{ matrix.cpu_config.vpx_target }} --enable-vp9-highbitdepth --disable-docs --disable-tools --disable-examples --disable-webm-io --disable-vp8-encoder --disable-vp9-encoder --prefix=${SYG_INSTALL_PREFIX}
+        make -j$(nproc)
+        make install -j$(nproc)
+
+    - name: Install FFmpeg
+      shell: msys2 {0}
+      run: |
+        SYG_INSTALL_PREFIX=$(cygpath -u "${INSTALL_PREFIX}")
+        cd $(cygpath -u "${{ github.workspace }}")/build/FFmpeg
+
+        # なぜかlibvplはx86ディレクトリ内に展開されるため、一階層上に移動する
+        # pkgconfigの記述も修正する
+        if [ "${{ matrix.cpu_config.arch }}" = "x86" ]; then
+          cp -r ${SYG_INSTALL_PREFIX}/lib/x86/* ${SYG_INSTALL_PREFIX}/lib/
+          rm -rf ${SYG_INSTALL_PREFIX}/lib/x86
+          sed -i 's|${pcfiledir}/../../../|${pcfiledir}/../../|g' ${SYG_INSTALL_PREFIX}/lib/pkgconfig/vpl.pc
+        fi
+        sed -i "s|-lvpl|-lvpl -ladvapi32 -lole32|g" ${SYG_INSTALL_PREFIX}/lib/pkgconfig/vpl.pc
+
+        mkdir build && cd build
+        PKG_CONFIG_PATH=${SYG_INSTALL_PREFIX}/lib/pkgconfig ../configure --prefix=${SYG_INSTALL_PREFIX} --pkg-config-flags="--static" --extra-ldflags='-static' --enable-version3 --disable-hwaccels --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --target-os=${{ matrix.cpu_config.ffmpeg_target_os }} --arch=${{ matrix.cpu_config.arch }} --toolchain=msvc --enable-libdav1d --enable-libvpx --enable-libgme --enable-libvpl
+        make -j$(nproc)
+        make install -j$(nproc)
+
+    # libvplなどでpc構造が変だったりするため、ログ出しとく
+    - name: Echo FFmpeg log
+      shell: msys2 {0}
+      if: ${{ !cancelled() }}
+      run: |
+        SYG_INSTALL_PREFIX=$(cygpath -u "${INSTALL_PREFIX}")
+        cd $(cygpath -u "${{ github.workspace }}")
+
+        echo "--- lib ---"
+        ls -l ${SYG_INSTALL_PREFIX}/lib
+        if [ -d "${SYG_INSTALL_PREFIX}/lib/Win32" ]; then
+          echo "--- lib/Win32 ---"
+          ls -l ${SYG_INSTALL_PREFIX}/lib/Win32
+        fi
+        if [ -d "${SYG_INSTALL_PREFIX}/lib/x86" ]; then
+          echo "--- lib/x86 ---"
+          ls -l ${SYG_INSTALL_PREFIX}/lib/x86
+        fi
+        if [ -d "${SYG_INSTALL_PREFIX}/lib/x64" ]; then
+          echo "--- lib/x64 ---"
+          ls -l ${SYG_INSTALL_PREFIX}/lib/x64
+        fi
+        echo "--- lib/pkgconfig ---"
+        ls -l ${SYG_INSTALL_PREFIX}/lib/pkgconfig
+        echo "--- cat vpl.pc ---"
+        cat ${SYG_INSTALL_PREFIX}/lib/pkgconfig/vpl.pc
+        echo "--- cat ffbuild/config.log ---"
+        cd FFmpeg/build
+        cat ffbuild/config.log
+
+    # AviSynth 用 L-SMASH-Works のビルド
+    - name: Build L-SMASH Works(AviSynth)
+      run: |
+        cd ${{ github.workspace }}/build/L-SMASH-Works/AviSynth
+        @'
+        #pragma comment( lib, "Ws2_32.lib" )
+        #pragma comment( lib, "Bcrypt.lib" )
+        #pragma comment( lib, "liblsmash.lib" )
+        #pragma comment( lib, "libavutil.a" )
+        #pragma comment( lib, "libavcodec.a" )
+        #pragma comment( lib, "libavformat.a" )
+        #pragma comment( lib, "libswscale.a" )
+        #pragma comment( lib, "libswresample.a" )
+        #pragma comment( lib, "zlib.lib" )
+        #pragma comment( lib, "obuparse.lib" )
+        #pragma comment( lib, "dav1d.lib" )
+        #pragma comment( lib, "gme.lib" )
+        #pragma comment( lib, "vpl.lib" )
+        '@ > exlibs.cpp
+        msbuild LSMASHSourceVCX.sln /p:Configuration=Release /p:Platform=${{ matrix.cpu_config.user_arch }} /p:PlatformToolset=v143
+
+    - name: Create pub Directory and Copy Files
+      run: |
+        cd ${{ github.workspace }}
+        mkdir -p pub/AviSynth/${{ matrix.cpu_config.user_arch }}
+        cp build/L-SMASH-Works/AviSynth/${{ matrix.cpu_config.msvc_dir }}/LSMASHSource.dll pub/AviSynth/${{ matrix.cpu_config.user_arch }}
+        cp build/L-SMASH-Works/AviSynth/README pub/AviSynth
+        cp build/L-SMASH-Works/AviSynth/LICENSE pub/AviSynth
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: windows-build-${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-${{ matrix.cpu_config.user_arch }}
         path: ${{ github.workspace }}/pub
 
 
