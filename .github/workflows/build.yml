@@ -303,8 +303,6 @@ jobs:
         cp ${{ github.workspace }}/build/obuparse/LICENSE obuparse.txt
         cp ${{ github.workspace }}/build/game-music-emu/license.txt game-music-emu.txt
         cp ${{ github.workspace }}/build/zimg/COPYING zimg.txt
-        cp ${{ github.workspace }}/build/AviSynthPlus/LICENSE avisynthplus.txt
-        cp ${{ github.workspace }}/build/vapoursynth/COPYING.LESSER vapoursynth.txt
 
         if [ "${{ matrix.lsw_config.intel }}" == "mfx" ]; then
           cp ${{ github.workspace }}/build/mfx_dispatch/LICENSE mfx_dispatch.txt
