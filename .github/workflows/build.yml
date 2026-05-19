@@ -315,6 +315,11 @@ jobs:
         name: docs-${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}
         path: ${{ github.workspace }}/pub
 
+    - name: Upload Cloned Repositories
+      uses: actions/upload-artifact@v7
+      with:
+        name: build-${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}
+        path: ${{ github.workspace }}/build
 
 
   # build:
