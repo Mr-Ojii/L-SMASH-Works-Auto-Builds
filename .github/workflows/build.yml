@@ -19,18 +19,18 @@ concurrency:
   # 1-1. build, pub, pub/Licenses ディレクトリを作成
   # 1-2. 各種依存ライブラリを build ディレクトリにクローンし、rev-count, shaを取得しながら、Licenses ディレクトリにライセンステキストを配置
   # 1-3. pub/About-this-build.txt に rev-count, sha を記載
-  # 1-4. pub ディレクトリを zip にして、Assets としてアップロード | docs-<LSW-Author>-<L-SMASH-Author>-docs キーでアップロード
-  # 1-6. build ディレクトリを zip にして、Assets としてアップロード | build-<LSW-Author>-<L-SMASH-Author> キーでアップロード
+  # 1-4. pub ディレクトリを Assets としてアップロード | docs-<LSW-Author>-<L-SMASH-Author> キーでアップロード
+  # 1-5. build ディレクトリを Assets としてアップロード | build-<LSW-Author>-<L-SMASH-Author> キーでアップロード
 # job 2. Ubuntu 環境で L-SMASH Worksをビルド (AvuUtl, AviUtl ExEdit2, VapourSynth)
   # 2-1. build-<LSW-Author>-<L-SMASH-Author> のAssetsをダウンロードし、ビルドに必要なファイルを配置
   # 2-2. pub ディレクトリを作成
   # 2-3. L-SMASH Worksをビルドし、ビルドしたファイルを pub/<HostApp>/<CpuArch> に配置
-  # 2-4. pub ディレクトリを zip にして、Assets としてアップロード | ubuntu-build-<LSW-Author>-<L-SMASH-Author>-<CpuArch> キーでアップロード
+  # 2-4. pub ディレクトリを、Assets としてアップロード | ubuntu-build-<LSW-Author>-<L-SMASH-Author>-<CpuArch> キーでアップロード
 # job 3. Windows 環境で L-SMASH Worksをビルド (AviSynth)
   # 3-1. build-<LSW-Author>-<L-SMASH-Author> のAssetsをダウンロードし、ビルドに必要なファイルを配置
   # 3-2. pub ディレクトリを作成
   # 3-3. L-SMASH Worksをビルドし、ビルドしたファイルを pub/<HostApp>/<CpuArch> に配置
-  # 3-4. pub ディレクトリを zip にして、Assets としてアップロード | windows-build-<LSW-Author>-<L-SMASH-Author>-<CpuArch> キーでアップロード
+  # 3-4. pub ディレクトリを Assets としてアップロード | windows-build-<LSW-Author>-<L-SMASH-Author>-<CpuArch> キーでアップロード
 # job 4. Ubuntu, Windows 環境でビルドしたファイルをダウンロードし、x86とx64のファイルをまとめて1つのzipにする
   # 4-1. ubuntu-build-<LSW-Author>-<L-SMASH-Author>-x86 と ubuntu-build-<LSW-Author>-<L-SMASH-Author>-x64, windows-build-<LSW-Author>-<L-SMASH-Author>-x86, windows-build-<LSW-Author>-<L-SMASH-Author>-x64 のAssetsをダウンロード
   # 4-2. ファイルをまとめて1つのzipにする (重要)
