@@ -239,7 +239,7 @@ jobs:
 
     - name: Create BuildInfo File
       run: |
-        cd ${{ github.workspace }}/L-SMASH-Works
+        cd ${{ github.workspace }}
         echo "L-SMASH-Works-Auto-Builds r${{ steps.workflow-rev.outputs.REV_LIST_COUNT }}
         https://github.com/Mr-Ojii/L-SMASH-Works-Auto-Builds
 
