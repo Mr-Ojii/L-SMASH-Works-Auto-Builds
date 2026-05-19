@@ -3,7 +3,7 @@ name: Build L-SMASH Works
 on:
   push:
     branches:
-      - main
+      - feature/redesign
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * 0'
@@ -12,15 +12,37 @@ concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
 
-jobs:
 
-  build:
-    env:
-      CFLAGS: -O2
-      CXXFLAGS: -O2
-      INSTALL_PREFIX: ${{ github.workspace }}/lsw
-      CMAKE_TOOLCHAIN_PREFIX: ${{ github.workspace }}/cmake_toolchainfile
-      MESON_CROSSFILE_PREFIX: ${{ github.workspace }}/meson_lsw_crossfile
+
+# 具体的なワークフローはこう
+# job 1. すべての依存ライブラリをクローン
+  # 1-1. build, pub, pub/Licenses ディレクトリを作成
+  # 1-2. 各種依存ライブラリを build ディレクトリにクローンし、rev-count, shaを取得しながら、Licenses ディレクトリにライセンステキストを配置
+  # 1-3. pub/About-this-build.txt に rev-count, sha を記載
+  # 1-4. pub ディレクトリを zip にして、Assets としてアップロード | docs-<LSW-Author>-<L-SMASH-Author>-docs キーでアップロード
+  # 1-6. build ディレクトリを zip にして、Assets としてアップロード | build-<LSW-Author>-<L-SMASH-Author> キーでアップロード
+# job 2. Ubuntu 環境で L-SMASH Worksをビルド (AvuUtl, AviUtl ExEdit2, VapourSynth)
+  # 2-1. build-<LSW-Author>-<L-SMASH-Author> のAssetsをダウンロードし、ビルドに必要なファイルを配置
+  # 2-2. pub ディレクトリを作成
+  # 2-3. L-SMASH Worksをビルドし、ビルドしたファイルを pub/<HostApp>/<CpuArch> に配置
+  # 2-4. pub ディレクトリを zip にして、Assets としてアップロード | ubuntu-build-<LSW-Author>-<L-SMASH-Author>-<CpuArch> キーでアップロード
+# job 3. Windows 環境で L-SMASH Worksをビルド (AviSynth)
+  # 3-1. build-<LSW-Author>-<L-SMASH-Author> のAssetsをダウンロードし、ビルドに必要なファイルを配置
+  # 3-2. pub ディレクトリを作成
+  # 3-3. L-SMASH Worksをビルドし、ビルドしたファイルを pub/<HostApp>/<CpuArch> に配置
+  # 3-4. pub ディレクトリを zip にして、Assets としてアップロード | windows-build-<LSW-Author>-<L-SMASH-Author>-<CpuArch> キーでアップロード
+# job 4. Ubuntu, Windows 環境でビルドしたファイルをダウンロードし、x86とx64のファイルをまとめて1つのzipにする
+  # 4-1. ubuntu-build-<LSW-Author>-<L-SMASH-Author>-x86 と ubuntu-build-<LSW-Author>-<L-SMASH-Author>-x64, windows-build-<LSW-Author>-<L-SMASH-Author>-x86, windows-build-<LSW-Author>-<L-SMASH-Author>-x64 のAssetsをダウンロード
+  # 4-2. ファイルをまとめて1つのzipにする (重要)
+  # 4-3. zip にして、Assets としてアップロード | L-SMASH-Works-<LSW-Author>-<L-SMASH-Author> キーでアップロード
+# job 5. zip にしたファイルを Release にアップロード
+  # 5-1. すべての Assets をダウンロード
+  # 5-2. Release を作成し、*.zip を Assets としてアップロード
+
+
+
+jobs:
+  clone:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
@@ -28,564 +50,584 @@ jobs:
           - { author: VFR-maniac, ffmpeg_version: "4.4", ffmpeg_patch: " (patched)", intel: "mfx", ffmpeg_extra_flags: "--enable-avresample" }
           - { author: Mr-Ojii, ffmpeg_version: "7.1", ffmpeg_patch: "", intel: "vpl", ffmpeg_extra_flags: ""}
         l-smash_author: [Mr-Ojii, vimeo]
-        cpu_config:
-          - { cpu: i686, arch: x86, user_arch: x86, vpx_target: x86-win32-gcc }
-          - { cpu: x86_64, arch: x86_64, user_arch: x64, vpx_target: x86_64-win64-gcc }
-    
     steps:
     - uses: actions/checkout@v6
       with:
         fetch-depth: 0
 
-    # ビルド用ソフトウェアのインストール
-    - name: Install depend lib
-      run: |
-        sudo apt-get update -y
-        sudo apt-get install -y autoconf cmake libtool nasm mingw-w64 meson ninja-build pkg-config
-
-    # pkg-configまでcross-prefixがつくので、シンボリックリンクを貼る
-    - name: Create pkg-config symbolic link
-      run: sudo ln -s /usr/bin/pkg-config /usr/bin/${{ matrix.cpu_config.cpu }}-w64-mingw32-pkg-config
-
-    # cherry-pickをする際に必要
-    - name: Set git config
-      run: |
-        git config --global user.name Mr-Ojii
-        git config --global user.email okaschan@gmail.com
-
-    # ここから依存ライブラリのインストール
-    - name: Install zlib
-      id: zlib-rev
-      run: |
-        cd ${{ github.workspace }}
-        git clone https://github.com/madler/zlib.git --depth 1
-        cd zlib
-        CROSS_PREFIX=${{ matrix.cpu_config.cpu }}-w64-mingw32- ./configure --static --prefix=${INSTALL_PREFIX}
-        make -j$(nproc)
-        make install -j$(nproc)
-        
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
-
-    - name: Install Game Music Emu
-      id: game-music-emu-rev
-      run: |
-        cd ${{ github.workspace }}
-        git clone https://github.com/libgme/game-music-emu.git --depth 1
-        cd game-music-emu
-        
-        # SharedとStaticの2回、ビルドとインストールを行う
-        # Shared (FFmpegはSharedをビルドしないければエラーとなる)
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_PREFIX}/${{ matrix.cpu_config.cpu }}.cmake
-        cmake --build build -j $(nproc)
-        cmake --install build --prefix ${INSTALL_PREFIX}
-        
-        rm -rf build
-        
-        # Static (LSWはStaticをビルドしなければエラーとなる)
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_PREFIX}/${{ matrix.cpu_config.cpu }}.cmake
-        cmake --build build -j $(nproc)
-        cmake --install build --prefix ${INSTALL_PREFIX}
-        
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
-        
-    - name: Install dav1d
-      id: dav1d-rev
-      run: |
-        cd ${{ github.workspace }}
-        git clone https://code.videolan.org/videolan/dav1d.git --depth 1
-        cd dav1d
-        meson setup --cross-file=./package/crossfiles/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson --buildtype release --default-library=static -Denable_tests=false --prefix=${INSTALL_PREFIX} build
-        ninja -C build
-        ninja install -C build
-        
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+  # build:
+  #   env:
+  #     CFLAGS: -O2
+  #     CXXFLAGS: -O2
+  #     INSTALL_PREFIX: ${{ github.workspace }}/lsw
+  #     CMAKE_TOOLCHAIN_PREFIX: ${{ github.workspace }}/cmake_toolchainfile
+  #     MESON_CROSSFILE_PREFIX: ${{ github.workspace }}/meson_lsw_crossfile
+  #   runs-on: ubuntu-24.04
+  #   strategy:
+  #     matrix:
+  #       lsw_config:
+  #         - { author: VFR-maniac, ffmpeg_version: "4.4", ffmpeg_patch: " (patched)", intel: "mfx", ffmpeg_extra_flags: "--enable-avresample" }
+  #         - { author: Mr-Ojii, ffmpeg_version: "7.1", ffmpeg_patch: "", intel: "vpl", ffmpeg_extra_flags: ""}
+  #       l-smash_author: [Mr-Ojii, vimeo]
+  #       cpu_config:
+  #         - { cpu: i686, arch: x86, user_arch: x86, vpx_target: x86-win32-gcc }
+  #         - { cpu: x86_64, arch: x86_64, user_arch: x64, vpx_target: x86_64-win64-gcc }
     
-    - name: Install libvpx
-      id: libvpx-rev
-      run: |
-        cd ${{ github.workspace }}
-        git clone https://github.com/webmproject/libvpx.git --depth 1
-        mkdir libvpx/builds && cd libvpx/builds
-        CROSS=${{ matrix.cpu_config.cpu }}-w64-mingw32- ../configure --target=${{ matrix.cpu_config.vpx_target }} --enable-vp9-highbitdepth --disable-docs --disable-tools --disable-examples --disable-webm-io --disable-vp8-encoder --disable-vp9-encoder --prefix=${INSTALL_PREFIX}
-        make -j$(nproc)
-        make install -j$(nproc)
-        
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
-        
-    - name: Install nv-codec-headers
-      id: nv-codec-headers-rev
-      run: |
-        cd ${{ github.workspace }}
-        git clone https://github.com/FFmpeg/nv-codec-headers.git --depth 1
-        cd nv-codec-headers
-        sudo make install -j$(nproc)
-        
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
-        
-    - name: Install mfx_dispatch
-      if: ${{ matrix.lsw_config.intel == 'mfx' }}
-      id: mfx_dispatch-rev
-      run: |
-        cd ${{ github.workspace }}
-        git clone https://github.com/lu-zero/mfx_dispatch.git --depth 1
-        cd mfx_dispatch
-        autoreconf -i
-        ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32 --prefix=${INSTALL_PREFIX}
-        make -j$(nproc)
-        make install -j$(nproc)
-        
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+  #   steps:
+  #   - uses: actions/checkout@v6
+  #     with:
+  #       fetch-depth: 0
 
-    - name: Install libvpl
-      if: ${{ matrix.lsw_config.intel == 'vpl' }}
-      id: libvpl-rev
-      run: |
-        cd ${{ github.workspace }}
-        git clone https://github.com/intel/libvpl.git --depth 1
-        cd libvpl
-        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TOOLCHAIN_PREFIX}/${{ matrix.cpu_config.cpu }}.cmake" -DBUILD_EXPERIMENTAL=OFF -DBUILD_SHARED_LIBS=OFF -DCXX_LIB=-lstdc++ -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" .
-        cmake --build build -j$(nproc)
-        cmake --install build --prefix=${INSTALL_PREFIX}
+  #   # ビルド用ソフトウェアのインストール
+  #   - name: Install depend lib
+  #     run: |
+  #       sudo apt-get update -y
+  #       sudo apt-get install -y autoconf cmake libtool nasm mingw-w64 meson ninja-build pkg-config
+
+  #   # pkg-configまでcross-prefixがつくので、シンボリックリンクを貼る
+  #   - name: Create pkg-config symbolic link
+  #     run: sudo ln -s /usr/bin/pkg-config /usr/bin/${{ matrix.cpu_config.cpu }}-w64-mingw32-pkg-config
+
+  #   # cherry-pickをする際に必要
+  #   - name: Set git config
+  #     run: |
+  #       git config --global user.name Mr-Ojii
+  #       git config --global user.email okaschan@gmail.com
+
+  #   # ここから依存ライブラリのインストール
+  #   - name: Install zlib
+  #     id: zlib-rev
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       git clone https://github.com/madler/zlib.git --depth 1
+  #       cd zlib
+  #       CROSS_PREFIX=${{ matrix.cpu_config.cpu }}-w64-mingw32- ./configure --static --prefix=${INSTALL_PREFIX}
+  #       make -j$(nproc)
+  #       make install -j$(nproc)
         
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+  #       REVCOUNT=`git rev-list --count HEAD`
+  #       echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+  #       SHA=`git rev-parse HEAD`
+  #       echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+
+  #   - name: Install Game Music Emu
+  #     id: game-music-emu-rev
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       git clone https://github.com/libgme/game-music-emu.git --depth 1
+  #       cd game-music-emu
+        
+  #       # SharedとStaticの2回、ビルドとインストールを行う
+  #       # Shared (FFmpegはSharedをビルドしないければエラーとなる)
+  #       cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_PREFIX}/${{ matrix.cpu_config.cpu }}.cmake
+  #       cmake --build build -j $(nproc)
+  #       cmake --install build --prefix ${INSTALL_PREFIX}
+        
+  #       rm -rf build
+        
+  #       # Static (LSWはStaticをビルドしなければエラーとなる)
+  #       cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DENABLE_UBSAN=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_PREFIX}/${{ matrix.cpu_config.cpu }}.cmake
+  #       cmake --build build -j $(nproc)
+  #       cmake --install build --prefix ${INSTALL_PREFIX}
+        
+  #       REVCOUNT=`git rev-list --count HEAD`
+  #       echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+  #       SHA=`git rev-parse HEAD`
+  #       echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+        
+  #   - name: Install dav1d
+  #     id: dav1d-rev
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       git clone https://code.videolan.org/videolan/dav1d.git --depth 1
+  #       cd dav1d
+  #       meson setup --cross-file=./package/crossfiles/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson --buildtype release --default-library=static -Denable_tests=false --prefix=${INSTALL_PREFIX} build
+  #       ninja -C build
+  #       ninja install -C build
+        
+  #       REVCOUNT=`git rev-list --count HEAD`
+  #       echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+  #       SHA=`git rev-parse HEAD`
+  #       echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+    
+  #   - name: Install libvpx
+  #     id: libvpx-rev
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       git clone https://github.com/webmproject/libvpx.git --depth 1
+  #       mkdir libvpx/builds && cd libvpx/builds
+  #       CROSS=${{ matrix.cpu_config.cpu }}-w64-mingw32- ../configure --target=${{ matrix.cpu_config.vpx_target }} --enable-vp9-highbitdepth --disable-docs --disable-tools --disable-examples --disable-webm-io --disable-vp8-encoder --disable-vp9-encoder --prefix=${INSTALL_PREFIX}
+  #       make -j$(nproc)
+  #       make install -j$(nproc)
+        
+  #       REVCOUNT=`git rev-list --count HEAD`
+  #       echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+  #       SHA=`git rev-parse HEAD`
+  #       echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+        
+  #   - name: Install nv-codec-headers
+  #     id: nv-codec-headers-rev
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       git clone https://github.com/FFmpeg/nv-codec-headers.git --depth 1
+  #       cd nv-codec-headers
+  #       sudo make install -j$(nproc)
+        
+  #       REVCOUNT=`git rev-list --count HEAD`
+  #       echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+  #       SHA=`git rev-parse HEAD`
+  #       echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+        
+  #   - name: Install mfx_dispatch
+  #     if: ${{ matrix.lsw_config.intel == 'mfx' }}
+  #     id: mfx_dispatch-rev
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       git clone https://github.com/lu-zero/mfx_dispatch.git --depth 1
+  #       cd mfx_dispatch
+  #       autoreconf -i
+  #       ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32 --prefix=${INSTALL_PREFIX}
+  #       make -j$(nproc)
+  #       make install -j$(nproc)
+        
+  #       REVCOUNT=`git rev-list --count HEAD`
+  #       echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+  #       SHA=`git rev-parse HEAD`
+  #       echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+
+  #   - name: Install libvpl
+  #     if: ${{ matrix.lsw_config.intel == 'vpl' }}
+  #     id: libvpl-rev
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       git clone https://github.com/intel/libvpl.git --depth 1
+  #       cd libvpl
+  #       cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TOOLCHAIN_PREFIX}/${{ matrix.cpu_config.cpu }}.cmake" -DBUILD_EXPERIMENTAL=OFF -DBUILD_SHARED_LIBS=OFF -DCXX_LIB=-lstdc++ -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" .
+  #       cmake --build build -j$(nproc)
+  #       cmake --install build --prefix=${INSTALL_PREFIX}
+        
+  #       REVCOUNT=`git rev-list --count HEAD`
+  #       echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+  #       SHA=`git rev-parse HEAD`
+  #       echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
       
-    - name: Install FFmpeg
-      run: |
-        cd ${{ github.workspace }}
-        git clone https://github.com/FFmpeg/FFmpeg.git -b release/${{ matrix.lsw_config.ffmpeg_version }}
-        cd FFmpeg
+  #   - name: Install FFmpeg
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       git clone https://github.com/FFmpeg/FFmpeg.git -b release/${{ matrix.lsw_config.ffmpeg_version }}
+  #       cd FFmpeg
 
-        # 文字が1文字以上存在すれば実行される
-        if [ "${{ matrix.lsw_config.ffmpeg_patch }}" ]; then
-          git cherry-pick 07bcedc232feeb9e30336624f4e9977d47ac43bc
-        fi
+  #       # 文字が1文字以上存在すれば実行される
+  #       if [ "${{ matrix.lsw_config.ffmpeg_patch }}" ]; then
+  #         git cherry-pick 07bcedc232feeb9e30336624f4e9977d47ac43bc
+  #       fi
         
-        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --enable-version3 --disable-hwaccels --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="-lpthread" --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --target-os=mingw32 --arch=${{ matrix.cpu_config.arch }} --prefix=${INSTALL_PREFIX} --enable-libdav1d --enable-libvpx --enable-libgme --enable-lib${{ matrix.lsw_config.intel }} ${{ matrix.lsw_config.ffmpeg_extra_flags }}
-        make -j$(nproc)
-        make install -j$(nproc)
+  #       PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --enable-version3 --disable-hwaccels --disable-encoders --disable-avisynth --disable-doc --disable-network --disable-programs --disable-outdevs --disable-indevs --disable-avfilter --disable-debug --disable-muxers --enable-avcodec --enable-avformat --enable-swresample --enable-swscale --extra-libs="-lpthread" --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --target-os=mingw32 --arch=${{ matrix.cpu_config.arch }} --prefix=${INSTALL_PREFIX} --enable-libdav1d --enable-libvpx --enable-libgme --enable-lib${{ matrix.lsw_config.intel }} ${{ matrix.lsw_config.ffmpeg_extra_flags }}
+  #       make -j$(nproc)
+  #       make install -j$(nproc)
   
-    - name: Install obuparse
-      id: obuparse-rev
-      run: |
-        cd ${{ github.workspace }}
-        git clone https://github.com/dwbuiten/obuparse.git --depth 1
-        cd obuparse
-        ${{ matrix.cpu_config.cpu }}-w64-mingw32-gcc -O2 -c obuparse.c
-        ${{ matrix.cpu_config.cpu }}-w64-mingw32-ar r libobuparse.a obuparse.o
-        install obuparse.h ${INSTALL_PREFIX}/include
-        install libobuparse.a ${INSTALL_PREFIX}/lib
+  #   - name: Install obuparse
+  #     id: obuparse-rev
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       git clone https://github.com/dwbuiten/obuparse.git --depth 1
+  #       cd obuparse
+  #       ${{ matrix.cpu_config.cpu }}-w64-mingw32-gcc -O2 -c obuparse.c
+  #       ${{ matrix.cpu_config.cpu }}-w64-mingw32-ar r libobuparse.a obuparse.o
+  #       install obuparse.h ${INSTALL_PREFIX}/include
+  #       install libobuparse.a ${INSTALL_PREFIX}/lib
         
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+  #       REVCOUNT=`git rev-list --count HEAD`
+  #       echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+  #       SHA=`git rev-parse HEAD`
+  #       echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
-    - name: Install L-SMASH
-      id: l-smash-rev
-      run: |
-        cd ${{ github.workspace }}
-        git clone https://github.com/${{ matrix.l-smash_author }}/l-smash.git
-        cd l-smash
-        ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I${INSTALL_PREFIX}/include --extra-ldflags=-L${INSTALL_PREFIX}/lib --prefix=${INSTALL_PREFIX}
-        make lib -j$(nproc)
-        make install-lib -j$(nproc)
+  #   - name: Install L-SMASH
+  #     id: l-smash-rev
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       git clone https://github.com/${{ matrix.l-smash_author }}/l-smash.git
+  #       cd l-smash
+  #       ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I${INSTALL_PREFIX}/include --extra-ldflags=-L${INSTALL_PREFIX}/lib --prefix=${INSTALL_PREFIX}
+  #       make lib -j$(nproc)
+  #       make install-lib -j$(nproc)
         
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+  #       REVCOUNT=`git rev-list --count HEAD`
+  #       echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+  #       SHA=`git rev-parse HEAD`
+  #       echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
 
-    - name: Install AviSynthPlus
-      id: avisynthplus-rev
-      run: |
-        cd ${{ github.workspace }}
-        git clone https://github.com/AviSynth/AviSynthPlus.git --depth 1 -b v3.7.3
-        cd AviSynthPlus
-        # Multiple definitions防止のため、勝手にちょっとだけパッチを当てる
-        sed -i 's/MSVC/__MINGW32__/' avs_core/filters/AviSource/avi_source.cpp
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_PLUGINS=OFF -DENABLE_INTEL_SIMD=OFF -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_PREFIX}/${{ matrix.cpu_config.cpu }}.cmake
-        cmake --build build -j $(nproc)
-        cmake --install build --prefix ${INSTALL_PREFIX}
+  #   - name: Install AviSynthPlus
+  #     id: avisynthplus-rev
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       git clone https://github.com/AviSynth/AviSynthPlus.git --depth 1 -b v3.7.3
+  #       cd AviSynthPlus
+  #       # Multiple definitions防止のため、勝手にちょっとだけパッチを当てる
+  #       sed -i 's/MSVC/__MINGW32__/' avs_core/filters/AviSource/avi_source.cpp
+  #       cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_PLUGINS=OFF -DENABLE_INTEL_SIMD=OFF -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_PREFIX}/${{ matrix.cpu_config.cpu }}.cmake
+  #       cmake --build build -j $(nproc)
+  #       cmake --install build --prefix ${INSTALL_PREFIX}
         
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+  #       REVCOUNT=`git rev-list --count HEAD`
+  #       echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+  #       SHA=`git rev-parse HEAD`
+  #       echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
-    - name: Install zimg
-      id: zimg-rev
-      run: |
-        cd ${{ github.workspace }}
-        git clone https://github.com/sekrit-twc/zimg -b v3.0 --depth 1
-        cd zimg
-        ./autogen.sh
-        ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32 --prefix=${INSTALL_PREFIX}
-        make -j$(nproc)
-        make install -j$(nproc)
+  #   - name: Install zimg
+  #     id: zimg-rev
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       git clone https://github.com/sekrit-twc/zimg -b v3.0 --depth 1
+  #       cd zimg
+  #       ./autogen.sh
+  #       ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32 --prefix=${INSTALL_PREFIX}
+  #       make -j$(nproc)
+  #       make install -j$(nproc)
         
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+  #       REVCOUNT=`git rev-list --count HEAD`
+  #       echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+  #       SHA=`git rev-parse HEAD`
+  #       echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
-    - name: Install VapourSynth
-      id: vapoursynth-rev
-      run: |
-        cd ${{ github.workspace }}
-        git clone https://github.com/vapoursynth/vapoursynth -b R72 --depth 1
-        cd vapoursynth
-        ./autogen.sh
-        CC=${{ matrix.cpu_config.cpu }}-w64-mingw32-gcc-posix CXX=${{ matrix.cpu_config.cpu }}-w64-mingw32-g++-posix PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32 --disable-vsscript --disable-vspipe --disable-python-module --prefix=${INSTALL_PREFIX}
-        make -j$(nproc)
-        make install -j$(nproc)
+  #   - name: Install VapourSynth
+  #     id: vapoursynth-rev
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       git clone https://github.com/vapoursynth/vapoursynth -b R72 --depth 1
+  #       cd vapoursynth
+  #       ./autogen.sh
+  #       CC=${{ matrix.cpu_config.cpu }}-w64-mingw32-gcc-posix CXX=${{ matrix.cpu_config.cpu }}-w64-mingw32-g++-posix PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --host=${{ matrix.cpu_config.cpu }}-w64-mingw32 --disable-vsscript --disable-vspipe --disable-python-module --prefix=${INSTALL_PREFIX}
+  #       make -j$(nproc)
+  #       make install -j$(nproc)
         
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
-    # ここまで依存ライブラリのインストール
+  #       REVCOUNT=`git rev-list --count HEAD`
+  #       echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+  #       SHA=`git rev-parse HEAD`
+  #       echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+  #   # ここまで依存ライブラリのインストール
 
-    - name: Clone L-SMASH Works
-      id: l-smash-works-rev
-      run: |
-        cd ${{ github.workspace }}
-        git clone https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works.git
+  #   - name: Clone L-SMASH Works
+  #     id: l-smash-works-rev
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       git clone https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works.git
         
-        cd L-SMASH-Works
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+  #       cd L-SMASH-Works
+  #       REVCOUNT=`git rev-list --count HEAD`
+  #       echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+  #       SHA=`git rev-parse HEAD`
+  #       echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
 
-    # BuildInfo File 周り
-    # LSWのビルド時に使用するので、先に取得しておく必要がある
-    - name: Set workflow Revision Info
-      id: workflow-rev
-      run: |
-        cd ${{ github.workspace }}
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
+  #   # BuildInfo File 周り
+  #   # LSWのビルド時に使用するので、先に取得しておく必要がある
+  #   - name: Set workflow Revision Info
+  #     id: workflow-rev
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       REVCOUNT=`git rev-list --count HEAD`
+  #       echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
+  #       SHA=`git rev-parse HEAD`
+  #       echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
         
-    - name: Create BuildInfo File
-      run: |
-        cd ${{ github.workspace }}/L-SMASH-Works
-        echo "L-SMASH-Works-Auto-Builds r${{ steps.workflow-rev.outputs.REV_LIST_COUNT }}
-        https://github.com/Mr-Ojii/L-SMASH-Works-Auto-Builds
+  #   - name: Create BuildInfo File
+  #     run: |
+  #       cd ${{ github.workspace }}/L-SMASH-Works
+  #       echo "L-SMASH-Works-Auto-Builds r${{ steps.workflow-rev.outputs.REV_LIST_COUNT }}
+  #       https://github.com/Mr-Ojii/L-SMASH-Works-Auto-Builds
         
-        ${{ matrix.lsw_config.author }}/L-SMASH-Works r${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}
-        https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works
+  #       ${{ matrix.lsw_config.author }}/L-SMASH-Works r${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }}
+  #       https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works
         
-        FFmpeg ${{ matrix.lsw_config.ffmpeg_version }}${{ matrix.lsw_config.ffmpeg_patch }}
-        https://github.com/FFmpeg/FFmpeg
+  #       FFmpeg ${{ matrix.lsw_config.ffmpeg_version }}${{ matrix.lsw_config.ffmpeg_patch }}
+  #       https://github.com/FFmpeg/FFmpeg
         
-        ${{ matrix.l-smash_author }}/L-SMASH r${{ steps.l-smash-rev.outputs.REV_LIST_COUNT }}
-        https://github.com/${{ matrix.l-smash_author }}/l-smash
+  #       ${{ matrix.l-smash_author }}/L-SMASH r${{ steps.l-smash-rev.outputs.REV_LIST_COUNT }}
+  #       https://github.com/${{ matrix.l-smash_author }}/l-smash
         
-        dav1d ${{ steps.dav1d-rev.outputs.REV_SHA }}
-        https://github.com/videolan/dav1d
+  #       dav1d ${{ steps.dav1d-rev.outputs.REV_SHA }}
+  #       https://github.com/videolan/dav1d
         
-        libvpx ${{ steps.libvpx-rev.outputs.REV_SHA }}
-        https://github.com/webmproject/libvpx
+  #       libvpx ${{ steps.libvpx-rev.outputs.REV_SHA }}
+  #       https://github.com/webmproject/libvpx
         
-        nv-codec-headers ${{ steps.nv-codec-headers-rev.outputs.REV_SHA }}
-        https://github.com/FFmpeg/nv-codec-headers
+  #       nv-codec-headers ${{ steps.nv-codec-headers-rev.outputs.REV_SHA }}
+  #       https://github.com/FFmpeg/nv-codec-headers
         
-        zlib ${{ steps.zlib-rev.outputs.REV_SHA }}
-        https://github.com/madler/zlib
+  #       zlib ${{ steps.zlib-rev.outputs.REV_SHA }}
+  #       https://github.com/madler/zlib
         
-        obuparse ${{ steps.obuparse-rev.outputs.REV_SHA }}
-        https://github.com/dwbuiten/obuparse
+  #       obuparse ${{ steps.obuparse-rev.outputs.REV_SHA }}
+  #       https://github.com/dwbuiten/obuparse
 
-        game-music-emu ${{ steps.game-music-emu-rev.outputs.REV_SHA }}
-        https://github.com/libgme/game-music-emu
+  #       game-music-emu ${{ steps.game-music-emu-rev.outputs.REV_SHA }}
+  #       https://github.com/libgme/game-music-emu
 
-        zimg ${{ steps.zimg-rev.outputs.REV_SHA }}
-        https://github.com/sekrit-twc/zimg
+  #       zimg ${{ steps.zimg-rev.outputs.REV_SHA }}
+  #       https://github.com/sekrit-twc/zimg
         
-        vapoursynth ${{ steps.vapoursynth-rev.outputs.REV_SHA }}
-        https://github.com/vapoursynth/vapoursynth
+  #       vapoursynth ${{ steps.vapoursynth-rev.outputs.REV_SHA }}
+  #       https://github.com/vapoursynth/vapoursynth
         
-        " >> "AviUtl/About-this-build.txt"
+  #       " >> "AviUtl/About-this-build.txt"
         
-        if [ "${{ matrix.lsw_config.intel }}" == "mfx" ]; then
+  #       if [ "${{ matrix.lsw_config.intel }}" == "mfx" ]; then
 
-        echo "mfx_dispatch ${{ steps.mfx_dispatch-rev.outputs.REV_SHA }}
-        https://github.com/lu-zero/mfx_dispatch" >> "AviUtl/About-this-build.txt"
+  #       echo "mfx_dispatch ${{ steps.mfx_dispatch-rev.outputs.REV_SHA }}
+  #       https://github.com/lu-zero/mfx_dispatch" >> "AviUtl/About-this-build.txt"
 
-        else
+  #       else
 
-        echo "libvpl ${{ steps.libvpl-rev.outputs.REV_SHA }}
-        https://github.com/intel/libvpl" >> "AviUtl/About-this-build.txt"
+  #       echo "libvpl ${{ steps.libvpl-rev.outputs.REV_SHA }}
+  #       https://github.com/intel/libvpl" >> "AviUtl/About-this-build.txt"
 
-        fi
+  #       fi
     
-    - name: Add License Files
-      run: |
-        mkdir ${{ github.workspace }}/L-SMASH-Works/AviUtl/Licenses
-        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl/Licenses
-        cp ${{ github.workspace }}/dav1d/COPYING dav1d.txt
-        cp ${{ github.workspace }}/l-smash/LICENSE L-SMASH.txt
-        cp ${{ github.workspace }}/FFmpeg/COPYING.LGPLv3 FFmpeg.txt
-        cp ${{ github.workspace }}/libvpx/LICENSE libvpx.txt
-        if [ "${{ matrix.lsw_config.intel }}" == "mfx" ]; then
-          cp ${{ github.workspace }}/mfx_dispatch/LICENSE mfx_dispatch.txt
-        else
-          cp ${{ github.workspace }}/libvpl/LICENSE libvpl.txt
-        fi
-        echo "[InternetShortcut]" > zlib.url
-        echo "URL=https://zlib.net/zlib_license.html" >> zlib.url
-        cp ${{ github.workspace }}/obuparse/LICENSE obuparse.txt
-        cp ${{ github.workspace }}/game-music-emu/license.txt game-music-emu.txt
-        cp ${{ github.workspace }}/zimg/COPYING zimg.txt
-        cp ${{ github.workspace }}/vapoursynth/COPYING.LESSER vapoursynth.txt
+  #   - name: Add License Files
+  #     run: |
+  #       mkdir ${{ github.workspace }}/L-SMASH-Works/AviUtl/Licenses
+  #       cd ${{ github.workspace }}/L-SMASH-Works/AviUtl/Licenses
+  #       cp ${{ github.workspace }}/dav1d/COPYING dav1d.txt
+  #       cp ${{ github.workspace }}/l-smash/LICENSE L-SMASH.txt
+  #       cp ${{ github.workspace }}/FFmpeg/COPYING.LGPLv3 FFmpeg.txt
+  #       cp ${{ github.workspace }}/libvpx/LICENSE libvpx.txt
+  #       if [ "${{ matrix.lsw_config.intel }}" == "mfx" ]; then
+  #         cp ${{ github.workspace }}/mfx_dispatch/LICENSE mfx_dispatch.txt
+  #       else
+  #         cp ${{ github.workspace }}/libvpl/LICENSE libvpl.txt
+  #       fi
+  #       echo "[InternetShortcut]" > zlib.url
+  #       echo "URL=https://zlib.net/zlib_license.html" >> zlib.url
+  #       cp ${{ github.workspace }}/obuparse/LICENSE obuparse.txt
+  #       cp ${{ github.workspace }}/game-music-emu/license.txt game-music-emu.txt
+  #       cp ${{ github.workspace }}/zimg/COPYING zimg.txt
+  #       cp ${{ github.workspace }}/vapoursynth/COPYING.LESSER vapoursynth.txt
 
-    - name: Create RevInfo.txt
-      run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
-        echo ${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} > RevInfo.txt
+  #   - name: Create RevInfo.txt
+  #     run: |
+  #       cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
+  #       echo ${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} > RevInfo.txt
 
-    # ここからLSWのビルド
-    # VFR-maniac版はmesonに対応していないため、一時的に除外
-    - name: Build L-SMASH Works(AviSynth)
-      if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
-      run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/AviSynth
-        # ヘッダファイルの階層問題より、AviSynthのヘッダを一つ上の階層にぶちまける
-        mv ${INSTALL_PREFIX}/include/avisynth/* ${INSTALL_PREFIX}/include
-        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig meson setup --prefer-static --cross-file=${MESON_CROSSFILE_PREFIX}/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
-        ninja -C build
+  #   # ここからLSWのビルド
+  #   # VFR-maniac版はmesonに対応していないため、一時的に除外
+  #   - name: Build L-SMASH Works(AviSynth)
+  #     if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
+  #     run: |
+  #       cd ${{ github.workspace }}/L-SMASH-Works/AviSynth
+  #       # ヘッダファイルの階層問題より、AviSynthのヘッダを一つ上の階層にぶちまける
+  #       mv ${INSTALL_PREFIX}/include/avisynth/* ${INSTALL_PREFIX}/include
+  #       PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig meson setup --prefer-static --cross-file=${MESON_CROSSFILE_PREFIX}/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
+  #       ninja -C build
 
-    - name: Build L-SMASH Works(VapourSynth)(meson)
-      if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
-      run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/VapourSynth
-        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig meson setup --prefer-static --cross-file=${MESON_CROSSFILE_PREFIX}/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
-        ninja -C build
+  #   - name: Build L-SMASH Works(VapourSynth)(meson)
+  #     if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
+  #     run: |
+  #       cd ${{ github.workspace }}/L-SMASH-Works/VapourSynth
+  #       PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig meson setup --prefer-static --cross-file=${MESON_CROSSFILE_PREFIX}/${{ matrix.cpu_config.cpu }}-w64-mingw32.meson build
+  #       ninja -C build
         
-    - name: Build L-SMASH Works(VapourSynth)(makefile)
-      if: ${{ matrix.lsw_config.author == 'VFR-maniac' }}
-      run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/VapourSynth
-        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
-        make
-        mkdir build
-        mv libvslsmashsource.so.${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} build/libvslsmashsource.dll
+  #   - name: Build L-SMASH Works(VapourSynth)(makefile)
+  #     if: ${{ matrix.lsw_config.author == 'VFR-maniac' }}
+  #     run: |
+  #       cd ${{ github.workspace }}/L-SMASH-Works/VapourSynth
+  #       PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
+  #       make
+  #       mkdir build
+  #       mv libvslsmashsource.so.${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} build/libvslsmashsource.dll
 
       
-    - name: Build L-SMASH Works(AviUtl ExEdit2)
-      if: ${{ matrix.cpu_config.user_arch == 'x64' && matrix.lsw_config.author == 'Mr-Ojii' }}
-      run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl2
-        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
-        make -j$(nproc)
+  #   - name: Build L-SMASH Works(AviUtl ExEdit2)
+  #     if: ${{ matrix.cpu_config.user_arch == 'x64' && matrix.lsw_config.author == 'Mr-Ojii' }}
+  #     run: |
+  #       cd ${{ github.workspace }}/L-SMASH-Works/AviUtl2
+  #       PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
+  #       make -j$(nproc)
 
-    - name: Build L-SMASH Works(AviUtl)
-      run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
-        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
-        make -j$(nproc)
+  #   - name: Build L-SMASH Works(AviUtl)
+  #     run: |
+  #       cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
+  #       PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
+  #       make -j$(nproc)
 
-    - name: Rename Files(x64)
-      if: ${{ matrix.cpu_config.user_arch == 'x64' }}
-      run: |
-        cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
-        mv lwinput.aui lwinput64.aui
-        mv About-this-build.txt About-this-build-x64.txt
-        mv RevInfo.txt RevInfo64.txt
+  #   - name: Rename Files(x64)
+  #     if: ${{ matrix.cpu_config.user_arch == 'x64' }}
+  #     run: |
+  #       cd ${{ github.workspace }}/L-SMASH-Works/AviUtl
+  #       mv lwinput.aui lwinput64.aui
+  #       mv About-this-build.txt About-this-build-x64.txt
+  #       mv RevInfo.txt RevInfo64.txt
 
-    # Releaseのためのディレクトリ
-    - name: Create pub Directory
-      run: |
-        cd ${{ github.workspace }}
-        mkdir pub
+  #   # Releaseのためのディレクトリ
+  #   - name: Create pub Directory
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       mkdir pub
 
-    - name: Copy to pub Directory(AviSynth)
-      if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
-      run: |
-        cd ${{ github.workspace }}
-        mkdir pub/AviSynth && mkdir pub/AviSynth/${{ matrix.cpu_config.user_arch }}
-        cp L-SMASH-Works/AviSynth/build/*.dll pub/AviSynth/${{ matrix.cpu_config.user_arch }}
+  #   - name: Copy to pub Directory(AviSynth)
+  #     if: ${{ matrix.lsw_config.author != 'VFR-maniac' }}
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       mkdir pub/AviSynth && mkdir pub/AviSynth/${{ matrix.cpu_config.user_arch }}
+  #       cp L-SMASH-Works/AviSynth/build/*.dll pub/AviSynth/${{ matrix.cpu_config.user_arch }}
 
-    - name: Copy to pub Directory(VapourSynth)
-      run: |
-        cd ${{ github.workspace }}
-        mkdir pub/VapourSynth && mkdir pub/VapourSynth/${{ matrix.cpu_config.user_arch }}
-        cp L-SMASH-Works/VapourSynth/build/*.dll pub/VapourSynth/${{ matrix.cpu_config.user_arch }}
+  #   - name: Copy to pub Directory(VapourSynth)
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       mkdir pub/VapourSynth && mkdir pub/VapourSynth/${{ matrix.cpu_config.user_arch }}
+  #       cp L-SMASH-Works/VapourSynth/build/*.dll pub/VapourSynth/${{ matrix.cpu_config.user_arch }}
         
 
-    - name: Copy to pub Directory(AviUtl, x86)
-      if: ${{ matrix.cpu_config.user_arch == 'x86' }}
-      run: |
-        cd ${{ github.workspace }}
-        mkdir pub/AviUtl
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auf pub/AviUtl
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auc pub/AviUtl
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui pub/AviUtl
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/README pub/AviUtl
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/README.ja pub/AviUtl
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/LICENSE pub
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build.txt pub
-        cp -r ${{ github.workspace }}/L-SMASH-Works/AviUtl/Licenses pub
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/RevInfo.txt pub
+  #   - name: Copy to pub Directory(AviUtl, x86)
+  #     if: ${{ matrix.cpu_config.user_arch == 'x86' }}
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       mkdir pub/AviUtl
+  #       cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auf pub/AviUtl
+  #       cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.auc pub/AviUtl
+  #       cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui pub/AviUtl
+  #       cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/README pub/AviUtl
+  #       cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/README.ja pub/AviUtl
+  #       cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/LICENSE pub
+  #       cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build.txt pub
+  #       cp -r ${{ github.workspace }}/L-SMASH-Works/AviUtl/Licenses pub
+  #       cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/RevInfo.txt pub
 
-    - name: Copy to pub Directory(AviUtl, x64)
-      if: ${{ matrix.cpu_config.user_arch == 'x64' }}
-      run: |
-        cd ${{ github.workspace }}
-        mkdir pub/AviUtl
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui pub/AviUtl
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build-x64.txt pub
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/RevInfo64.txt pub
+  #   - name: Copy to pub Directory(AviUtl, x64)
+  #     if: ${{ matrix.cpu_config.user_arch == 'x64' }}
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       mkdir pub/AviUtl
+  #       cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/*.aui pub/AviUtl
+  #       cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/About-this-build-x64.txt pub
+  #       cp ${{ github.workspace }}/L-SMASH-Works/AviUtl/RevInfo64.txt pub
 
-    - name: Copy to pub Directory(AviUtl Exedit2)
-      if: ${{ matrix.cpu_config.user_arch == 'x64' && matrix.lsw_config.author == 'Mr-Ojii' }}
-      run: |
-        cd ${{ github.workspace }}
-        mkdir pub/AviUtl2
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl2/lwinput.aui2 pub/AviUtl2
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl2/README pub/AviUtl2
-        cp ${{ github.workspace }}/L-SMASH-Works/AviUtl2/README.ja pub/AviUtl2
+  #   - name: Copy to pub Directory(AviUtl Exedit2)
+  #     if: ${{ matrix.cpu_config.user_arch == 'x64' && matrix.lsw_config.author == 'Mr-Ojii' }}
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       mkdir pub/AviUtl2
+  #       cp ${{ github.workspace }}/L-SMASH-Works/AviUtl2/lwinput.aui2 pub/AviUtl2
+  #       cp ${{ github.workspace }}/L-SMASH-Works/AviUtl2/README pub/AviUtl2
+  #       cp ${{ github.workspace }}/L-SMASH-Works/AviUtl2/README.ja pub/AviUtl2
         
-    - name: Upload artifact
-      uses: actions/upload-artifact@v7
-      with:
-        name: ${{ matrix.lsw_config.author }}_${{ matrix.l-smash_author }}_${{ matrix.cpu_config.user_arch }}
-        path: ${{ github.workspace }}/pub
+  #   - name: Upload artifact
+  #     uses: actions/upload-artifact@v7
+  #     with:
+  #       name: ${{ matrix.lsw_config.author }}_${{ matrix.l-smash_author }}_${{ matrix.cpu_config.user_arch }}
+  #       path: ${{ github.workspace }}/pub
 
 
-  # x86とx64のファイルをまとめて1つのzipにするための処理
-  create-archive:
-    name: Create archive
-    needs: build
-    runs-on: ubuntu-24.04
-    strategy:
-      matrix:
-        author: [VFR-maniac, Mr-Ojii]
-        l-smash_author: [Mr-Ojii, vimeo]
-    steps:
-    - uses: actions/checkout@v6
+  # # x86とx64のファイルをまとめて1つのzipにするための処理
+  # create-archive:
+  #   name: Create archive
+  #   needs: build
+  #   runs-on: ubuntu-24.04
+  #   strategy:
+  #     matrix:
+  #       author: [VFR-maniac, Mr-Ojii]
+  #       l-smash_author: [Mr-Ojii, vimeo]
+  #   steps:
+  #   - uses: actions/checkout@v6
     
-    - uses: actions/download-artifact@v8
-      with:
-        name: ${{ matrix.author }}_${{ matrix.l-smash_author }}_x86
-        path: x86
+  #   - uses: actions/download-artifact@v8
+  #     with:
+  #       name: ${{ matrix.author }}_${{ matrix.l-smash_author }}_x86
+  #       path: x86
 
-    - uses: actions/download-artifact@v8
-      with:
-        name: ${{ matrix.author }}_${{ matrix.l-smash_author }}_x64
-        path: x64
+  #   - uses: actions/download-artifact@v8
+  #     with:
+  #       name: ${{ matrix.author }}_${{ matrix.l-smash_author }}_x64
+  #       path: x64
 
-    - name: Copy Artifacts
-      run: |
-        cd ${{ github.workspace }}
-        mkdir artifacts
-        cp -r x86/* artifacts
-        cp -r x64/* artifacts
+  #   - name: Copy Artifacts
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       mkdir artifacts
+  #       cp -r x86/* artifacts
+  #       cp -r x64/* artifacts
         
-    - name: Upload artifact
-      uses: actions/upload-artifact@v7
-      with:
-        name: ${{ matrix.author }}_${{ matrix.l-smash_author }}_Test
-        path: ${{ github.workspace }}/artifacts
+  #   - name: Upload artifact
+  #     uses: actions/upload-artifact@v7
+  #     with:
+  #       name: ${{ matrix.author }}_${{ matrix.l-smash_author }}_Test
+  #       path: ${{ github.workspace }}/artifacts
 
-    - name: Delete test files
-      run: |
-        cd ${{ github.workspace }}/artifacts
-        rm -rf AviSynth
+  #   - name: Delete test files
+  #     run: |
+  #       cd ${{ github.workspace }}/artifacts
+  #       rm -rf AviSynth
         
-    - name: Set RevInfo
-      id: rev-info
-      run: |
-        cd ${{ github.workspace }}/artifacts
-        if [ "$(cat RevInfo.txt)" != "$(cat RevInfo64.txt)" ]; then
-          exit 1
-        fi
-        echo -n "REV=" > Rev.txt
-        cat RevInfo.txt >> Rev.txt
-        cat Rev.txt >> $GITHUB_OUTPUT
-        rm Rev.txt RevInfo.txt RevInfo64.txt
+  #   - name: Set RevInfo
+  #     id: rev-info
+  #     run: |
+  #       cd ${{ github.workspace }}/artifacts
+  #       if [ "$(cat RevInfo.txt)" != "$(cat RevInfo64.txt)" ]; then
+  #         exit 1
+  #       fi
+  #       echo -n "REV=" > Rev.txt
+  #       cat RevInfo.txt >> Rev.txt
+  #       cat Rev.txt >> $GITHUB_OUTPUT
+  #       rm Rev.txt RevInfo.txt RevInfo64.txt
         
-    - name: Check diff
-      run: |
-        cd ${{ github.workspace }}/artifacts
-        if [ "$(diff About-this-build.txt About-this-build-x64.txt)" == "" ]; then
-          rm About-this-build-x64.txt
-        fi
+  #   - name: Check diff
+  #     run: |
+  #       cd ${{ github.workspace }}/artifacts
+  #       if [ "$(diff About-this-build.txt About-this-build-x64.txt)" == "" ]; then
+  #         rm About-this-build-x64.txt
+  #       fi
         
-    - name: Create archive
-      run: |
-        cd ${{ github.workspace }}/artifacts
-        zip L-SMASH-Works_r${{ steps.rev-info.outputs.REV }}_${{ matrix.author }}_${{ matrix.l-smash_author }} -r *
+  #   - name: Create archive
+  #     run: |
+  #       cd ${{ github.workspace }}/artifacts
+  #       zip L-SMASH-Works_r${{ steps.rev-info.outputs.REV }}_${{ matrix.author }}_${{ matrix.l-smash_author }} -r *
         
-    - uses: actions/upload-artifact@v7
-      with:
-        name: L-SMASH-Works-${{ matrix.author }}_${{ matrix.l-smash_author }}
-        path: ${{ github.workspace }}/artifacts/*.zip
+  #   - uses: actions/upload-artifact@v7
+  #     with:
+  #       name: L-SMASH-Works-${{ matrix.author }}_${{ matrix.l-smash_author }}
+  #       path: ${{ github.workspace }}/artifacts/*.zip
 
-  # Releaseをするための処理
-  create-release:
-    name: Create release
-    needs: create-archive
-    runs-on: ubuntu-24.04
-    steps:
-    - uses: actions/checkout@v6
+  # # Releaseをするための処理
+  # create-release:
+  #   name: Create release
+  #   needs: create-archive
+  #   if: ${{ github.ref == 'refs/heads/main' }}
+  #   runs-on: ubuntu-24.04
+  #   steps:
+  #   - uses: actions/checkout@v6
     
-    - uses: actions/download-artifact@v8
-      with:
-        path: artifacts
+  #   - uses: actions/download-artifact@v8
+  #     with:
+  #       path: artifacts
     
-    - name: Get Date
-      id: get_date
-      run: |
-        DATE_TIME=`date +'%Y-%m-%d-%H-%M-%S'`
-        echo "DATE_TIME=${DATE_TIME}" >> $GITHUB_OUTPUT
+  #   - name: Get Date
+  #     id: get_date
+  #     run: |
+  #       DATE_TIME=`date +'%Y-%m-%d-%H-%M-%S'`
+  #       echo "DATE_TIME=${DATE_TIME}" >> $GITHUB_OUTPUT
           
-    - name: Create a Release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        cd ${{ github.workspace }}
-        RECOMMEND=$(cat recommend.txt)
-        cd ${{ github.workspace }}/artifacts
-        mv ./*/*.zip ./
-        RELEASE_NAME=Build-${{ steps.get_date.outputs.DATE_TIME }}
-        TAG_NAME=build-${{ steps.get_date.outputs.DATE_TIME }}
-        for asset in *.zip; do
-          if [[ "$asset" =~ "${RECOMMEND}" ]]; then
-            AVIUTL_RECOMMEND_FILE=$asset
-          fi
-        done
-        echo "AviUtl・AviUtl ExEdit2用には\`${AVIUTL_RECOMMEND_FILE}\`をダウンロードすることをお勧めします。" >> ReleaseNotes.txt
-        echo "また、別バージョンからMr-Ojii版L-SMASH Worksに更新する場合、以下の記事をお読みください。" >> ReleaseNotes.txt
-        echo "https://scrapbox.io/Mr-Ojii/Mr-Ojii%E7%89%88_L-SMASH_Works%E3%81%AE%E6%9C%80%E6%96%B0%E7%89%88%E3%81%AB%E6%9B%B4%E6%96%B0%E3%81%99%E3%82%8B%E9%9A%9B%E3%81%AE%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A0%85" >> ReleaseNotes.txt
+  #   - name: Create a Release
+  #     env:
+  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     run: |
+  #       cd ${{ github.workspace }}
+  #       RECOMMEND=$(cat recommend.txt)
+  #       cd ${{ github.workspace }}/artifacts
+  #       mv ./*/*.zip ./
+  #       RELEASE_NAME=Build-${{ steps.get_date.outputs.DATE_TIME }}
+  #       TAG_NAME=build-${{ steps.get_date.outputs.DATE_TIME }}
+  #       for asset in *.zip; do
+  #         if [[ "$asset" =~ "${RECOMMEND}" ]]; then
+  #           AVIUTL_RECOMMEND_FILE=$asset
+  #         fi
+  #       done
+  #       echo "AviUtl・AviUtl ExEdit2用には\`${AVIUTL_RECOMMEND_FILE}\`をダウンロードすることをお勧めします。" >> ReleaseNotes.txt
+  #       echo "また、別バージョンからMr-Ojii版L-SMASH Worksに更新する場合、以下の記事をお読みください。" >> ReleaseNotes.txt
+  #       echo "https://scrapbox.io/Mr-Ojii/Mr-Ojii%E7%89%88_L-SMASH_Works%E3%81%AE%E6%9C%80%E6%96%B0%E7%89%88%E3%81%AB%E6%9B%B4%E6%96%B0%E3%81%99%E3%82%8B%E9%9A%9B%E3%81%AE%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A0%85" >> ReleaseNotes.txt
         
-        gh release create "${TAG_NAME}" ${{ github.workspace }}/artifacts/*.zip -t "${RELEASE_NAME}" -F ReleaseNotes.txt
+  #       gh release create "${TAG_NAME}" ${{ github.workspace }}/artifacts/*.zip -t "${RELEASE_NAME}" -F ReleaseNotes.txt
 
-    - uses: dev-drprasad/delete-older-releases@v0.3.4
-      with:
-        keep_latest: 20
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #   - uses: dev-drprasad/delete-older-releases@v0.3.4
+  #     with:
+  #       keep_latest: 20
+  #     env:
+  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
