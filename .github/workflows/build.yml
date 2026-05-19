@@ -674,13 +674,12 @@ jobs:
         lib /OUT:obuparse.lib obuparse.obj
         copy obuparse.h ${Env:INSTALL_PREFIX}\include
         copy obuparse.lib ${Env:INSTALL_PREFIX}\lib
+        copy obuparse.h ../l-smash
+        copy obuparse.lib ../l-smash
 
     - name: Install l-smash
       run: |
         cd ${{ github.workspace }}/build/l-smash
-        copy obuparse\obuparse.h l-smash
-        copy obuparse\obuparse.lib l-smash
-        cd l-smash
         msbuild L-SMASH.sln /p:Configuration=Release /p:ConfigurationType=StaticLibrary /p:Platform=${{ matrix.cpu_config.msvc_platform }} /p:TargetFrameworkVersion=v4.8 /p:PlatformToolset=v143
         copy lsmash.h ${Env:INSTALL_PREFIX}\include
         copy ${{ matrix.cpu_config.msvc_dir }}\liblsmash.lib ${Env:INSTALL_PREFIX}\lib
