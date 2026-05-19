@@ -456,7 +456,7 @@ jobs:
 
     - name: Install L-SMASH
       run: |
-        cd ${{ github.workspace }}/build/L-SMASH
+        cd ${{ github.workspace }}/build/l-smash
         ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I${INSTALL_PREFIX}/include --extra-ldflags=-L${INSTALL_PREFIX}/lib --prefix=${INSTALL_PREFIX}
         make lib -j$(nproc)
         make install-lib -j$(nproc)
