@@ -13,7 +13,6 @@ concurrency:
   cancel-in-progress: true
 
 
-
 # 具体的なワークフローはこう
 # job 1. すべての依存ライブラリをクローン
   # 1-1. build, pub, pub/Licenses ディレクトリを作成
@@ -865,48 +864,48 @@ jobs:
         name: L-SMASH-Works-${{ matrix.author }}_${{ matrix.l-smash_author }}
         path: ${{ github.workspace }}/artifacts/*.zip
 
-  # # Releaseをするための処理
-  # create-release:
-  #   name: Create release
-  #   needs: create-archive
-  #   if: ${{ github.ref == 'refs/heads/main' }}
-  #   runs-on: ubuntu-24.04
-  #   steps:
-  #   - uses: actions/checkout@v6
+  # 5. zip にしたファイルを Release にアップロード
+  create-release:
+    name: Create release
+    needs: create-archive
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v6
 
-  #   - uses: actions/download-artifact@v8
-  #     with:
-  #       path: artifacts
+    - uses: actions/download-artifact@v8
+      with:
+        path: artifacts
 
-  #   - name: Get Date
-  #     id: get_date
-  #     run: |
-  #       DATE_TIME=`date +'%Y-%m-%d-%H-%M-%S'`
-  #       echo "DATE_TIME=${DATE_TIME}" >> $GITHUB_OUTPUT
+    - name: Get Date
+      id: get_date
+      run: |
+        DATE_TIME=`date +'%Y-%m-%d-%H-%M-%S'`
+        echo "DATE_TIME=${DATE_TIME}" >> $GITHUB_OUTPUT
 
-  #   - name: Create a Release
-  #     env:
-  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     run: |
-  #       cd ${{ github.workspace }}
-  #       RECOMMEND=$(cat recommend.txt)
-  #       cd ${{ github.workspace }}/artifacts
-  #       mv ./*/*.zip ./
-  #       RELEASE_NAME=Build-${{ steps.get_date.outputs.DATE_TIME }}
-  #       TAG_NAME=build-${{ steps.get_date.outputs.DATE_TIME }}
-  #       for asset in *.zip; do
-  #         if [[ "$asset" =~ "${RECOMMEND}" ]]; then
-  #           AVIUTL_RECOMMEND_FILE=$asset
-  #         fi
-  #       done
-  #       echo "AviUtl・AviUtl ExEdit2用には\`${AVIUTL_RECOMMEND_FILE}\`をダウンロードすることをお勧めします。" >> ReleaseNotes.txt
-  #       echo "また、別バージョンからMr-Ojii版L-SMASH Worksに更新する場合、以下の記事をお読みください。" >> ReleaseNotes.txt
-  #       echo "https://scrapbox.io/Mr-Ojii/Mr-Ojii%E7%89%88_L-SMASH_Works%E3%81%AE%E6%9C%80%E6%96%B0%E7%89%88%E3%81%AB%E6%9B%B4%E6%96%B0%E3%81%99%E3%82%8B%E9%9A%9B%E3%81%AE%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A0%85" >> ReleaseNotes.txt
+    - name: Create a Release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        cd ${{ github.workspace }}
+        RECOMMEND=$(cat recommend.txt)
+        cd ${{ github.workspace }}/artifacts
+        mv ./*/*.zip ./
+        RELEASE_NAME=Build-${{ steps.get_date.outputs.DATE_TIME }}
+        TAG_NAME=build-${{ steps.get_date.outputs.DATE_TIME }}
+        for asset in *.zip; do
+          if [[ "$asset" =~ "${RECOMMEND}" ]]; then
+            AVIUTL_RECOMMEND_FILE=$asset
+          fi
+        done
+        echo "AviUtl・AviUtl ExEdit2用には\`${AVIUTL_RECOMMEND_FILE}\`をダウンロードすることをお勧めします。" >> ReleaseNotes.txt
+        echo "また、別バージョンからMr-Ojii版L-SMASH Worksに更新する場合、以下の記事をお読みください。" >> ReleaseNotes.txt
+        echo "https://scrapbox.io/Mr-Ojii/Mr-Ojii%E7%89%88_L-SMASH_Works%E3%81%AE%E6%9C%80%E6%96%B0%E7%89%88%E3%81%AB%E6%9B%B4%E6%96%B0%E3%81%99%E3%82%8B%E9%9A%9B%E3%81%AE%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A0%85" >> ReleaseNotes.txt
 
-  #       gh release create "${TAG_NAME}" ${{ github.workspace }}/artifacts/*.zip -t "${RELEASE_NAME}" -F ReleaseNotes.txt
+        gh release create "${TAG_NAME}" ${{ github.workspace }}/artifacts/*.zip -t "${RELEASE_NAME}" -F ReleaseNotes.txt
 
-  #   - uses: dev-drprasad/delete-older-releases@v0.3.4
-  #     with:
-  #       keep_latest: 20
-  #     env:
-  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: dev-drprasad/delete-older-releases@v0.3.4
+      with:
+        keep_latest: 20
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
