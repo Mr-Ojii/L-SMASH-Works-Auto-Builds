@@ -6,12 +6,12 @@ This is an unofficial build of the master branch of L-SMASH Works for [VFR-mania
 The L-SMASH library uses the [Mr-Ojii version](https://github.com/Mr-Ojii/l-smash.git) and [vimeo version](https://github.com/vimeo/l-smash.git).
 
 As of 2026-05-20, only builds for the following are supported.
-| HostApp        | Supported Variant                     |
-|:---------------|:--------------------------------------|
-| AviSynth       | `Mr-Ojii_Mr-Ojii`                     |
-| AviUtl         | All                                   |
-| AviUtl ExEdit2 | `Mr-Ojii_Mr-Ojii` or `Mr-Ojii_vimeo`  |
-| VapourSynth    | All                                   |
+|                    | AviSynth | AviUtl | AviUtl ExEdit2 | VapourSynth |
+|:-------------------|:--------:|:------:|:--------------:|:-----------:|
+| Mr_Ojii_Mr_Ojii    |    ✅    |   ✅   |       ✅       |      ✅     |
+| Mr_Ojii_vimeo      |    ー    |   ✅   |       ✅       |      ✅     |
+| VFR-maniac_Mr_Ojii |    ー    |   ✅   |       ー       |      ✅     |
+| VFR-maniac_vimeo   |    ー    |   ✅   |       ー       |      ✅     |
 
 Translated by DeepL
 
@@ -21,12 +21,12 @@ Translated by DeepL
 L-SMASHのライブラリは[Mr-Ojii版](https://github.com/Mr-Ojii/l-smash.git)と[vimeo版](https://github.com/vimeo/l-smash.git)を使用しています。
 
 2026-05-20 現在、以下のプラグインのビルドに対応しています。
-| ホストアプリ   | ビルドしているバリアント              |
-|:---------------|:--------------------------------------|
-| AviSynth       | `Mr-Ojii_Mr-Ojii`                     |
-| AviUtl         | All                                   |
-| AviUtl ExEdit2 | `Mr-Ojii_Mr-Ojii` or `Mr-Ojii_vimeo`  |
-| VapourSynth    | All                                   |
+|                    | AviSynth | AviUtl | AviUtl ExEdit2 | VapourSynth |
+|:-------------------|:--------:|:------:|:--------------:|:-----------:|
+| Mr_Ojii_Mr_Ojii    |    ✅    |   ✅   |       ✅       |      ✅     |
+| Mr_Ojii_vimeo      |    ー    |   ✅   |       ✅       |      ✅     |
+| VFR-maniac_Mr_Ojii |    ー    |   ✅   |       ー       |      ✅     |
+| VFR-maniac_vimeo   |    ー    |   ✅   |       ー       |      ✅     |
 
 ### おすすめ導入方法
 #### AviSynth
