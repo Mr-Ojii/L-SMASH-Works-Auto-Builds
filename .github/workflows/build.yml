@@ -371,7 +371,7 @@ jobs:
       run: sudo ln -s /usr/bin/pkg-config /usr/bin/${{ matrix.cpu_config.cpu }}-w64-mingw32-pkg-config
 
     - name: Download Cloned Repositories
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         name: build-${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}
         path: ${{ github.workspace }}
@@ -625,7 +625,7 @@ jobs:
         fetch-depth: 0
 
     - name: Download Cloned Repositories
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         name: build-${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}
         path: ${{ github.workspace }}
