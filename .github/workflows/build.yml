@@ -684,7 +684,7 @@ jobs:
     - name: Install l-smash
       run: |
         cd ${{ github.workspace }}/build/l-smash
-        msbuild L-SMASH.sln /p:Configuration=Release /p:ConfigurationType=StaticLibrary /p:Platform=${{ matrix.cpu_config.msvc_platform }} /p:TargetFrameworkVersion=v4.8 /p:PlatformToolset=v143
+        msbuild L-SMASH.sln /p:Configuration=Release /p:ConfigurationType=StaticLibrary /p:Platform=${{ matrix.cpu_config.msvc_platform }} /p:TargetFrameworkVersion=v4.8 /p:PlatformToolset=v145
         copy lsmash.h ${Env:INSTALL_PREFIX}\include
         copy ${{ matrix.cpu_config.msvc_dir }}\liblsmash.lib ${Env:INSTALL_PREFIX}\lib
 
@@ -807,7 +807,7 @@ jobs:
         #pragma comment( lib, "gme.lib" )
         #pragma comment( lib, "vpl.lib" )
         '@ > exlibs.cpp
-        msbuild LSMASHSourceVCX.sln /p:Configuration=Release /p:Platform=${{ matrix.cpu_config.user_arch }} /p:PlatformToolset=v143
+        msbuild LSMASHSourceVCX.sln /p:Configuration=Release /p:Platform=${{ matrix.cpu_config.user_arch }} /p:PlatformToolset=v145
 
     - name: Create pub Directory and Copy Files
       run: |
