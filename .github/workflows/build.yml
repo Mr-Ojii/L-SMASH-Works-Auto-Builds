@@ -85,7 +85,7 @@ jobs:
       id: zlib-rev
       run: |
         cd ${{ github.workspace }}/build
-        git clone https://github.com/madler/zlib.git --depth 1
+        git clone https://github.com/madler/zlib.git -b v1.3.2 --depth 1
         cd zlib
 
         echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
