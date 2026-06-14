@@ -645,6 +645,7 @@ jobs:
     - uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: ${{ matrix.cpu_config.user_arch }}
+        toolset: 19.0
 
     - uses: msys2/setup-msys2@v2
       with:
