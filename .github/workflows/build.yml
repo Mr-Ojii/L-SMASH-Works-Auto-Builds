@@ -65,7 +65,7 @@ jobs:
           - { author: Mr-Ojii, ffmpeg_version: "7.1", ffmpeg_patch: "", intel: "vpl", ffmpeg_extra_flags: ""}
         l-smash_author: [Mr-Ojii, vimeo]
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
 
@@ -356,7 +356,7 @@ jobs:
           - { cpu: x86_64, arch: x86_64, user_arch: x64, vpx_target: x86_64-win64-gcc }
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
 
@@ -620,7 +620,7 @@ jobs:
           - { cpu: x86_64, arch: x86_64, user_arch: x64, build_arch: 64, sys: mingw64, vpx_target: x86_64-win64-vs17, ffmpeg_target_os: win64, msvc_platform: x64, msvc_dir: "x64\\Release" }
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
 
@@ -834,7 +834,7 @@ jobs:
         author: [VFR-maniac, Mr-Ojii]
         l-smash_author: [Mr-Ojii, vimeo]
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - uses: actions/download-artifact@v8
       with:
@@ -871,7 +871,7 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - uses: actions/download-artifact@v8
       with:
