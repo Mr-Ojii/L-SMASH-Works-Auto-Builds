@@ -635,7 +635,7 @@ jobs:
         cd ${{ github.workspace }}
         tar -xzf build.tar.gz
 
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
 
     - name: Install Meson and Ninja
       run: |
