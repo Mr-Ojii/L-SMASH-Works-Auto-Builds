@@ -44,6 +44,7 @@ concurrency:
 # - game-music-emu
 # - dav1d
 # - libvpx
+# - AMF
 # - nv-codec-headers
 # - libvpl or mfx_dispatch
 # - FFmpeg
@@ -218,6 +219,16 @@ jobs:
         echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
         echo "REV_SHA=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
+    - name: Clone AMF
+      id: amf-rev
+      run: |
+        cd ${{ github.workspace }}/build
+        git clone https://github.com/GPUOpen-LibrariesAndSDKs/AMF.git --depth 1
+        cd AMF
+
+        echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
+        echo "REV_SHA=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
     - name: Clone L-SMASH Works
       id: l-smash-works-rev
       run: |
@@ -256,6 +267,9 @@ jobs:
 
         libvpx ${{ steps.libvpx-rev.outputs.REV_SHA }}
         https://github.com/webmproject/libvpx
+
+        AMF ${{ steps.amf-rev.outputs.REV_SHA }}
+        https://github.com/GPUOpen-LibrariesAndSDKs/AMF
 
         nv-codec-headers ${{ steps.nv-codec-headers-rev.outputs.REV_SHA }}
         https://github.com/FFmpeg/nv-codec-headers
@@ -297,6 +311,7 @@ jobs:
         cd ${{ github.workspace }}/pub/Licenses
         cp ${{ github.workspace }}/build/dav1d/COPYING dav1d.txt
         cp ${{ github.workspace }}/build/l-smash/LICENSE L-SMASH.txt
+        cp ${{ github.workspace }}/build/AMF/LICENSE.txt AMF.txt
         cp ${{ github.workspace }}/build/FFmpeg/COPYING.LGPLv3 FFmpeg.txt
         cp ${{ github.workspace }}/build/libvpx/LICENSE libvpx.txt
         cp ${{ github.workspace }}/build/obuparse/LICENSE obuparse.txt
@@ -420,6 +435,12 @@ jobs:
         CROSS=${{ matrix.cpu_config.cpu }}-w64-mingw32- ../configure --target=${{ matrix.cpu_config.vpx_target }} --enable-vp9-highbitdepth --disable-docs --disable-tools --disable-examples --disable-webm-io --disable-vp8-encoder --disable-vp9-encoder --prefix=${INSTALL_PREFIX}
         make -j$(nproc)
         make install -j$(nproc)
+
+    - name: Install AMF
+      run: |
+        cd ${{ github.workspace }}/build/AMF/amf/public/include
+        mkdir ${INSTALL_PREFIX}/include/AMF
+        cp -r ./* ${INSTALL_PREFIX}/include/AMF/
 
     - name: Install nv-codec-headers
       run: |
@@ -720,6 +741,15 @@ jobs:
         cmake --install build --config Release --prefix="${Env:INSTALL_PREFIX}"
 
     # 以下 msys2 でのビルド
+    - name: Install AMF
+      shell: msys2 {0}
+      run: |
+        SYG_INSTALL_PREFIX=$(cygpath -u "${INSTALL_PREFIX}")
+        cd $(cygpath -u "${{ github.workspace }}")/build/AMF/amf/public/include
+        mkdir ${SYG_INSTALL_PREFIX}/include/AMF
+        cp -r ./* ${SYG_INSTALL_PREFIX}/include/AMF/
+        
+    
     - name: Install nv-codec-headers
       shell: msys2 {0}
       run: |
