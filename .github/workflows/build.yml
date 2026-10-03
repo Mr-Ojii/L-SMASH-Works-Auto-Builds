@@ -379,11 +379,7 @@ jobs:
     - name: Install depend lib
       run: |
         sudo apt-get update -y
-        sudo apt-get install -y autoconf cmake libtool nasm mingw-w64 meson ninja-build pkg-config
-
-    # pkg-configまでcross-prefixがつくので、シンボリックリンクを貼る
-    - name: Create pkg-config symbolic link
-      run: sudo ln -s /usr/bin/pkg-config /usr/bin/${{ matrix.cpu_config.cpu }}-w64-mingw32-pkg-config
+        sudo apt-get install -y autoconf cmake libtool nasm mingw-w64 mingw-w64-tools meson ninja-build pkg-config
 
     - name: Download Cloned Repositories
       uses: actions/download-artifact@v8
