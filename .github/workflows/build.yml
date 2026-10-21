@@ -32,7 +32,7 @@ concurrency:
   # 3-4. pub ディレクトリを Assets としてアップロード | windows-build-<LSW-Author>-<L-SMASH-Author>-<CpuArch> キーでアップロード
 # job 4. Ubuntu, Windows 環境でビルドしたファイルをダウンロードし、x86とx64のファイルをまとめて1つのzipにする
   # 4-1. ubuntu-build-<LSW-Author>-<L-SMASH-Author>-x86 と ubuntu-build-<LSW-Author>-<L-SMASH-Author>-x64, windows-build-<LSW-Author>-<L-SMASH-Author>-x86, windows-build-<LSW-Author>-<L-SMASH-Author>-x64 のAssetsをダウンロード
-  # 4-2. ファイルをまとめて1つのzipにする (重要)
+  # 4-2. ファイルをまとめて1つのzipにする  (l-smashのブランチがmasterではない際にブランチ名を末尾に付加する)
   # 4-3. zip にして、Assets としてアップロード | L-SMASH-Works-<LSW-Author>-<L-SMASH-Author> キーでアップロード
 # job 5. zip にしたファイルを Release にアップロード
   # 5-1. すべての Assets をダウンロード
@@ -67,6 +67,7 @@ jobs:
         l-smash_config:
           - { author: Mr-Ojii, branch: master }
           - { author: vimeo, branch: master }
+          - { author: l-smash, branch: dev }
     steps:
     - uses: actions/checkout@v7
       with:
@@ -185,7 +186,7 @@ jobs:
       id: l-smash-rev
       run: |
         cd ${{ github.workspace }}/build
-        git clone https://github.com/${{ matrix.l-smash_config.author }}/l-smash.git
+        git clone https://github.com/${{ matrix.l-smash_config.author }}/l-smash.git -b ${{ matrix.l-smash_config.branch }}
         cd l-smash
 
         echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
@@ -261,7 +262,7 @@ jobs:
         FFmpeg ${{ matrix.lsw_config.ffmpeg_version }}${{ matrix.lsw_config.ffmpeg_patch }}
         https://github.com/FFmpeg/FFmpeg
 
-        ${{ matrix.l-smash_config.author }}/L-SMASH r${{ steps.l-smash-rev.outputs.REV_LIST_COUNT }}
+        ${{ matrix.l-smash_config.author }}/L-SMASH r${{ steps.l-smash-rev.outputs.REV_LIST_COUNT }} ${{ matrix.l-smash_config.branch }}
         https://github.com/${{ matrix.l-smash_config.author }}/l-smash
 
         dav1d ${{ steps.dav1d-rev.outputs.REV_SHA }}
@@ -370,6 +371,7 @@ jobs:
         l-smash_config:
           - { author: Mr-Ojii, branch: master }
           - { author: vimeo, branch: master }
+          - { author: l-smash, branch: dev }
         cpu_config:
           - { cpu: i686, arch: x86, user_arch: x86, vpx_target: x86-win32-gcc }
           - { cpu: x86_64, arch: x86_64, user_arch: x64, vpx_target: x86_64-win64-gcc }
@@ -866,6 +868,7 @@ jobs:
         l-smash_config:
           - { author: Mr-Ojii, branch: master }
           - { author: vimeo, branch: master }
+          - { author: l-smash, branch: dev }
     steps:
     - uses: actions/checkout@v7
 
@@ -890,7 +893,11 @@ jobs:
     - name: Create archive
       run: |
         cd ${{ github.workspace }}/artifacts
-        zip L-SMASH-Works_r${{ steps.rev-info.outputs.REV }}_${{ matrix.author }}_${{ matrix.l-smash_config.author }} -r *
+        if [ "${{ matrix.l-smash_config.branch }}" == "master" ]; then
+          zip L-SMASH-Works_r${{ steps.rev-info.outputs.REV }}_${{ matrix.author }}_${{ matrix.l-smash_config.author }} -r *
+        else
+          zip L-SMASH-Works_r${{ steps.rev-info.outputs.REV }}_${{ matrix.author }}_${{ matrix.l-smash_config.author }}-${{ matrix.l-smash_config.branch }} -r *
+        fi
 
     - uses: actions/upload-artifact@v7
       with:
