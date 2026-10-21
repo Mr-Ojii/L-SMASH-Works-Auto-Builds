@@ -64,7 +64,9 @@ jobs:
         lsw_config:
           - { author: VFR-maniac, ffmpeg_version: "4.4", ffmpeg_patch: " (patched)", intel: "mfx" }
           - { author: Mr-Ojii, ffmpeg_version: "8.1", ffmpeg_patch: "", intel: "vpl"}
-        l-smash_author: [Mr-Ojii, vimeo]
+        l-smash_config:
+          - { author: Mr-Ojii, branch: master }
+          - { author: vimeo, branch: master }
     steps:
     - uses: actions/checkout@v7
       with:
@@ -183,7 +185,7 @@ jobs:
       id: l-smash-rev
       run: |
         cd ${{ github.workspace }}/build
-        git clone https://github.com/${{ matrix.l-smash_author }}/l-smash.git
+        git clone https://github.com/${{ matrix.l-smash_config.author }}/l-smash.git
         cd l-smash
 
         echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
@@ -259,8 +261,8 @@ jobs:
         FFmpeg ${{ matrix.lsw_config.ffmpeg_version }}${{ matrix.lsw_config.ffmpeg_patch }}
         https://github.com/FFmpeg/FFmpeg
 
-        ${{ matrix.l-smash_author }}/L-SMASH r${{ steps.l-smash-rev.outputs.REV_LIST_COUNT }}
-        https://github.com/${{ matrix.l-smash_author }}/l-smash
+        ${{ matrix.l-smash_config.author }}/L-SMASH r${{ steps.l-smash-rev.outputs.REV_LIST_COUNT }}
+        https://github.com/${{ matrix.l-smash_config.author }}/l-smash
 
         dav1d ${{ steps.dav1d-rev.outputs.REV_SHA }}
         https://github.com/videolan/dav1d
@@ -334,7 +336,7 @@ jobs:
     - name: Upload BuildInfo and Licenses
       uses: actions/upload-artifact@v7
       with:
-        name: docs-${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}
+        name: docs-${{ matrix.lsw_config.author }}-${{ matrix.l-smash_config.author }}
         path: ${{ github.workspace }}/pub
 
     - name: Create Cloned Repositories Archive
@@ -345,7 +347,7 @@ jobs:
     - name: Upload Cloned Repositories
       uses: actions/upload-artifact@v7
       with:
-        name: build-${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}
+        name: build-${{ matrix.lsw_config.author }}-${{ matrix.l-smash_config.author }}
         path: ${{ github.workspace }}/build.tar.gz
 
 
@@ -365,7 +367,9 @@ jobs:
         lsw_config:
           - { author: VFR-maniac, intel: "mfx", ffmpeg_extra_flags: "--enable-avresample" }
           - { author: Mr-Ojii, intel: "vpl", ffmpeg_extra_flags: "" }
-        l-smash_author: [Mr-Ojii, vimeo]
+        l-smash_config:
+          - { author: Mr-Ojii, branch: master }
+          - { author: vimeo, branch: master }
         cpu_config:
           - { cpu: i686, arch: x86, user_arch: x86, vpx_target: x86-win32-gcc }
           - { cpu: x86_64, arch: x86_64, user_arch: x64, vpx_target: x86_64-win64-gcc }
@@ -384,7 +388,7 @@ jobs:
     - name: Download Cloned Repositories
       uses: actions/download-artifact@v8
       with:
-        name: build-${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}
+        name: build-${{ matrix.lsw_config.author }}-${{ matrix.l-smash_config.author }}
         path: ${{ github.workspace }}
 
     - name: Extract Cloned Repositories
@@ -616,7 +620,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v7
       with:
-        name: ubuntu-build-${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-${{ matrix.cpu_config.user_arch }}
+        name: ubuntu-build-${{ matrix.lsw_config.author }}-${{ matrix.l-smash_config.author }}-${{ matrix.cpu_config.user_arch }}
         path: ${{ github.workspace }}/pub
 
   # job 3. Windows 環境で L-SMASH Worksをビルド (AviSynth)
@@ -631,7 +635,8 @@ jobs:
       matrix:
         lsw_config:
           - { author: Mr-Ojii, intel: "vpl" }
-        l-smash_author: [Mr-Ojii]
+        l-smash_config:
+          - { author: Mr-Ojii, branch: master }
         cpu_config:
           - { cpu: i686, arch: x86, user_arch: x86, build_arch: 32, sys: mingw32, vpx_target: x86-win32-vs17, ffmpeg_target_os: win32, msvc_platform: Win32, msvc_dir: "Release" }
           - { cpu: x86_64, arch: x86_64, user_arch: x64, build_arch: 64, sys: mingw64, vpx_target: x86_64-win64-vs17, ffmpeg_target_os: win64, msvc_platform: x64, msvc_dir: "x64\\Release" }
@@ -644,7 +649,7 @@ jobs:
     - name: Download Cloned Repositories
       uses: actions/download-artifact@v8
       with:
-        name: build-${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}
+        name: build-${{ matrix.lsw_config.author }}-${{ matrix.l-smash_config.author }}
         path: ${{ github.workspace }}
 
     - name: Extract Cloned Repositories
@@ -846,7 +851,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v7
       with:
-        name: windows-build-${{ matrix.lsw_config.author }}-${{ matrix.l-smash_author }}-${{ matrix.cpu_config.user_arch }}
+        name: windows-build-${{ matrix.lsw_config.author }}-${{ matrix.l-smash_config.author }}-${{ matrix.cpu_config.user_arch }}
         path: ${{ github.workspace }}/pub
 
 
@@ -858,19 +863,21 @@ jobs:
     strategy:
       matrix:
         author: [VFR-maniac, Mr-Ojii]
-        l-smash_author: [Mr-Ojii, vimeo]
+        l-smash_config:
+          - { author: Mr-Ojii, branch: master }
+          - { author: vimeo, branch: master }
     steps:
     - uses: actions/checkout@v7
 
     - uses: actions/download-artifact@v8
       with:
-        pattern: "*-build-${{ matrix.author }}-${{ matrix.l-smash_author }}-*"
+        pattern: "*-build-${{ matrix.author }}-${{ matrix.l-smash_config.author }}-*"
         path: artifacts
         merge-multiple: true
 
     - uses: actions/download-artifact@v8
       with:
-        name: docs-${{ matrix.author }}-${{ matrix.l-smash_author }}
+        name: docs-${{ matrix.author }}-${{ matrix.l-smash_config.author }}
         path: artifacts
 
     - name: Set RevInfo
@@ -883,11 +890,11 @@ jobs:
     - name: Create archive
       run: |
         cd ${{ github.workspace }}/artifacts
-        zip L-SMASH-Works_r${{ steps.rev-info.outputs.REV }}_${{ matrix.author }}_${{ matrix.l-smash_author }} -r *
+        zip L-SMASH-Works_r${{ steps.rev-info.outputs.REV }}_${{ matrix.author }}_${{ matrix.l-smash_config.author }} -r *
 
     - uses: actions/upload-artifact@v7
       with:
-        name: L-SMASH-Works-${{ matrix.author }}_${{ matrix.l-smash_author }}
+        name: L-SMASH-Works-${{ matrix.author }}_${{ matrix.l-smash_config.author }}
         path: ${{ github.workspace }}/artifacts/*.zip
 
   # 5. zip にしたファイルを Release にアップロード
