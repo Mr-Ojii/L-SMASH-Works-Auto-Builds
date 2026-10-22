@@ -2,8 +2,6 @@ name: Build L-SMASH Works
 
 on:
   push:
-    branches:
-      - main
   workflow_dispatch:
   schedule:
     - cron: '0 0,6,12,18 * * *'
@@ -708,9 +706,33 @@ jobs:
     - name: Install l-smash
       run: |
         cd ${{ github.workspace }}/build/l-smash
-        msbuild L-SMASH.sln /p:Configuration=Release /p:ConfigurationType=StaticLibrary /p:Platform=${{ matrix.cpu_config.msvc_platform }} /p:TargetFrameworkVersion=v4.8 /p:PlatformToolset=v145
+
+        # 公式devのvcxprojは古く、x64構成やソースリストが現在のソースに追随していないため、
+        # msbuildを使わずライブラリ本体のCソースをclで直接ビルドする
+        Remove-Item -Recurse -Force obj -ErrorAction SilentlyContinue
+        New-Item -ItemType Directory -Force obj | Out-Null
+
+        $root = (Get-Location).Path
+        $sources = @(Get-ChildItem common,core,codecs,importer -Filter *.c -Recurse | Sort-Object FullName)
+        if ($sources.Count -eq 0) {
+          Write-Error "No l-smash C sources found"
+          exit 1
+        }
+        Write-Host "Compiling $($sources.Count) l-smash sources"
+        foreach ($src in $sources) {
+          $rel = $src.FullName.Substring($root.Length + 1)
+          $obj = Join-Path "obj" (($rel -replace '[\\/]', '_') -replace '\.c$', '.obj')
+          Write-Host "Compiling $rel"
+          cl /nologo /c /O2 /MT /std:c11 /W3 /D_CRT_SECURE_NO_WARNINGS /I. /Fo"$obj" "$($src.FullName)"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        }
+
+        $objs = @(Get-ChildItem obj -Filter *.obj | ForEach-Object { $_.FullName })
+        lib /nologo /OUT:liblsmash.lib $objs
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
         copy lsmash.h ${Env:INSTALL_PREFIX}\include
-        copy ${{ matrix.cpu_config.msvc_dir }}\liblsmash.lib ${Env:INSTALL_PREFIX}\lib
+        copy liblsmash.lib ${Env:INSTALL_PREFIX}\lib
 
     - name: Install zlib
       run: |
@@ -751,8 +773,8 @@ jobs:
         cd $(cygpath -u "${{ github.workspace }}")/build/AMF/amf/public/include
         mkdir ${SYG_INSTALL_PREFIX}/include/AMF
         cp -r ./* ${SYG_INSTALL_PREFIX}/include/AMF/
-        
-    
+
+
     - name: Install nv-codec-headers
       shell: msys2 {0}
       run: |
