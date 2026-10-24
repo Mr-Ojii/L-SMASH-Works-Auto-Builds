@@ -637,6 +637,7 @@ jobs:
           - { author: Mr-Ojii, intel: "vpl" }
         l-smash_config:
           - { author: Mr-Ojii, branch: master }
+          - { author: vimeo, branch: master }
           - { author: l-smash, branch: dev }
         cpu_config:
           - { cpu: i686, arch: x86, user_arch: x86, build_arch: 32, sys: mingw32, vpx_target: x86-win32-vs17, ffmpeg_target_os: win32, msvc_platform: Win32, msvc_dir: "Release" }
