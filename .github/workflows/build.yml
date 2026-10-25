@@ -6,6 +6,9 @@ on:
   schedule:
     - cron: '0 0,6,12,18 * * *'
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
@@ -70,6 +73,7 @@ jobs:
     - uses: actions/checkout@v7
       with:
         fetch-depth: 0
+        persist-credentials: false
 
     - name: Create build and pub Directory
       run: |
@@ -378,6 +382,7 @@ jobs:
     - uses: actions/checkout@v7
       with:
         fetch-depth: 0
+        persist-credentials: false
 
     # ビルド用ソフトウェアのインストール
     - name: Install depend lib
@@ -647,6 +652,7 @@ jobs:
     - uses: actions/checkout@v7
       with:
         fetch-depth: 0
+        persist-credentials: false
 
     - name: Download Cloned Repositories
       uses: actions/download-artifact@v8
@@ -895,6 +901,8 @@ jobs:
           - { author: l-smash, branch: dev }
     steps:
     - uses: actions/checkout@v7
+      with:
+        persist-credentials: false
 
     - uses: actions/download-artifact@v8
       with:
@@ -933,9 +941,13 @@ jobs:
     name: Create release
     needs: create-archive
     if: ${{ github.ref == 'refs/heads/main' }}
+    permissions:
+      contents: write
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v7
+      with:
+        persist-credentials: false
 
     - uses: actions/download-artifact@v8
       with:
