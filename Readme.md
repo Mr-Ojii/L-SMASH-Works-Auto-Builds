@@ -5,7 +5,7 @@ This is an unofficial build of the default branch of L-SMASH Works for [VFR-mani
 
 The L-SMASH library uses the [official version (dev branch)](https://github.com/l-smash/l-smash.git) , [Mr-Ojii version](https://github.com/Mr-Ojii/l-smash.git) and [vimeo version](https://github.com/vimeo/l-smash.git).
 
-As of 2026-10-21, only builds for the following are supported.
+As of 2026-10-25, only builds for the following are supported.
 |                          | AviSynth | AviUtl | AviUtl ExEdit2 | VapourSynth |
 |:-------------------------|:--------:|:------:|:--------------:|:-----------:|
 | Mr-Ojii_Mr-Ojii          |    ✅    |   ✅   |       ✅       |      ✅     |
@@ -22,7 +22,7 @@ Translated by DeepL
 
 L-SMASHのライブラリは[公式版(devブランチ)](https://github.com/l-smash/l-smash.git)と[Mr-Ojii版](https://github.com/Mr-Ojii/l-smash.git)と[vimeo版](https://github.com/vimeo/l-smash.git)を使用しています。
 
-2026-10-21 現在、以下のプラグインのビルドに対応しています。
+2026-10-25 現在、以下のプラグインのビルドに対応しています。
 |                          | AviSynth | AviUtl | AviUtl ExEdit2 | VapourSynth |
 |:-------------------------|:--------:|:------:|:--------------:|:-----------:|
 | Mr-Ojii_Mr-Ojii          |    ✅    |   ✅   |       ✅       |      ✅     |
