@@ -1,7 +1,7 @@
 # L-SMASH-Works-Auto-Builds
 
 ## en
-This is an unofficial build of the master branch of L-SMASH Works for [VFR-maniac version](https://github.com/VFR-maniac/L-SMASH-Works) and [Mr-Ojii version](https://github.com/Mr-Ojii/L-SMASH-Works).
+This is an unofficial build of the default branch of L-SMASH Works for [VFR-maniac version](https://github.com/VFR-maniac/L-SMASH-Works) and [Mr-Ojii version](https://github.com/Mr-Ojii/L-SMASH-Works).
 
 The L-SMASH library uses the [official version (dev branch)](https://github.com/l-smash/l-smash.git) , [Mr-Ojii version](https://github.com/Mr-Ojii/l-smash.git) and [vimeo version](https://github.com/vimeo/l-smash.git).
 
@@ -18,7 +18,7 @@ As of 2026-10-21, only builds for the following are supported.
 Translated by DeepL
 
 ## ja
-[VFR-maniac氏版](https://github.com/VFR-maniac/L-SMASH-Works)と[Mr-Ojii版](https://github.com/Mr-Ojii/L-SMASH-Works)のL-SMASH Worksのmasterブランチの非公式ビルドです。
+[VFR-maniac氏版](https://github.com/VFR-maniac/L-SMASH-Works)と[Mr-Ojii版](https://github.com/Mr-Ojii/L-SMASH-Works)のL-SMASH Worksのdefaultブランチの非公式ビルドです。
 
 L-SMASHのライブラリは[公式版(devブランチ)](https://github.com/l-smash/l-smash.git)と[Mr-Ojii版](https://github.com/Mr-Ojii/l-smash.git)と[vimeo版](https://github.com/vimeo/l-smash.git)を使用しています。
 
