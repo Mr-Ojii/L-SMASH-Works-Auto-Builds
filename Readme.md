@@ -8,10 +8,10 @@ The L-SMASH library uses the [official version (dev branch)](https://github.com/
 As of 2026-10-21, only builds for the following are supported.
 |                          | AviSynth | AviUtl | AviUtl ExEdit2 | VapourSynth |
 |:-------------------------|:--------:|:------:|:--------------:|:-----------:|
-| Mr_Ojii_Mr_Ojii          |    ✅    |   ✅   |       ✅       |      ✅     |
-| Mr_Ojii_vimeo            |    ✅    |   ✅   |       ✅       |      ✅     |
+| Mr-Ojii_Mr-Ojii          |    ✅    |   ✅   |       ✅       |      ✅     |
+| Mr-Ojii_vimeo            |    ✅    |   ✅   |       ✅       |      ✅     |
 | Mr-Ojii_l-smash-dev      |    ✅    |   ✅   |       ✅       |      ✅     |
-| VFR-maniac_Mr_Ojii       |    ー    |   ✅   |       ー       |      ✅     |
+| VFR-maniac_Mr-Ojii       |    ー    |   ✅   |       ー       |      ✅     |
 | VFR-maniac_vimeo         |    ー    |   ✅   |       ー       |      ✅     |
 | VFR-maniac_l-smash-dev   |    ー    |   ✅   |       ー       |      ✅     |
 
@@ -25,10 +25,10 @@ L-SMASHのライブラリは[公式版(devブランチ)](https://github.com/l-sm
 2026-10-21 現在、以下のプラグインのビルドに対応しています。
 |                          | AviSynth | AviUtl | AviUtl ExEdit2 | VapourSynth |
 |:-------------------------|:--------:|:------:|:--------------:|:-----------:|
-| Mr_Ojii_Mr_Ojii          |    ✅    |   ✅   |       ✅       |      ✅     |
-| Mr_Ojii_vimeo            |    ✅    |   ✅   |       ✅       |      ✅     |
+| Mr-Ojii_Mr-Ojii          |    ✅    |   ✅   |       ✅       |      ✅     |
+| Mr-Ojii_vimeo            |    ✅    |   ✅   |       ✅       |      ✅     |
 | Mr-Ojii_l-smash-dev      |    ✅    |   ✅   |       ✅       |      ✅     |
-| VFR-maniac_Mr_Ojii       |    ー    |   ✅   |       ー       |      ✅     |
+| VFR-maniac_Mr-Ojii       |    ー    |   ✅   |       ー       |      ✅     |
 | VFR-maniac_vimeo         |    ー    |   ✅   |       ー       |      ✅     |
 | VFR-maniac_l-smash-dev   |    ー    |   ✅   |       ー       |      ✅     |
 
