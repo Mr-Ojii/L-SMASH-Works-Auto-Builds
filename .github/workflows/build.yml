@@ -445,7 +445,7 @@ jobs:
     - name: Install nv-codec-headers
       run: |
         cd ${{ github.workspace }}/build/nv-codec-headers
-        sudo make install -j$(nproc)
+        make install PREFIX=${INSTALL_PREFIX} -j$(nproc)
 
     - name: Install mfx_dispatch
       if: ${{ matrix.lsw_config.intel == 'mfx' }}
@@ -548,7 +548,7 @@ jobs:
       if: ${{ matrix.lsw_config.author == 'VFR-maniac' }}
       run: |
         cd ${{ github.workspace }}/build/L-SMASH-Works/VapourSynth
-        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
+        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I${INSTALL_PREFIX}/include --extra-ldflags="-L${INSTALL_PREFIX}/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make
         mkdir build
         mv libvslsmashsource.so.${{ steps.l-smash-works-rev.outputs.REV_LIST_COUNT }} build/libvslsmashsource.dll
@@ -558,13 +558,13 @@ jobs:
       if: ${{ matrix.cpu_config.user_arch == 'x64' && matrix.lsw_config.author == 'Mr-Ojii' }}
       run: |
         cd ${{ github.workspace }}/build/L-SMASH-Works/AviUtl2
-        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
+        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I${INSTALL_PREFIX}/include --extra-ldflags="-L${INSTALL_PREFIX}/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make -j$(nproc)
 
     - name: Build L-SMASH Works(AviUtl)
       run: |
         cd ${{ github.workspace }}/build/L-SMASH-Works/AviUtl
-        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I/usr/local/include --extra-ldflags="-L/usr/local/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
+        PKG_CONFIG_PATH=${INSTALL_PREFIX}/lib/pkgconfig ./configure --cross-prefix=${{ matrix.cpu_config.cpu }}-w64-mingw32- --extra-cflags=-I${INSTALL_PREFIX}/include --extra-ldflags="-L${INSTALL_PREFIX}/lib -static-libgcc -static-libstdc++ -static" --extra-libs="-lpthread"
         make -j$(nproc)
 
     - name: Rename Files(x64)
