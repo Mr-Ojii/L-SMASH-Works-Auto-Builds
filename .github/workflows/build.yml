@@ -2,6 +2,11 @@ name: Build L-SMASH Works
 
 on:
   push:
+    paths-ignore:
+      - 'Readme.md'
+      - 'LICENSE'
+      - '.editorconfig'
+      - '.github/dependabot.yml'
   workflow_dispatch:
   schedule:
     - cron: '0 0,6,12,18 * * *'
