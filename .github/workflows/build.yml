@@ -327,14 +327,13 @@ jobs:
         cp ${{ github.workspace }}/build/obuparse/LICENSE obuparse.txt
         cp ${{ github.workspace }}/build/game-music-emu/license.txt game-music-emu.txt
         cp ${{ github.workspace }}/build/zimg/COPYING zimg.txt
+        cp ${{ github.workspace }}/build/zlib/LICENSE zlib.txt
 
         if [ "${{ matrix.lsw_config.intel }}" == "mfx" ]; then
           cp ${{ github.workspace }}/build/mfx_dispatch/LICENSE mfx_dispatch.txt
         else
           cp ${{ github.workspace }}/build/libvpl/LICENSE libvpl.txt
         fi
-        echo "[InternetShortcut]" > zlib.url
-        echo "URL=https://zlib.net/zlib_license.html" >> zlib.url
 
     - name: Create RevInfo File
       run: |
