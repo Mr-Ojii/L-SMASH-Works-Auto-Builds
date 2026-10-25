@@ -939,7 +939,9 @@ jobs:
 
     - uses: actions/download-artifact@v8
       with:
+        pattern: "L-SMASH-Works-*"
         path: artifacts
+        merge-multiple: true
 
     - name: Get Date
       id: get_date
@@ -954,7 +956,6 @@ jobs:
         cd ${{ github.workspace }}
         RECOMMEND=$(cat recommend.txt)
         cd ${{ github.workspace }}/artifacts
-        mv ./*/*.zip ./
         RELEASE_NAME=Build-${{ steps.get_date.outputs.DATE_TIME }}
         TAG_NAME=build-${{ steps.get_date.outputs.DATE_TIME }}
         for asset in *.zip; do
