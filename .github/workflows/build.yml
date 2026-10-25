@@ -9,7 +9,7 @@ on:
       - '.github/dependabot.yml'
   workflow_dispatch:
   schedule:
-    - cron: '0 0,6,12,18 * * *'  # UTC基準の時刻
+    - cron: '0 0,12 * * *'  # UTC基準の時刻
 
 permissions:
   contents: read
