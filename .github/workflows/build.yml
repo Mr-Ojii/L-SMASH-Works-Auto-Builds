@@ -638,7 +638,7 @@ jobs:
       INSTALL_PREFIX: ${{ github.workspace }}/build/L-SMASH-Works/build${{matrix.cpu_config.build_arch }}_msvc
       MSYS2_PATH_TYPE: inherit
 
-    runs-on: windows-latest
+    runs-on: windows-2025-vs2026
     strategy:
       matrix:
         lsw_config:
