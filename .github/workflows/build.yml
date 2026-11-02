@@ -672,7 +672,6 @@ jobs:
     - uses: actions/setup-python@v7
       with:
         python-version: '3.15'
-        cache: 'pip'
 
     - name: Install Meson and Ninja
       run: |
