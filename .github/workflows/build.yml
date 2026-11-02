@@ -679,10 +679,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install meson ninja
 
-    - uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: ${{ matrix.cpu_config.user_arch }}
-
     - uses: msys2/setup-msys2@v2
       with:
         update: true
@@ -699,6 +695,10 @@ jobs:
           yasm
           ninja
           pkgconf
+
+    - uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: ${{ matrix.cpu_config.user_arch }}
 
     # 以下 pwsh でのビルド
     - name: Clone L-SMASH-Works
