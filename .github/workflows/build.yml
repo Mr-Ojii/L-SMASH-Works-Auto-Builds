@@ -828,7 +828,7 @@ jobs:
     # libvplなどでpc構造が変だったりするため、ログ出しとく
     - name: Echo FFmpeg log
       shell: msys2 {0}
-      if: ${{ !cancelled() }}
+      if: ${{ failure() }}
       run: |
         SYG_INSTALL_PREFIX=$(cygpath -u "${INSTALL_PREFIX}")
         cd $(cygpath -u "${{ github.workspace }}")/build
