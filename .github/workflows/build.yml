@@ -527,7 +527,7 @@ jobs:
 
     # ここまで依存ライブラリのインストール
 
-    - name: Clone L-SMASH Works
+    - name: Check L-SMASH Works revision
       id: l-smash-works-rev
       run: |
         cd ${{ github.workspace }}/build/L-SMASH-Works
@@ -698,7 +698,7 @@ jobs:
         arch: ${{ matrix.cpu_config.user_arch }}
 
     # 以下 pwsh でのビルド
-    - name: Clone L-SMASH-Works
+    - name: Create Install Directory
       run: |
         cd ${{ github.workspace }}
         mkdir ${Env:INSTALL_PREFIX}
