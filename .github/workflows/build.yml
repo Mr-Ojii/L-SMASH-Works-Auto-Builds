@@ -985,8 +985,18 @@ jobs:
 
         gh release create "${TAG_NAME}" ${{ github.workspace }}/artifacts/*.zip -t "${RELEASE_NAME}" -F ReleaseNotes.txt --target "${{ github.sha }}"
 
-    - uses: dev-drprasad/delete-older-releases@v0.3.4
-      with:
-        keep_latest: 200
+    - name: Delete older releases
+      shell: bash
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        KEEP_LATEST: 200
+      run: |
+        gh release list --repo "${GITHUB_REPOSITORY}" --limit 10000 --exclude-drafts \
+          --json tagName,createdAt \
+          --jq "[.[] | select(.tagName | startswith(\"build-\"))]
+                | sort_by(.createdAt) | reverse
+                | .[${KEEP_LATEST}:] | .[].tagName" |
+        while read -r tag; do
+          echo "Deleting release: ${tag}"
+          gh release delete "${tag}" --repo "${GITHUB_REPOSITORY}" --yes
+        done
