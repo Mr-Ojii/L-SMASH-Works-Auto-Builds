@@ -752,7 +752,7 @@ jobs:
         cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_GENERATOR_PLATFORM=${{ matrix.cpu_config.msvc_platform }} -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="${Env:INSTALL_PREFIX}"
         cmake --build build --config Release --parallel
         cmake --install build --config Release --prefix="${Env:INSTALL_PREFIX}"
-        move ${Env:INSTALL_PREFIX}\lib\zs.lib ${Env:INSTALL_PREFIX}\lib\zlib.lib
+        move ${Env:INSTALL_PREFIX}\lib\libzs.lib ${Env:INSTALL_PREFIX}\lib\zlib.lib
 
     - name: Install Game Music Emu
       run: |
