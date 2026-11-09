@@ -20,29 +20,32 @@ concurrency:
 
 
 # 具体的なワークフローはこう
-# job 1. すべての依存ライブラリをクローン
-  # 1-1. build, pub, pub/Licenses ディレクトリを作成
-  # 1-2. 各種依存ライブラリを build ディレクトリにクローンし、rev-count, shaを取得しながら、Licenses ディレクトリにライセンステキストを配置
-  # 1-3. pub/About-this-build.txt に rev-count, sha を記載
-  # 1-4. pub ディレクトリを Assets としてアップロード | docs-<LSW-Author>-<L-SMASH-Author> キーでアップロード
-  # 1-5. build ディレクトリを Assets としてアップロード | build-<LSW-Author>-<L-SMASH-Author> キーでアップロード
-# job 2. Ubuntu 環境で L-SMASH Worksをビルド (AviUtl, AviUtl ExEdit2, VapourSynth)
-  # 2-1. build-<LSW-Author>-<L-SMASH-Author> のAssetsをダウンロードし、ビルドに必要なファイルを配置
-  # 2-2. pub ディレクトリを作成
-  # 2-3. L-SMASH Worksをビルドし、ビルドしたファイルを pub/<HostApp>/<CpuArch> に配置
-  # 2-4. pub ディレクトリを、Assets としてアップロード | ubuntu-build-<LSW-Author>-<L-SMASH-Author>-<CpuArch> キーでアップロード
-# job 3. Windows 環境で L-SMASH Worksをビルド (AviSynth)
+# job 1. リリースおよび日時情報を確定し、output
+  # 1-1. 現在の時刻を取得し、リリース名称を決定
+  # 1-2. 前回のリリース情報から、Pre-releaseかReleaseかを決定
+# job 2. すべての依存ライブラリをクローン
+  # 2-1. build, pub, pub/Licenses ディレクトリを作成
+  # 2-2. 各種依存ライブラリを build ディレクトリにクローンし、rev-count, shaを取得しながら、Licenses ディレクトリにライセンステキストを配置
+  # 2-3. pub/About-this-build.txt に rev-count, sha を記載
+  # 2-4. pub ディレクトリを Assets としてアップロード | docs-<LSW-Author>-<L-SMASH-Author> キーでアップロード
+  # 2-5. build ディレクトリを Assets としてアップロード | build-<LSW-Author>-<L-SMASH-Author> キーでアップロード
+# job 3. Ubuntu 環境で L-SMASH Worksをビルド (AviUtl, AviUtl ExEdit2, VapourSynth)
   # 3-1. build-<LSW-Author>-<L-SMASH-Author> のAssetsをダウンロードし、ビルドに必要なファイルを配置
   # 3-2. pub ディレクトリを作成
   # 3-3. L-SMASH Worksをビルドし、ビルドしたファイルを pub/<HostApp>/<CpuArch> に配置
-  # 3-4. pub ディレクトリを Assets としてアップロード | windows-build-<LSW-Author>-<L-SMASH-Author>-<CpuArch> キーでアップロード
-# job 4. Ubuntu, Windows 環境でビルドしたファイルをダウンロードし、x86とx64のファイルをまとめて1つのzipにする
-  # 4-1. ubuntu-build-<LSW-Author>-<L-SMASH-Author>-x86 と ubuntu-build-<LSW-Author>-<L-SMASH-Author>-x64, windows-build-<LSW-Author>-<L-SMASH-Author>-x86, windows-build-<LSW-Author>-<L-SMASH-Author>-x64 のAssetsをダウンロード
-  # 4-2. ファイルをまとめて1つのzipにする  (l-smashのブランチがmasterではない際にブランチ名を末尾に付加する)
-  # 4-3. zip にして、Assets としてアップロード | L-SMASH-Works-<LSW-Author>-<L-SMASH-Author> キーでアップロード
-# job 5. zip にしたファイルを Release にアップロード
-  # 5-1. すべての Assets をダウンロード
-  # 5-2. Release を作成し、*.zip を Assets としてアップロード
+  # 3-4. pub ディレクトリを、Assets としてアップロード | ubuntu-build-<LSW-Author>-<L-SMASH-Author>-<CpuArch> キーでアップロード
+# job 4. Windows 環境で L-SMASH Worksをビルド (AviSynth)
+  # 4-1. build-<LSW-Author>-<L-SMASH-Author> のAssetsをダウンロードし、ビルドに必要なファイルを配置
+  # 4-2. pub ディレクトリを作成
+  # 4-3. L-SMASH Worksをビルドし、ビルドしたファイルを pub/<HostApp>/<CpuArch> に配置
+  # 4-4. pub ディレクトリを Assets としてアップロード | windows-build-<LSW-Author>-<L-SMASH-Author>-<CpuArch> キーでアップロード
+# job 5. Ubuntu, Windows 環境でビルドしたファイルをダウンロードし、x86とx64のファイルをまとめて1つのzipにする
+  # 5-1. ubuntu-build-<LSW-Author>-<L-SMASH-Author>-x86 と ubuntu-build-<LSW-Author>-<L-SMASH-Author>-x64, windows-build-<LSW-Author>-<L-SMASH-Author>-x86, windows-build-<LSW-Author>-<L-SMASH-Author>-x64 のAssetsをダウンロード
+  # 5-2. ファイルをまとめて1つのzipにする  (l-smashのブランチがmasterではない際にブランチ名を末尾に付加する)
+  # 5-3. zip にして、Assets としてアップロード | L-SMASH-Works-<LSW-Author>-<L-SMASH-Author> キーでアップロード
+# job 6. zip にしたファイルを Release にアップロード
+  # 6-1. すべての Assets をダウンロード
+  # 6-2. Release を作成し、*.zip を Assets としてアップロード
 
 
 # 現在の構成は以下
@@ -62,8 +65,21 @@ concurrency:
 
 
 jobs:
-  # 1. すべての依存ライブラリをクローン
+  # 1. リリースおよび日時情報を確定し、output
+  release-data:
+    runs-on: ubuntu-latest
+    outputs:
+      DATE_TIME:  ${{ steps.get_date.outputs.DATE_TIME }}
+    steps:
+    - name: Get Date
+      id: get_date
+      run: |
+        DATE_TIME=$(date +'%Y-%m-%d-%H-%M-%S')
+        echo "DATE_TIME=${DATE_TIME}" >> $GITHUB_OUTPUT
+  
+  # 2. すべての依存ライブラリをクローン
   clone:
+    needs: release-data
     runs-on: ubuntu-24.04
     strategy:
       matrix:
@@ -358,9 +374,9 @@ jobs:
         path: ${{ github.workspace }}/build.tar.gz
 
 
-  # job 2. Ubuntu 環境で L-SMASH Worksをビルド (AviUtl, AviUtl ExEdit2, VapourSynth)
+  # job 3. Ubuntu 環境で L-SMASH Worksをビルド (AviUtl, AviUtl ExEdit2, VapourSynth)
   ubuntu-build:
-    needs: clone
+    needs: [clone, release-data]
     env:
       CFLAGS: -O2
       CXXFLAGS: -O2
@@ -631,9 +647,9 @@ jobs:
         name: ubuntu-build-${{ matrix.lsw_config.author }}-${{ matrix.l-smash_config.author }}-${{ matrix.cpu_config.user_arch }}
         path: ${{ github.workspace }}/pub
 
-  # job 3. Windows 環境で L-SMASH Worksをビルド (AviSynth)
+  # job 4. Windows 環境で L-SMASH Worksをビルド (AviSynth)
   windows-build:
-    needs: clone
+    needs: [clone, release-data]
     env:
       INSTALL_PREFIX: ${{ github.workspace }}/build/L-SMASH-Works/build${{matrix.cpu_config.build_arch }}_msvc
       MSYS2_PATH_TYPE: inherit
@@ -891,10 +907,10 @@ jobs:
         path: ${{ github.workspace }}/pub
 
 
-  # job 4. Ubuntu, Windows 環境でビルドしたファイルをダウンロードし、x86とx64のファイルをまとめて1つのzipにする
+  # job 5. Ubuntu, Windows 環境でビルドしたファイルをダウンロードし、x86とx64のファイルをまとめて1つのzipにする
   create-archive:
     name: Create archive
-    needs: [windows-build, ubuntu-build]
+    needs: [windows-build, ubuntu-build, release-data]
     runs-on: ubuntu-24.04
     strategy:
       matrix:
@@ -940,10 +956,10 @@ jobs:
         name: L-SMASH-Works-${{ matrix.author }}_${{ matrix.l-smash_config.author }}
         path: ${{ github.workspace }}/artifacts/*.zip
 
-  # 5. zip にしたファイルを Release にアップロード
+  # 6. zip にしたファイルを Release にアップロード
   create-release:
     name: Create release
-    needs: create-archive
+    needs: [create-archive, release-data]
     if: ${{ github.ref == 'refs/heads/main' }}
     permissions:
       contents: write
@@ -959,12 +975,6 @@ jobs:
         path: artifacts
         merge-multiple: true
 
-    - name: Get Date
-      id: get_date
-      run: |
-        DATE_TIME=`date +'%Y-%m-%d-%H-%M-%S'`
-        echo "DATE_TIME=${DATE_TIME}" >> $GITHUB_OUTPUT
-
     - name: Create a Release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -972,8 +982,8 @@ jobs:
         cd ${{ github.workspace }}
         RECOMMEND=$(cat recommend.txt)
         cd ${{ github.workspace }}/artifacts
-        RELEASE_NAME=Build-${{ steps.get_date.outputs.DATE_TIME }}
-        TAG_NAME=build-${{ steps.get_date.outputs.DATE_TIME }}
+        RELEASE_NAME=Build-${{ needs.release-data.outputs.DATE_TIME }}
+        TAG_NAME=build-${{ needs.release-data.outputs.DATE_TIME }}
         for asset in *.zip; do
           if [[ "$asset" =~ "${RECOMMEND}" ]]; then
             AVIUTL_RECOMMEND_FILE=$asset
