@@ -522,11 +522,6 @@ jobs:
         cmake --build build -j $(nproc)
         cmake --install build --prefix ${INSTALL_PREFIX}
 
-        REVCOUNT=`git rev-list --count HEAD`
-        echo "REV_LIST_COUNT=${REVCOUNT}" >> $GITHUB_OUTPUT
-        SHA=`git rev-parse HEAD`
-        echo "REV_SHA=${SHA}" >> $GITHUB_OUTPUT
-
     - name: Install zimg
       run: |
         cd ${{ github.workspace }}/build/zimg
