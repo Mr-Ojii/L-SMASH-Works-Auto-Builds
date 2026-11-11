@@ -76,7 +76,7 @@ jobs:
       run: |
         DATE_TIME=$(date +'%Y-%m-%d-%H-%M-%S')
         echo "DATE_TIME=${DATE_TIME}" >> $GITHUB_OUTPUT
-  
+
   # 2. すべての依存ライブラリをクローン
   clone:
     needs: release-data
@@ -184,12 +184,14 @@ jobs:
       id: ffmpeg-rev
       run: |
         cd ${{ github.workspace }}/build
-        git clone https://github.com/FFmpeg/FFmpeg.git -b release/${{ matrix.lsw_config.ffmpeg_version }}
+        git clone https://github.com/FFmpeg/FFmpeg.git -b release/${{ matrix.lsw_config.ffmpeg_version }} --depth 1
         cd FFmpeg
 
         # 文字が1文字以上存在すれば実行される
         if [ "${{ matrix.lsw_config.ffmpeg_patch }}" ]; then
-          git cherry-pick 07bcedc232feeb9e30336624f4e9977d47ac43bc
+          # shallow cloneにはパッチ対象のコミットが無いため、親コミットと一緒に取得する
+          git fetch --depth 2 origin 07bcedc232feeb9e30336624f4e9977d47ac43bc
+          git cherry-pick FETCH_HEAD
         fi
 
         echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
