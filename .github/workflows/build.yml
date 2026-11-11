@@ -364,6 +364,12 @@ jobs:
         name: docs-${{ matrix.lsw_config.author }}-${{ matrix.l-smash_config.author }}
         path: ${{ github.workspace }}/pub
 
+    - name: Remove Unnecessary Git Directories
+      run: |
+        cd ${{ github.workspace }}/build
+        # L-SMASH Works のみビルド時に rev-count を参照するため .git を残す
+        find . -mindepth 2 -maxdepth 2 -type d -name .git -not -path './L-SMASH-Works/.git' -exec rm -rf {} +
+
     - name: Create Cloned Repositories Archive
       run: |
         cd ${{ github.workspace }}
