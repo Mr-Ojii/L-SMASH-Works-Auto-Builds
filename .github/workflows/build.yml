@@ -1005,9 +1005,9 @@ jobs:
         KEEP_LATEST: 200
       run: |
         gh release list --repo "${GITHUB_REPOSITORY}" --limit 10000 --exclude-drafts \
-          --json tagName,createdAt \
+          --json tagName,publishedAt \
           --jq "[.[] | select(.tagName | startswith(\"build-\"))]
-                | sort_by(.createdAt) | reverse
+                | sort_by(.publishedAt) | reverse
                 | .[${KEEP_LATEST}:] | .[].tagName" |
         while read -r tag; do
           echo "Deleting release: ${tag}"
