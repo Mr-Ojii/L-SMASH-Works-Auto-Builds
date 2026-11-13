@@ -22,10 +22,13 @@ concurrency:
 # 具体的なワークフローはこう
 # job 1. リリースおよび日時情報を確定し、output
   # 1-1. 現在の時刻を取得し、リリース名称を決定
-  # 1-2. 前回のリリース情報から、Pre-releaseかReleaseかを決定
+  # 1-2. 前回の Release（pre-releaseは除く）のsources.lock.jsonと比較し、L-SMASH WorksかAuto-Buildsが更新されていれば Release、
+  #      前回の Release から6日21時間以上経過していれば Release、それ以外は Pre-release とする
+  # 1-3. sources.json の定義から依存ライブラリのSHAを ls-remote で確定し、sources.lock.json として保存
+  # 1-4. sources.lock.json をリリースのアセットとして添付
 # job 2. すべての依存ライブラリをクローン
   # 2-1. build, pub, pub/Licenses ディレクトリを作成
-  # 2-2. 各種依存ライブラリを build ディレクトリにクローンし、rev-count, shaを取得しながら、Licenses ディレクトリにライセンステキストを配置
+  # 2-2. sources.lock.json のSHAで各種依存ライブラリを build ディレクトリにクローンし、rev-count, shaを取得しながら、Licenses ディレクトリにライセンステキストを配置
   # 2-3. pub/About-this-build.txt に rev-count, sha を記載
   # 2-4. pub ディレクトリを Assets としてアップロード | docs-<LSW-Author>-<L-SMASH-Author> キーでアップロード
   # 2-5. build ディレクトリを Assets としてアップロード | build-<LSW-Author>-<L-SMASH-Author> キーでアップロード
@@ -43,9 +46,10 @@ concurrency:
   # 5-1. ubuntu-build-<LSW-Author>-<L-SMASH-Author>-x86 と ubuntu-build-<LSW-Author>-<L-SMASH-Author>-x64, windows-build-<LSW-Author>-<L-SMASH-Author>-x86, windows-build-<LSW-Author>-<L-SMASH-Author>-x64 のAssetsをダウンロード
   # 5-2. ファイルをまとめて1つのzipにする  (l-smashのブランチがmasterではない際にブランチ名を末尾に付加する)
   # 5-3. zip にして、Assets としてアップロード | L-SMASH-Works-<LSW-Author>-<L-SMASH-Author> キーでアップロード
-# job 6. zip にしたファイルを Release にアップロード
+# job 6. zip にしたファイルと sources.lock.json を Release にアップロード
   # 6-1. すべての Assets をダウンロード
-  # 6-2. Release を作成し、*.zip を Assets としてアップロード
+  # 6-2. Release を作成し、*.zip と sources.lock.json を Assets としてアップロード
+  #      release-data の判定が Pre-release の場合は pre-release として作成する
 
 
 # 現在の構成は以下
@@ -70,12 +74,88 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       DATE_TIME:  ${{ steps.get_date.outputs.DATE_TIME }}
+      IS_RELEASE: ${{ steps.release_type.outputs.IS_RELEASE }}
     steps:
+    - uses: actions/checkout@v7
+      with:
+        persist-credentials: false
+
     - name: Get Date
       id: get_date
       run: |
         DATE_TIME=$(date +'%Y-%m-%d-%H-%M-%S')
         echo "DATE_TIME=${DATE_TIME}" >> $GITHUB_OUTPUT
+
+    # すべてのバリアントで同一の依存リビジョンを使うため、cloneせず ls-remote でSHAだけを確定する
+    - name: Resolve Source Revisions
+      run: |
+        cd ${{ github.workspace }}
+        ./scripts/resolve_sources.sh sources.json > sources.lock.json
+
+        # 前回リリースとの比較用に、このワークフロー自身のリビジョンも記録する
+        jq --arg sha "$(git rev-parse HEAD)" \
+           --arg url "${{ github.server_url }}/${{ github.repository }}.git" \
+           '. + [{name: "L-SMASH-Works-Auto-Builds", url: $url, ref: "HEAD", sha: $sha}]' \
+           sources.lock.json > sources.lock.tmp
+        mv sources.lock.tmp sources.lock.json
+
+        cat sources.lock.json
+
+    # 前回リリースから L-SMASH Works か L-SMASH-Works-Auto-Builds が更新されていれば release、
+    # 6日21時間以上経過していれば release、それ以外は pre-release とする
+    - name: Determine Release Type
+      id: release_type
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_REPO: ${{ github.repository }}
+      run: |
+        set -euo pipefail
+
+        IS_RELEASE=false
+
+        # 前回のリリースをプレリリース抜きで取得し、保持しておく
+        PREV=$(gh release list --limit 1000 --exclude-drafts --json tagName,publishedAt,isPrerelease \
+          --jq 'map(select(.isPrerelease == false)) | sort_by(.publishedAt) | reverse | .[0]')
+        PREV_TAG=$(jq -r '.tagName // empty' <<< "$PREV")
+
+        if [ -z "$PREV_TAG" ]; then
+          echo "previous release not found"
+          IS_RELEASE=true
+        else
+          PREV_CREATED=$(jq -r '.publishedAt' <<< "$PREV")
+          AGE_SECONDS=$(( $(date -u +%s) - $(date -u -d "$PREV_CREATED" +%s) ))
+          # 6日21時間 (= 594000秒) 以上経過していれば Release
+          INTERVAL_SECONDS=$(( 6 * 86400 + 21 * 3600 ))
+          echo "previous release: ${PREV_TAG} (${AGE_SECONDS} seconds ago)"
+          if [ "$AGE_SECONDS" -ge "$INTERVAL_SECONDS" ]; then
+            echo "the release interval has passed since the previous release"
+            IS_RELEASE=true
+          fi
+
+          # 今回のリリースで L-SMASH-Works のいずれかか Auto-Builds が更新されている場合、 Releaseにする
+          mkdir -p prev
+          if gh release download "$PREV_TAG" --pattern sources.lock.json --dir prev --clobber; then
+            for name in L-SMASH-Works-Auto-Builds L-SMASH-Works-Mr-Ojii L-SMASH-Works-VFR-maniac; do
+              OLD=$(jq -r --arg n "$name" '.[] | select(.name == $n) | .sha' prev/sources.lock.json)
+              NEW=$(jq -r --arg n "$name" '.[] | select(.name == $n) | .sha' sources.lock.json)
+              if [ "$OLD" != "$NEW" ]; then
+                echo "changed: ${name} ${OLD:-<none>} -> ${NEW:-<none>}"
+                IS_RELEASE=true
+              fi
+            done
+          else
+            echo "sources.lock.json not found in ${PREV_TAG}"
+            IS_RELEASE=true
+          fi
+        fi
+
+        echo "IS_RELEASE=${IS_RELEASE}" >> "$GITHUB_OUTPUT"
+
+    - name: Upload Source Revisions
+      uses: actions/upload-artifact@v7
+      with:
+        name: sources
+        path: ${{ github.workspace }}/sources.lock.json
 
   # 2. すべての依存ライブラリをクローン
   clone:
@@ -96,6 +176,12 @@ jobs:
         fetch-depth: 0
         persist-credentials: false
 
+    - name: Download Source Revisions
+      uses: actions/download-artifact@v8
+      with:
+        name: sources
+        path: ${{ github.workspace }}/sources
+
     - name: Create build and pub Directory
       run: |
         cd ${{ github.workspace }}
@@ -112,7 +198,7 @@ jobs:
       id: zlib-rev
       run: |
         cd ${{ github.workspace }}/build
-        git clone https://github.com/madler/zlib.git -b v1.4 --depth 1
+        ${{ github.workspace }}/scripts/clone_pinned.sh ${{ github.workspace }}/sources/sources.lock.json zlib zlib
         cd zlib
 
         echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
@@ -122,7 +208,7 @@ jobs:
       id: game-music-emu-rev
       run: |
         cd ${{ github.workspace }}/build
-        git clone https://github.com/libgme/game-music-emu.git --depth 1
+        ${{ github.workspace }}/scripts/clone_pinned.sh ${{ github.workspace }}/sources/sources.lock.json game-music-emu game-music-emu
         cd game-music-emu
 
         echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
@@ -132,7 +218,7 @@ jobs:
       id: dav1d-rev
       run: |
         cd ${{ github.workspace }}/build
-        git clone https://code.videolan.org/videolan/dav1d.git --depth 1
+        ${{ github.workspace }}/scripts/clone_pinned.sh ${{ github.workspace }}/sources/sources.lock.json dav1d dav1d
         cd dav1d
 
         echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
@@ -142,7 +228,7 @@ jobs:
       id: libvpx-rev
       run: |
         cd ${{ github.workspace }}/build
-        git clone https://github.com/webmproject/libvpx.git --depth 1
+        ${{ github.workspace }}/scripts/clone_pinned.sh ${{ github.workspace }}/sources/sources.lock.json libvpx libvpx
         cd libvpx
 
         echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
@@ -152,7 +238,7 @@ jobs:
       id: nv-codec-headers-rev
       run: |
         cd ${{ github.workspace }}/build
-        git clone https://github.com/FFmpeg/nv-codec-headers.git --depth 1
+        ${{ github.workspace }}/scripts/clone_pinned.sh ${{ github.workspace }}/sources/sources.lock.json nv-codec-headers nv-codec-headers
         cd nv-codec-headers
 
         echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
@@ -163,7 +249,7 @@ jobs:
       id: mfx_dispatch-rev
       run: |
         cd ${{ github.workspace }}/build
-        git clone https://github.com/lu-zero/mfx_dispatch.git --depth 1
+        ${{ github.workspace }}/scripts/clone_pinned.sh ${{ github.workspace }}/sources/sources.lock.json mfx_dispatch mfx_dispatch
         cd mfx_dispatch
 
         echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
@@ -174,7 +260,7 @@ jobs:
       id: libvpl-rev
       run: |
         cd ${{ github.workspace }}/build
-        git clone https://github.com/intel/libvpl.git --depth 1
+        ${{ github.workspace }}/scripts/clone_pinned.sh ${{ github.workspace }}/sources/sources.lock.json libvpl libvpl
         cd libvpl
 
         echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
@@ -184,7 +270,7 @@ jobs:
       id: ffmpeg-rev
       run: |
         cd ${{ github.workspace }}/build
-        git clone https://github.com/FFmpeg/FFmpeg.git -b release/${{ matrix.lsw_config.ffmpeg_version }} --depth 1
+        ${{ github.workspace }}/scripts/clone_pinned.sh ${{ github.workspace }}/sources/sources.lock.json "FFmpeg-${{ matrix.lsw_config.ffmpeg_version }}" FFmpeg
         cd FFmpeg
 
         # 文字が1文字以上存在すれば実行される
@@ -201,7 +287,7 @@ jobs:
       id: obuparse-rev
       run: |
         cd ${{ github.workspace }}/build
-        git clone https://github.com/dwbuiten/obuparse.git --depth 1
+        ${{ github.workspace }}/scripts/clone_pinned.sh ${{ github.workspace }}/sources/sources.lock.json obuparse obuparse
         cd obuparse
 
         echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
@@ -211,7 +297,7 @@ jobs:
       id: l-smash-rev
       run: |
         cd ${{ github.workspace }}/build
-        git clone https://github.com/${{ matrix.l-smash_config.author }}/l-smash.git -b ${{ matrix.l-smash_config.branch }}
+        ${{ github.workspace }}/scripts/clone_pinned.sh ${{ github.workspace }}/sources/sources.lock.json "l-smash-${{ matrix.l-smash_config.author }}-${{ matrix.l-smash_config.branch }}" l-smash --full
         cd l-smash
 
         echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
@@ -221,7 +307,7 @@ jobs:
       id: avisynthplus-rev
       run: |
         cd ${{ github.workspace }}/build
-        git clone https://github.com/AviSynth/AviSynthPlus.git --depth 1 -b v3.7.3
+        ${{ github.workspace }}/scripts/clone_pinned.sh ${{ github.workspace }}/sources/sources.lock.json AviSynthPlus AviSynthPlus
         cd AviSynthPlus
 
         echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
@@ -231,7 +317,7 @@ jobs:
       id: zimg-rev
       run: |
         cd ${{ github.workspace }}/build
-        git clone https://github.com/sekrit-twc/zimg -b v3.0 --depth 1
+        ${{ github.workspace }}/scripts/clone_pinned.sh ${{ github.workspace }}/sources/sources.lock.json zimg zimg
         cd zimg
 
         echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
@@ -241,7 +327,7 @@ jobs:
       id: vapoursynth-rev
       run: |
         cd ${{ github.workspace }}/build
-        git clone https://github.com/vapoursynth/vapoursynth -b R72 --depth 1
+        ${{ github.workspace }}/scripts/clone_pinned.sh ${{ github.workspace }}/sources/sources.lock.json VapourSynth vapoursynth
         cd vapoursynth
 
         echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
@@ -251,7 +337,7 @@ jobs:
       id: amf-rev
       run: |
         cd ${{ github.workspace }}/build
-        git clone https://github.com/GPUOpen-LibrariesAndSDKs/AMF.git --depth 1
+        ${{ github.workspace }}/scripts/clone_pinned.sh ${{ github.workspace }}/sources/sources.lock.json AMF AMF
         cd AMF
 
         echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
@@ -261,7 +347,7 @@ jobs:
       id: l-smash-works-rev
       run: |
         cd ${{ github.workspace }}/build
-        git clone https://github.com/${{ matrix.lsw_config.author }}/L-SMASH-Works.git
+        ${{ github.workspace }}/scripts/clone_pinned.sh ${{ github.workspace }}/sources/sources.lock.json "L-SMASH-Works-${{ matrix.lsw_config.author }}" L-SMASH-Works --full
         cd L-SMASH-Works
 
         echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
@@ -978,6 +1064,11 @@ jobs:
         path: artifacts
         merge-multiple: true
 
+    - uses: actions/download-artifact@v8
+      with:
+        name: sources
+        path: ${{ github.workspace }}/sources
+
     - name: Create a Release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -996,7 +1087,13 @@ jobs:
         echo "また、別バージョンからMr-Ojii版L-SMASH Worksに更新する場合、以下の記事をお読みください。" >> ReleaseNotes.txt
         echo "https://scrapbox.io/Mr-Ojii/Mr-Ojii%E7%89%88_L-SMASH_Works%E3%81%AE%E6%9C%80%E6%96%B0%E7%89%88%E3%81%AB%E6%9B%B4%E6%96%B0%E3%81%99%E3%82%8B%E9%9A%9B%E3%81%AE%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A0%85" >> ReleaseNotes.txt
 
-        gh release create "${TAG_NAME}" ${{ github.workspace }}/artifacts/*.zip -t "${RELEASE_NAME}" -F ReleaseNotes.txt --target "${{ github.sha }}"
+        if [ "${{ needs.release-data.outputs.IS_RELEASE }}" = "true" ]; then
+          RELEASE_FLAGS="--latest"
+        else
+          RELEASE_FLAGS="--prerelease --latest=false"
+        fi
+
+        gh release create "${TAG_NAME}" ${{ github.workspace }}/artifacts/*.zip ${{ github.workspace }}/sources/sources.lock.json -t "${RELEASE_NAME}" -F ReleaseNotes.txt --target "${{ github.sha }}" ${RELEASE_FLAGS}
 
     - name: Delete older releases
       shell: bash

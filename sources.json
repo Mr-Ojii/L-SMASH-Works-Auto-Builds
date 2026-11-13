@@ -1,0 +1,21 @@
+[
+  { "name": "zlib", "url": "https://github.com/madler/zlib.git", "ref": "refs/tags/v1.4" },
+  { "name": "game-music-emu", "url": "https://github.com/libgme/game-music-emu.git", "ref": "HEAD" },
+  { "name": "dav1d", "url": "https://code.videolan.org/videolan/dav1d.git", "ref": "HEAD" },
+  { "name": "libvpx", "url": "https://github.com/webmproject/libvpx.git", "ref": "HEAD" },
+  { "name": "nv-codec-headers", "url": "https://github.com/FFmpeg/nv-codec-headers.git", "ref": "HEAD" },
+  { "name": "mfx_dispatch", "url": "https://github.com/lu-zero/mfx_dispatch.git", "ref": "HEAD" },
+  { "name": "libvpl", "url": "https://github.com/intel/libvpl.git", "ref": "HEAD" },
+  { "name": "FFmpeg-4.4", "url": "https://github.com/FFmpeg/FFmpeg.git", "ref": "refs/heads/release/4.4" },
+  { "name": "FFmpeg-8.1", "url": "https://github.com/FFmpeg/FFmpeg.git", "ref": "refs/heads/release/8.1" },
+  { "name": "obuparse", "url": "https://github.com/dwbuiten/obuparse.git", "ref": "HEAD" },
+  { "name": "l-smash-Mr-Ojii-master", "url": "https://github.com/Mr-Ojii/l-smash.git", "ref": "refs/heads/master" },
+  { "name": "l-smash-vimeo-master", "url": "https://github.com/vimeo/l-smash.git", "ref": "refs/heads/master" },
+  { "name": "l-smash-l-smash-dev", "url": "https://github.com/l-smash/l-smash.git", "ref": "refs/heads/dev" },
+  { "name": "AviSynthPlus", "url": "https://github.com/AviSynth/AviSynthPlus.git", "ref": "refs/tags/v3.7.3" },
+  { "name": "zimg", "url": "https://github.com/sekrit-twc/zimg.git", "ref": "refs/heads/v3.0" },
+  { "name": "VapourSynth", "url": "https://github.com/vapoursynth/vapoursynth.git", "ref": "refs/tags/R72" },
+  { "name": "AMF", "url": "https://github.com/GPUOpen-LibrariesAndSDKs/AMF.git", "ref": "HEAD" },
+  { "name": "L-SMASH-Works-Mr-Ojii", "url": "https://github.com/Mr-Ojii/L-SMASH-Works.git", "ref": "HEAD" },
+  { "name": "L-SMASH-Works-VFR-maniac", "url": "https://github.com/VFR-maniac/L-SMASH-Works.git", "ref": "HEAD" }
+]
