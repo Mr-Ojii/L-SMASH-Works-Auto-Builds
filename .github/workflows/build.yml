@@ -353,6 +353,22 @@ jobs:
         echo "REV_LIST_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
         echo "REV_SHA=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
+    - name: Patch L-SMASH Works Revision
+      env:
+        DATE_TIME: ${{ needs.release-data.outputs.DATE_TIME }}
+      run: |
+        cd ${{ github.workspace }}/build/L-SMASH-Works
+
+        # プラグイン情報に埋め込まれる revision にビルド日時を付加する
+        # 例: r1111 -> r1111-20261112-001004
+        rev_cmd='$(git rev-list --count HEAD 2> /dev/null)'
+        for f in AviUtl/configure AviUtl2/configure; do
+          if [ -f "$f" ]; then
+            sed -i "s|^REV=\"${rev_cmd}\"$|REV=\"${rev_cmd}-${DATE_TIME}\"|" "$f"
+            grep -q "$DATE_TIME" "$f"
+          fi
+        done
+
     # BuildInfo File 周り
     - name: Set workflow Revision Info
       id: workflow-rev
