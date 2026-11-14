@@ -83,7 +83,7 @@ jobs:
     - name: Get Date
       id: get_date
       run: |
-        DATE_TIME=$(date +'%Y-%m-%d-%H-%M-%S')
+        DATE_TIME=$(date +'%Y%m%d-%H%M%S')
         echo "DATE_TIME=${DATE_TIME}" >> $GITHUB_OUTPUT
 
     # すべてのバリアントで同一の依存リビジョンを使うため、cloneせず ls-remote でSHAだけを確定する
