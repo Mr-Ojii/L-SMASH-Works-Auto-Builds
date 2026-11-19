@@ -9,6 +9,8 @@
   { "name": "FFmpeg-4.4", "url": "https://github.com/FFmpeg/FFmpeg.git", "ref": "refs/heads/release/4.4" },
   { "name": "FFmpeg-8.1", "url": "https://github.com/FFmpeg/FFmpeg.git", "ref": "refs/heads/release/8.1" },
   { "name": "obuparse", "url": "https://github.com/dwbuiten/obuparse.git", "ref": "HEAD" },
+  { "name": "l-smash-Mr-Ojii-master", "url": "https://github.com/Mr-Ojii/l-smash.git", "ref": "refs/heads/master" },
+  { "name": "l-smash-vimeo-master", "url": "https://github.com/vimeo/l-smash.git", "ref": "refs/heads/master" },
   { "name": "l-smash-l-smash-master", "url": "https://github.com/l-smash/l-smash.git", "ref": "refs/heads/master" },
   { "name": "l-smash-l-smash-dev", "url": "https://github.com/l-smash/l-smash.git", "ref": "refs/heads/dev" },
   { "name": "AviSynthPlus", "url": "https://github.com/AviSynth/AviSynthPlus.git", "ref": "refs/tags/v3.7.3" },

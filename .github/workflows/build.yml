@@ -164,13 +164,14 @@ jobs:
     strategy:
       matrix:
         lsw_config:
-          # - { author: VFR-maniac, ffmpeg_version: "4.4", ffmpeg_patch: " (patched)", intel: "mfx" }
           - { author: Mr-Ojii, ffmpeg_version: "8.1", ffmpeg_patch: "", intel: "vpl"}
         l-smash_config:
-          # - { author: Mr-Ojii, branch: master }
-          # - { author: vimeo, branch: master }
+          - { author: Mr-Ojii, branch: master }
           - { author: l-smash, branch: master }
           - { author: l-smash, branch: dev }
+        include:
+          - lsw_config: { author: VFR-maniac, ffmpeg_version: "4.4", ffmpeg_patch: " (patched)", intel: "mfx" }
+            l-smash_config: { author: vimeo, branch: master }
     steps:
     - uses: actions/checkout@v7
       with:
@@ -483,16 +484,17 @@ jobs:
     strategy:
       matrix:
         lsw_config:
-          # - { author: VFR-maniac, intel: "mfx", ffmpeg_extra_flags: "--enable-avresample" }
           - { author: Mr-Ojii, intel: "vpl", ffmpeg_extra_flags: "" }
         l-smash_config:
-          # - { author: Mr-Ojii, branch: master }
-          # - { author: vimeo, branch: master }
+          - { author: Mr-Ojii, branch: master }
           - { author: l-smash, branch: master }
           - { author: l-smash, branch: dev }
         cpu_config:
           - { cpu: i686, arch: x86, user_arch: x86, vpx_target: x86-win32-gcc }
           - { cpu: x86_64, arch: x86_64, user_arch: x64, vpx_target: x86_64-win64-gcc }
+        include:
+          - lsw_config: { author: VFR-maniac, intel: "mfx", ffmpeg_extra_flags: "--enable-avresample" }
+            l-smash_config: { author: vimeo, branch: master }
 
     steps:
     - uses: actions/checkout@v7
@@ -751,8 +753,7 @@ jobs:
         lsw_config:
           - { author: Mr-Ojii, intel: "vpl" }
         l-smash_config:
-          # - { author: Mr-Ojii, branch: master }
-          # - { author: vimeo, branch: master }
+          - { author: Mr-Ojii, branch: master }
           - { author: l-smash, branch: master }
           - { author: l-smash, branch: dev }
         cpu_config:
@@ -1008,10 +1009,13 @@ jobs:
       matrix:
         author: [Mr-Ojii]
         l-smash_config:
-          # - { author: Mr-Ojii, branch: master }
-          # - { author: vimeo, branch: master }
+          - { author: Mr-Ojii, branch: master }
           - { author: l-smash, branch: master }
           - { author: l-smash, branch: dev }
+        include:
+          - author: VFR-maniac
+            l-smash_config: { author: vimeo, branch: master }
+
     steps:
     - uses: actions/checkout@v7
       with:
