@@ -164,11 +164,12 @@ jobs:
     strategy:
       matrix:
         lsw_config:
-          - { author: VFR-maniac, ffmpeg_version: "4.4", ffmpeg_patch: " (patched)", intel: "mfx" }
+          # - { author: VFR-maniac, ffmpeg_version: "4.4", ffmpeg_patch: " (patched)", intel: "mfx" }
           - { author: Mr-Ojii, ffmpeg_version: "8.1", ffmpeg_patch: "", intel: "vpl"}
         l-smash_config:
-          - { author: Mr-Ojii, branch: master }
-          - { author: vimeo, branch: master }
+          # - { author: Mr-Ojii, branch: master }
+          # - { author: vimeo, branch: master }
+          - { author: l-smash, branch: master }
           - { author: l-smash, branch: dev }
     steps:
     - uses: actions/checkout@v7
@@ -482,11 +483,12 @@ jobs:
     strategy:
       matrix:
         lsw_config:
-          - { author: VFR-maniac, intel: "mfx", ffmpeg_extra_flags: "--enable-avresample" }
+          # - { author: VFR-maniac, intel: "mfx", ffmpeg_extra_flags: "--enable-avresample" }
           - { author: Mr-Ojii, intel: "vpl", ffmpeg_extra_flags: "" }
         l-smash_config:
-          - { author: Mr-Ojii, branch: master }
-          - { author: vimeo, branch: master }
+          # - { author: Mr-Ojii, branch: master }
+          # - { author: vimeo, branch: master }
+          - { author: l-smash, branch: master }
           - { author: l-smash, branch: dev }
         cpu_config:
           - { cpu: i686, arch: x86, user_arch: x86, vpx_target: x86-win32-gcc }
@@ -749,8 +751,9 @@ jobs:
         lsw_config:
           - { author: Mr-Ojii, intel: "vpl" }
         l-smash_config:
-          - { author: Mr-Ojii, branch: master }
-          - { author: vimeo, branch: master }
+          # - { author: Mr-Ojii, branch: master }
+          # - { author: vimeo, branch: master }
+          - { author: l-smash, branch: master }
           - { author: l-smash, branch: dev }
         cpu_config:
           - { cpu: i686, arch: x86, user_arch: x86, build_arch: 32, sys: ucrt64, vpx_target: x86-win32-vs18, ffmpeg_target_os: win32, msvc_platform: Win32, msvc_dir: "Release" }
@@ -1003,10 +1006,11 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        author: [VFR-maniac, Mr-Ojii]
+        author: [Mr-Ojii]
         l-smash_config:
-          - { author: Mr-Ojii, branch: master }
-          - { author: vimeo, branch: master }
+          # - { author: Mr-Ojii, branch: master }
+          # - { author: vimeo, branch: master }
+          - { author: l-smash, branch: master }
           - { author: l-smash, branch: dev }
     steps:
     - uses: actions/checkout@v7
