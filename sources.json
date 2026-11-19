@@ -15,6 +15,6 @@
   { "name": "zimg", "url": "https://github.com/sekrit-twc/zimg.git", "ref": "refs/heads/v3.0" },
   { "name": "VapourSynth", "url": "https://github.com/vapoursynth/vapoursynth.git", "ref": "refs/tags/R72" },
   { "name": "AMF", "url": "https://github.com/GPUOpen-LibrariesAndSDKs/AMF.git", "ref": "HEAD" },
-  { "name": "L-SMASH-Works-Mr-Ojii", "url": "https://github.com/Mr-Ojii/L-SMASH-Works.git", "ref": "ref/heads/feature/lsmash3" },
+  { "name": "L-SMASH-Works-Mr-Ojii", "url": "https://github.com/Mr-Ojii/L-SMASH-Works.git", "ref": "refs/heads/feature/lsmash3" },
   { "name": "L-SMASH-Works-VFR-maniac", "url": "https://github.com/VFR-maniac/L-SMASH-Works.git", "ref": "HEAD" }
 ]
